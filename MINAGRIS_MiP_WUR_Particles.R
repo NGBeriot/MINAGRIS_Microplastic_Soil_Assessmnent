@@ -83,14 +83,10 @@ source("MINAGRIS_Read_Labels_Function.R")
     # There can be more than IR folders because some are analysed by several operators
     # There can be less when all IR files have not been PMF processed yet. 
     
-    # Directory PMF files
-    wd.in.PMF="/WUR_Data/PMF_Manual.check.csv"
-    #wd.in.PMF="//WURNET.NL/Homes/berio001/My Documents/R/PMF_ManualCheck_Local_240618.csv"
+    # Directory of the Manually checked IR files
+    wd.in.PMF="/WUR_Data"
     wd.in=wd.in.PMF
     setwd(wd.in)
-    
-    wd.out.PMF="W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Purency Microplastic Finder/PMF_Results_Summary"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
-    wd.out=wd.out.PMF
 
     # Create a list of PMF files available
     PMF_File_names <- dir(wd.in, full.names = F, recursive = T)
