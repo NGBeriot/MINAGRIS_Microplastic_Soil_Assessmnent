@@ -10,12 +10,17 @@ rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+library(here)
+setwd(here())
+
 # Load the MINAGRIS_Read_Labels_function.R
-source("//WURNET.NL/Homes/berio001/My Documents/R/MINAGRIS_Read_Labels_Function.R") 
+source("MINAGRIS_Read_Labels_Function.R") 
 
 #0. Summerize available DATA ####
   # * IR files Available ####
-  # = Folders produced after uFTIR aquisition
+  # //!\\ Not available for review, only on SLM W:drive
+
+  # List of folders produced after uFTIR aquisition
     # Directory IR files
     wd.in.IR="//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/1_FTIR_rawdata/uFTIR_files"
     wd.in=wd.in.IR
@@ -74,12 +79,12 @@ source("//WURNET.NL/Homes/berio001/My Documents/R/MINAGRIS_Read_Labels_Function.
                 Batch= unique(paste0(Batch_Name, collapse = " ; ") ))
 
   # * PMF checked Files Available ####
-  # = results.csv produced after PMF processing and visual checking. 
-  # There can be more than IR folders because some are analysed by several operators
-  # There can be less when all IR files have not been PMF processed yet. 
+    # = results.csv produced after PMF processing and visual checking. 
+    # There can be more than IR folders because some are analysed by several operators
+    # There can be less when all IR files have not been PMF processed yet. 
     
     # Directory PMF files
-    wd.in.PMF="//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Purency Microplastic Finder/PMF_Manual.check.csv"
+    wd.in.PMF="/WUR_Data/PMF_Manual.check.csv"
     #wd.in.PMF="//WURNET.NL/Homes/berio001/My Documents/R/PMF_ManualCheck_Local_240618.csv"
     wd.in=wd.in.PMF
     setwd(wd.in)
