@@ -9,194 +9,391 @@ rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
-wd.out="W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Purency Microplastic Finder/PMF_Results_Summary"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
+setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
+wd.out="Outputs"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
+
+# Nicolas Color Palette 
+# values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+#            "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
+#            "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
+#            "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+#            "CA"= "#FFD39B"  
+
+# MaP Color Palette 
+# values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+#            "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+#            "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+#            "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+#            "CA"= "#FFD39B")
+
 
 
 # 1. Load MiP table ####
 
-  wd.in="W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Purency Microplastic Finder/PMF_Results_Summary"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
-  setwd(wd.in)
-  
-  Data=read.csv("Corrected_MiP_Particles_20241113.csv")
-  
-  
-  Summary5a_Field=read.csv("Summary5a_Field_20241118.csv") # Mean per soil sample, All factors
-  Summary5b_Field=read.csv("Summary5b_Field_20241118.csv") # Mean per soil sample, Polymer.red12 * Size_cat.um
-  Summary5c_Field=read.csv("Summary5c_Field_20241118.csv") # Mean per soil sample, Polymer.red12
-  Summary5d_Field=read.csv("Summary5c_Field_20241118.csv") # Mean per soil sample, Sum up all polymers, "Other.Plastic" excluded 
+ 
+  Data=read.csv("Outputs/Corrected_MiP_Particles_20241113.csv")
 
+# Summary5a_Field=read.csv("Outputs/Summary5a_Field_20241118.csv") # Mean per soil sample, All factors
+# Summary5b_Field=read.csv("Outputs/Summary5b_Field_20241118.csv") # Mean per soil sample, Polymer.red12 * Size_cat.um
+Summary4c_Soil=read.csv("Outputs/Summary4c_Soil_20241118.csv") # Mean per soil sample, Polymer.red12
+# Summary5d_Field=read.csv("Outputs/Summary5d_Field_20241118.csv") # Mean per soil sample, Sum up all polymers, "Other.Plastic" excluded 
+# Summary5e_Field=read.csv("Outputs/Summary5e_Field_20241118.csv") # Mean per soil sample, Sum up all polymers, "Other.Plastic" excluded 
+  
+  Summary5a_Field=read.csv("Outputs/Summary5a_Field_20241118.csv") # Mean per soil sample, All factors
+  Summary5b_Field=read.csv("Outputs/Summary5b_Field_20241118.csv") # Mean per soil sample, Polymer.red12 * Size_cat.um
+  Summary5c_Field=read.csv("Outputs/Summary5c_Field_20241118.csv") # Mean per soil sample, Polymer.red12
+  Summary5d_Field=read.csv("Outputs/Summary5d_Field_20241118.csv") # Mean per soil sample, Sum up all polymers, "Other.Plastic" excluded 
+  Summary5e_Field=read.csv("Outputs/Summary5e_Field_20241118.csv") # Mean per soil sample, Sum up all polymers, "Other.Plastic" excluded 
 
-# 2. Size distribution histogram ####
+  Summary6c_CSS=read.csv("Outputs/Summary7c_MINAGRIS_20241118.csv")
+    
+    
+  Summary7c_MINAGRIS=read.csv("Outputs/Summary7c_MINAGRIS_20241118.csv")
+
+  # 2. Size distribution histogram ####
 Cat.um.txt=c("50-300", "300-550", "550-800",
              "800-1050", "1050-1300", "1300-1550", "1550-1800")
+# source("MINAGRIS_Custom_Histogram.R") Work in progress
+# MINAGRIS_Custom_Histogram(Data) 
 
-MINAGRIS_Custom_Histogram(Data)
+  
+# x. Particles per CSS ####
+  
+  
+  
+  df_plot_bar=Summary6c_CSS
+  
+  y_max=50
+  df_plot_dot_css$Max.particles.CSS[ df_plot_dot_css$Max.particles.CSS> y_max]= y_max
+  
+    df_plot_dot_css=subset(Summary6c_CSS,  Preparation_Type=="Field_samples")
+    df_plot_bar_css=subset( df_plot_bar,  Preparation_Type=="Field_samples")
 
+    df_plot_bar_css$CSS=factor(df_plot_bar_css$CSS)
+  
+    PLOT= ggplot( df_plot_bar_css) +
+      # Stack bars with Polymer 12 
+      geom_bar( aes(x=CSS, y=Mean.particles.CSS*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+      # Custum color palette
+      scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                   "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                   "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                   "CA"= "#FFD39B") , 
+                        # Relabel  "Other.Plastic"                 
+                        labels = c( "Other.Plastic"="Other Plastic" ) ) +
+      # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
+      geom_bar( aes(x=CSS, y=Mean.particles.CSS*200, group=CSS, color = CSS), position="stack", stat="summary", fun=sum, fill = "transparent",
+                size = 1.5) +
+      scale_color_manual(values = c("1"="NA", "2"="NA", "3"="NA", "4"="NA", "5"="NA", "6"="NA", 
+                                    "7"="NA", "8"="NA", "9"="NA", "10"="NA", "11"="NA", "12"="NA", "MEAN"="Black" ))+
+      # # Add a min max line, from summary soil, polymer 12,   
+      geom_linerange(data=df_plot_dot_css, aes(x=CSS, y=Mean.particles.CSS*200, ymin = Min.particles.CSS*200, ymax = Max.particles.CSS*200))+
+      # Titles
+      ggtitle(paste("Field Sample"))+
+      theme_minimal()+
+      guides( color  = "none")+
+      scale_y_continuous(limits = c(0, 200* y_max))+
+      labs(y = "Average number of plastic particles per kg of soil",
+           fill = "Plastics identified") +
+      theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5),
+            axis.title.x = element_blank())
+    
+  
+    PLOT
+    ggsave(filename = paste(wd.out,"/Bar_MiP_number_AllCSS", ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
+    
+  
+# x. Polymers all project ####  
+  
+  Summary7c_MINAGRIS$Polymer.red12 = factor(Summary7c_MINAGRIS$Polymer.red12,
+                                            levels = Summary7c_MINAGRIS$Polymer.red12[order(-Summary7c_MINAGRIS$Mean.particles.MM)] )
+  Summary7c_MINAGRIS$MiP_perc <- Summary7c_MINAGRIS$Mean.particles.MM / sum(Summary7c_MINAGRIS$Mean.particles.MM) * 100
+  
+  # * Pie chart ####
+  
+  # ggplot(Summary4c_Soil, aes(x="", y=Mean.particles, fill= Polymer.red12 ))+
+  #   geom_bar(stat="identity", width=1, color="white") +
+  #   coord_polar("y", start=0) +
+  #   scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+  #                                "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+  #                                "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+  #                                "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+  #                                "CA"= "#FFD39B") , 
+  #                     # Relabel  "Other.Plastic"                 
+  #                     labels = c( "Other.Plastic"="Other Plastic" ) ) +
+  #   theme_void() 
+  
+  ggplot(Summary7c_MINAGRIS, aes(x="", y=Mean.particles.MM, fill= Polymer.red12 ))+
+    geom_bar(stat="identity", width=1, color="white") +
+    coord_polar("y", start=0) +
+    scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                 "CA"= "#FFD39B") , 
+                      # Relabel  "Other.Plastic"                 
+                      labels = c( "Other.Plastic"="Other Plastic" ) ) +
+    geom_text(aes(label = paste0(round(MiP_perc, 1), "%")), 
+              position = position_stack(vjust = 0.5)  )+
+    coord_polar("y", start=0) +
+    theme_void() + 
+    
+  #ggtitle(paste("Field Samples ; CSS ", css))+
+   # guides( color  = "none")+
+    labs(# y = "Average number of plastic particles per kg of soil",
+         fill = "Plastics identified") #+
+    #theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
+       #   axis.title.x = element_blank() )
+  
+
+
+
+# * Bar chart ####
+
+
+ggplot(Summary7c_MINAGRIS, aes(x=Polymer.red12, y=Mean.particles.MM*200, fill= Polymer.red12 ))+
+  geom_bar(stat="identity", width=1, color="white") +
+  #coord_polar("y", start=0) +
+  scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                               "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                               "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                               "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                               "CA"= "#FFD39B") , 
+                    # Relabel  "Other.Plastic"                 
+                    labels = c( "Other.Plastic"="Other Plastic" ) ) +
+  theme_minimal() + 
+  geom_text(aes(label=Polymer.red12) , vjust = -0.5, hjust = 0 , nudge_x = -.5) +
+  geom_text(aes(label = paste0(round(MiP_perc, 1), "%")), vjust = 1, nudge_y = 0.2)+
+  #ggtitle(paste("Field Samples ; CSS ", css))+
+  # guides( color  = "none")+
+  labs(# y = "Average number of plastic particles per kg of soil",
+    fill = "Plastics identified") +
+theme(axis.text.x = element_blank(),
+      axis.title.x = element_blank())
+
+#
+
+
+
+df <- data.frame(
+  Category = c("A", "B", "C", "D", "E"),
+  Value = c(5, 2, 9, 4, 17)
+)
+
+# Reorder 'Category' based on 'Value'
+df$Category <- factor(df$Category, levels = df$Category[order(df$Value)])
+
+# Plot using geom_bar()
+ggplot(df, aes(x = Category, y = Value)) +
+  geom_bar(stat = "identity", fill = "skyblue") +
+  labs(title = "Ordered Bar Plot", x = "Category", y = "Value") +
+  theme_minimal()
+
+
+
+# details of "other polymers"
+A=subset(Summary7a_MINAGRIS, Polymer.red12=="Other.Plastic")
+ggplot(data=A, aes(x=Polymer.grp, y=Mean.particles.MM, fill=Size_cat.um))+
+  geom_bar(stat="identity", position = "stack", width=1, color="white") 
+  
+  # * Bar chart
+  
 
 # 3. Bar Plot per CSS, uP per kg soil per field  ####
-
-# Average number of particles per kg soil per field
-
-# Duplicate the data to create calculate an overall mean. 
-
-A=Summary5c_Field
-B=Summary5c_Field
-A$CSS=as.character(A$CSS)
-A$Farm=as.character(A$Farm)
-A$Field=as.character(A$Field)
-B$CSS="MEAN"
-B$Farm="ME"
-B$Field="AN"
-
-C=bind_rows(A,B) 
-
-
-Summary_Field_Polymer12_bar= subset(C, Preparation_Type=="Field_samples") %>% 
-  group_by(  Preparation_Type, CSS, Farm, Field, Polymer.red12 ) %>%  # Group per polymer cluster
-  summarise( N.files = n(),
-             Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-             Min.particles= min( Mean.particles),
-             Max.particles= max( Mean.particles),
-             Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-             Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-             Min.Tot.Area.mm2=min(Mean.Tot.Area.mm2),
-             Max.Tot.Area.mm2=max(Mean.Tot.Area.mm2),
-             Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng)  #  Mean mass per sample and polymer, over the files/operators
-  ) 
-
-#Summary_Field_Polymer12_bar=C
-Summary_Field_Polymer12_bar$Farm.Field=paste(Summary_Field_Polymer12_bar$Farm, Summary_Field_Polymer12_bar$Field, sep=".")
-Summary_Field_Polymer12_bar$Farm.Field[Summary_Field_Polymer12_bar$Farm.Field=="ME.AN"]="MEAN"
-unique(Summary_Field_Polymer12_bar$Farm.Field)  
-
-Summary_Field_Polymer12_bar$Farm.Field= factor(Summary_Field_Polymer12_bar$Farm.Field, 
-                                               levels= c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2",
-                                                         "7.1", "7.2", "8.1","8.2", "9.1", "9.2", "10.1", "10.2", "11.1", "11.2", "12.1", "12.2","12.3","12.4", "MEAN"))
-
-
-
-
-A=Summary4e_Soil
-B=Summary4e_Soil
-A$CSS=as.character(A$CSS)
-A$Farm=as.character(A$Farm)
-A$Field=as.character(A$Field)
-B$CSS="MEAN"
-B$Farm="ME"
-B$Field="AN"
-
-C=bind_rows(A,B) 
-C=A
-
-
-Summary_Soil_PolymerALL_dot= subset(C, Preparation_Type=="Field_samples") %>% 
-  group_by(  Preparation_Type, CSS, Farm, Field, Soil_sample, Lab) %>%  # Group per polymer cluster
-  summarise( N.files = n(),
-             Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-             Min.particles= min( Mean.particles),
-             Max.particles= max( Mean.particles),
-             Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-             Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-             Min.Tot.Area.mm2=min(Mean.Tot.Area.mm2),
-             Max.Tot.Area.mm2=max(Mean.Tot.Area.mm2),
-             Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng)  #  Mean mass per sample and polymer, over the files/operators
-  ) 
-
-#Summary_Soil_PolymerALL_dot=C
-Summary_Soil_PolymerALL_dot$Farm.Field=paste(Summary_Soil_PolymerALL_dot$Farm, Summary_Soil_PolymerALL_dot$Field, sep=".")
-Summary_Soil_PolymerALL_dot$Farm.Field[Summary_Soil_PolymerALL_dot$Farm.Field=="ME.AN"]="MEAN"
-unique(Summary_Soil_PolymerALL_dot$Farm.Field)  
-
-Summary_Soil_PolymerALL_dot$Farm.Field= factor(Summary_Soil_PolymerALL_dot$Farm.Field, 
-                                      levels= c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2",
-                                                 "7.1", "7.2", "8.1","8.2", "9.1", "9.2", "10.1", "10.2", "11.1", "11.2", "12.1", "12.2","12.3","12.4", "MEAN"))
-
-for (css in 1:11){  
-df_plot_bar=subset(Summary_Field_Polymer12_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
-df_plot_dot=subset(Summary_Soil_PolymerALL_dot, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
-
-PLOT= ggplot(df_plot_bar) +
-  # Stack bars with Polymer 12 
-  geom_bar( aes(x=Farm.Field, y=Mean.particles*200, fill=Polymer.red12), position="stack", stat="identity")+ 
-  # Custum color palette
-  scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                               "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
-                               "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
-                               "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                               "CA"= "#FFD39B"  ),
-  # Relabel  "Other.Plastic"                 
-                    labels = c( "Other.Plastic"="Other Plastic" ) ) +
-  # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
-  geom_bar( aes(x=Farm.Field, y=Mean.particles*200, group=Farm.Field, color = Farm.Field), position="stack", stat="summary", fun=sum, fill = "transparent",
-            size = 1.5) + 
-  scale_color_manual(values = c("1.1"="NA", "1.2"="NA", "2.1"="NA", "2.2"="NA", "3.1"="NA", "3.2"="NA", "4.1"="NA", "4.2"="NA", "5.1"="NA", "5.2"="NA", "6.1"="NA", "6.2"="NA",
-                                "7.1"="NA", "7.2"="NA", "8.1"="NA","8.2"="NA", "9.1"="NA", "9.2"="NA", "10.1"="NA", "10.2"="NA", "11.1"="NA", "11.2"="NA", "12.1"="NA", "12.2"="NA","12.3"="NA","12.4"="NA", "MEAN"="Black" ))+ 
-  # Add a min max line, from summary soil, polymer 12,   
-  # geom_point(data = df_plot_dot, aes(x=Farm.Field, y=Mean.particles*200)) +
-  geom_errorbar(aes(x=Farm.Field ,ymin = Min.particles*200, ymax = Max.particles*200))+
-  # Titles
-  ggtitle(paste("Field Samples ; CSS ", css))+
-  theme_minimal()+
-  guides( color  = "none")+
-  labs(y = "Average number of plastic particles per kg of soil",
-       fill = "Plastics identified") +
-  theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
-        axis.title.x = element_blank())
-
-
-print(PLOT)
-# Export plots ####
-# ggsave(filename = paste(wd.out,"/Bar_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
-
-} 
-
-
-# x. Points S1-S2 per Field, min-max with lab color and range bar  ####
-Summary5e_Field$Farm.Field=paste(Summary5e_Field$Farm, Summary5e_Field$Field, sep=".")
-Summary4e_Soil$Farm.Field=paste( Summary4e_Soil$Farm, Summary4e_Soil$Field, sep=".")
-
-for (css in 1:11){
-# P1: Plot vertical bar min-max, from Summary5e_Field
-  df_p1=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
-  df_p1$Farm.Field= factor( df_p1$Farm.Field, 
-                            levels= c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2",
-                                      "7.1", "7.2", "8.1","8.2", "9.1", "9.2", "10.1", "10.2", "11.1", "11.2", "12.1", "12.2","12.3","12.4", "MEAN"))
   
-  p1=ggplot(df_p1, aes(x=Farm.Field, y=Mean.particles.F))+
-    geom_linerange( aes(ymin = Min.particles.F, ymax = Max.particles.F))+
-    ggtitle(paste("Field Samples ; CSS ", css))
-
+  # Average number of particles per kg soil per field
+  Summary5e_Field$Farm.Field=paste("F",Summary5e_Field$Farm, Summary5e_Field$Field, sep=".")
+  Summary5e_Field$Farm.Field= factor(Summary5e_Field$Farm.Field, 
+                                           levels= c("F.1.1", "F.1.2", "F.2.1", "F.2.2", "F.3.1", "F.3.2", "F.4.1", "F.4.2", "F.5.1", "F.5.2", "F.6.1", "F.6.2",
+                                                     "F.7.1", "F.7.2", "F.8.1","F.8.2", "F.9.1", "F.9.2", "F.10.1", "F.10.2", "F.11.1", "F.11.2", "F.12.1", "F.12.2","F.12.3","F.12.4", "MEAN"))
+  Summary5c_Field$Farm.Field=paste("F",Summary5c_Field$Farm, Summary5c_Field$Field, sep=".")
+  Summary5c_Field$Farm.Field= factor(Summary5c_Field$Farm.Field, 
+                                     levels= c("F.1.1", "F.1.2", "F.2.1", "F.2.2", "F.3.1", "F.3.2", "F.4.1", "F.4.2", "F.5.1", "F.5.2", "F.6.1", "F.6.2",
+                                               "F.7.1", "F.7.2", "F.8.1","F.8.2", "F.9.1", "F.9.2", "F.10.1", "F.10.2", "F.11.1", "F.11.2", "F.12.1", "F.12.2","F.12.3","F.12.4", "MEAN"))
   
- #  P2: Plot Samples S1-S2, min-max with lab color, from Summary4e_Soil
-   df_p2=subset(Summary4e_Soil, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
-   df_p2$Farm.Field= factor( df_p2$Farm.Field, 
-                       levels= c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2",
-                                 "7.1", "7.2", "8.1","8.2", "9.1", "9.2", "10.1", "10.2", "11.1", "11.2", "12.1", "12.2","12.3","12.4", "MEAN"))
+  # *  IF PROJECT MEAN bar: ####
+  # Duplicate the data to create calculate an overall mean. 
+  
+  A=Summary5c_Field
+  B=Summary5c_Field
+  A$CSS=as.character(A$CSS)
+  A$Farm=as.character(A$Farm)
+  A$Field=as.character(A$Field)
+  B$CSS="MEAN"
+  B$Farm="ME"
+  B$Field="AN"
+  
+  C=bind_rows(A,B) 
+  
+  
+  Summary5c_Field_MMEAN= subset(C, Preparation_Type=="Field_samples") %>% 
+    group_by(  Preparation_Type, CSS, Farm, Field, Farm.Field, Polymer.red12 ) %>%  # Group per polymer cluster
+    summarise( N.files = n(),
+               Mean.particles.MM= mean( Mean.particles.F), # Mean particle number per sample and polymer, over the files/operators 
+               Min.particles.MM= min( Mean.particles.F),
+               Max.particles.MM= max( Mean.particles.F),
+               Mean.px.MM=mean( Mean.px.F),              # Mean Number of pixels per sample and polymer, over the files/operators
+               Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2.F), #  Mean area per sample and polymer, over the files/operators
+               Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2.F),
+               Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2.F),
+               Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.F)  #  Mean mass per sample and polymer, over the files/operators
+    ) 
+  
+    Summary5c_Field_MMEAN$Farm.Field[Summary5c_Field_MMEAN$Farm.Field=="ME.AN"]="MEAN"
+    
+  
+  Summary5c_Field_MMEAN$Farm.Field= factor(Summary5c_Field_MMEAN$Farm.Field, 
+                                           levels= c("F.1.1", "F.1.2", "F.2.1", "F.2.2", "F.3.1", "F.3.2", "F.4.1", "F.4.2", "F.5.1", "F.5.2", "F.6.1", "F.6.2",
+                                                     "F.7.1", "F.7.2", "F.8.1","F.8.2", "F.9.1", "F.9.2", "F.10.1", "F.10.2", "F.11.1", "F.11.2", "F.12.1", "F.12.2","F.12.3","F.12.4", "MEAN"))
+  
+  
+  #Adding the MEAN 
+  
+      A=Summary5e_Field
+      B=Summary5e_Field
+      A$CSS=as.character(A$CSS)
+      A$Farm=as.character(A$Farm)
+      A$Field=as.character(A$Field)
+      B$CSS="MEAN"
+      B$Farm="ME"
+      B$Field="AN"
       
-   p2= ggplot()+
-      geom_point(data = df_p2, aes(x=Farm.Field, y=Mean.particles, color=Lab, shape=Lab, size=Lab ))+
-      scale_size_manual(values = c("WUR"=2,  "Ubern"=3))+
-      scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
+      C=bind_rows(A,B) 
+      
+      Summary5e_Field_MMEAN= subset(C, Preparation_Type=="Field_samples") %>% 
+        group_by(  Preparation_Type, CSS, Farm, Field, Farm.Field) %>%  # Group per polymer cluster
+        summarise( N.files = n(),
+                   Mean.particles.MM= mean( Mean.particles.F), # Mean particle number per sample and polymer, over the files/operators 
+                   Min.particles.MM= min( Mean.particles.F),
+                   Max.particles.MM= max( Mean.particles.F),
+                   Mean.px.MM=mean( Mean.px.F),              # Mean Number of pixels per sample and polymer, over the files/operators
+                   Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2.F), #  Mean area per sample and polymer, over the files/operators
+                   Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2.F),
+                   Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2.F),
+                   Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.F)  #  Mean mass per sample and polymer, over the files/operators
+        ) 
+      
+      #Summary5e_Field_MMEAN=C
+      Summary5e_Field_MMEAN$Farm.Field=paste( "F",Summary5e_Field_MMEAN$Farm, Summary5e_Field_MMEAN$Field, sep=".")
+      Summary5e_Field_MMEAN$Farm.Field[Summary5e_Field_MMEAN$Farm.Field=="ME.AN"]="MEAN"
+      unique(Summary5e_Field_MMEAN$Farm.Field)  
+      
+      Summary5e_Field_MMEAN$Farm.Field= factor(Summary5e_Field_MMEAN$Farm.Field, 
+                                               levels= c("F.1.1", "F.1.2", "F.2.1", "F.2.2", "F.3.1", "F.3.2", "F.4.1", "F.4.2", "F.5.1", "F.5.2", "F.6.1", "F.6.2",
+                                                         "F.7.1", "F.7.2", "F.8.1","F.8.2", "F.9.1", "F.9.2", "F.10.1", "F.10.2", "F.11.1", "F.11.2", "F.12.1", "F.12.2","F.12.3","F.12.4", "MEAN"))
+      
+      df_plot_bar=Summary5e_Field_MMEAN
+      
+      # * IF NO PROJECT MEAN bar:  ####
+      
+      df_plot_bar=Summary5c_Field
+  
+      
+      for (css in 1:11){  
+  #df_plot_bar_css=subset(Summary5c_Field_MMEAN, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+  # df_plot_dot=subset(Summary5e_Field_MMEAN, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+  
+  #df_p1=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+  #df_p2=subset(Summary4e_Soil, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+  
+  df_plot_dot_css=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+  df_plot_bar_css=subset( df_plot_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+  
+  PLOT= ggplot( df_plot_bar_css) +
+    # Stack bars with Polymer 12 
+    geom_bar( aes(x=Farm.Field, y=Mean.particles.F*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+    # Custum color palette
+    scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                 "CA"= "#FFD39B") , 
+    # Relabel  "Other.Plastic"                 
+                      labels = c( "Other.Plastic"="Other Plastic" ) ) +
+    # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
+    geom_bar( aes(x=Farm.Field, y=Mean.particles.F*200, group=Farm.Field, color = Farm.Field), position="stack", stat="summary", fun=sum, fill = "transparent",
+              size = 1.5) + 
+    scale_color_manual(values = c("F.1.1"="NA", "F.1.2"="NA", "F.2.1"="NA", "F.2.2"="NA", "F.3.1"="NA", "F.3.2"="NA", "F.4.1"="NA", "F.4.2"="NA", "F.5.1"="NA", "F.5.2"="NA", "F.6.1"="NA", "F.6.2"="NA",
+                                  "F.7.1"="NA", "F.7.2"="NA", "F.8.1"="NA","F.8.2"="NA", "F.9.1"="NA", "F.9.2"="NA", "F.10.1"="NA", "F.10.2"="NA", "F.11.1"="NA", "F.11.2"="NA", "F.12.1"="NA", "F.12.2"="NA","F.12.3"="NA","F.12.4"="NA", "MEAN"="Black" ))+ 
+    # Add a min max line, from summary soil, polymer 12,   
+    geom_linerange(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, ymin = Min.particles.F*200, ymax = Max.particles.F*200))+
+    # Titles
+    ggtitle(paste("Field Samples ; CSS ", css))+
+    theme_minimal()+
+    guides( color  = "none")+
+    labs(y = "Average number of plastic particles per kg of soil",
+         fill = "Plastics identified") +
+    theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
+          axis.title.x = element_blank())
+  
+  
+  print(PLOT)
+  # Export plots ####
+   ggsave(filename = paste(wd.out,"/Bar_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
+  
+  } 
+  
+  
+  # x. Points S1-S2 per Field, min-max with lab color and range bar  ####
+  Summary5e_Field$Farm.Field=paste(Summary5e_Field$Farm, Summary5e_Field$Field, sep=".")
+  Summary4e_Soil$Farm.Field=paste( Summary4e_Soil$Farm, Summary4e_Soil$Field, sep=".")
+  
+  for (css in 1:11){
+  # P1: Plot vertical bar min-max, from Summary5e_Field
+    df_p1=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+    df_p1$Farm.Field= factor( df_p1$Farm.Field, 
+                              levels= c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2",
+                                        "7.1", "7.2", "8.1","8.2", "9.1", "9.2", "10.1", "10.2", "11.1", "11.2", "12.1", "12.2","12.3","12.4", "MEAN"))
+    
+    p1= ggplot()+
+      geom_linerange(data=df_p1, aes(x=Farm.Field, y=Mean.particles.F, ymin = Min.particles.F, ymax = Max.particles.F))+
       ggtitle(paste("Field Samples ; CSS ", css))+
       theme_minimal()
+    
+   #  P2: Plot Samples S1-S2, min-max with lab color, from Summary4e_Soil
+     df_p2=subset(Summary4e_Soil, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+     df_p2$Farm.Field= factor( df_p2$Farm.Field, 
+                         levels= c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2",
+                                   "7.1", "7.2", "8.1","8.2", "9.1", "9.2", "10.1", "10.2", "11.1", "11.2", "12.1", "12.2","12.3","12.4", "MEAN"))
+        
+     p2= ggplot()+
+        geom_point(data = df_p2, aes(x=Farm.Field, y=Mean.particles, color=Lab, shape=Lab, size=Lab ))+
+        scale_size_manual(values = c("WUR"=2,  "Ubern"=3))+
+        scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
+        ggtitle(paste("Field Samples ; CSS ", css))+
+        theme_minimal()
+  
+     PLOT=  
+  p1+ 
+    geom_point(data = df_p2, aes(x=Farm.Field, y=Mean.particles, color=Lab, shape=Lab, size=Lab ))+
+    scale_size_manual(values = c("WUR"=2,  "Ubern"=3))+
+    scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
+    ggtitle(paste("Field Samples ; CSS ", css))+
+       labs(y = "Average number of plastic particles per soil sample") +
+    theme_minimal()+
+       theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
+             axis.title.x = element_blank())
+     
+     PLOT
+     
+      ggsave(filename = paste(wd.out,"/Dot_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
+  } #end for css  
 
-   PLOT=  
-p1+ 
-  geom_point(data = df_p2, aes(x=Farm.Field, y=Mean.particles, color=Lab, shape=Lab, size=Lab ))+
-  scale_size_manual(values = c("WUR"=2,  "Ubern"=3))+
-  scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
-  ggtitle(paste("Field Samples ; CSS ", css))+
-  theme_minimal()
-   
-    ggsave(filename = paste(wd.out,"/Dot_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
-} #end for css  
 
-# 4. Bar Plot CSS Area ####
+  
+
+  
+  
+  
+  
+  
+  # 4. Bar Plot CSS Area ####
 
 ##########33
 
 for (css in 1:11){  
-  df_plot=subset(Summary_Field_Polymer12_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+  df_plot=subset(Summary5c_Field_MMEAN, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
   
   
   PLOT= ggplot(df_plot ) +
@@ -229,7 +426,7 @@ ggplot(df_plot ) +
   
   
 # lab 
-  Summary_Field_Polymer12_bar2 = subset(Data, Preparation_Type=="Field_samples") %>% 
+  Summary5c_Field_MMEAN2 = subset(Data, Preparation_Type=="Field_samples") %>% 
   group_by( File_Names, Polymer.red12, Sample_type, Preparation_Type, CSS, Farm, Field, Lab   ) %>% # For each PMF_File_name, get the summary
   summarise( N.particles= sum(N.px!=0),           # Number of particles
              Num.px=sum(N.px),           # Number of pixels
@@ -245,7 +442,7 @@ ggplot(df_plot ) +
   
   
   
-  PLOT= ggplot(Summary_Field_Polymer12_bar2  ) +
+  PLOT= ggplot(Summary5c_Field_MMEAN2  ) +
   geom_bar( aes(x=Lab, y=Mean.Tot.Area.um2, fill=Polymer.red12), position="stack", stat="identity")+ 
   scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
@@ -263,7 +460,7 @@ ggplot(df_plot ) +
 
 print(PLOT)
 
-ggplot(Summary_Field_Polymer12_bar2  ) +
+ggplot(Summary5c_Field_MMEAN2  ) +
   geom_bar( aes(x=Lab, y=Mean.particles, fill=Polymer.red12), position="stack", stat="identity")+ 
   scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
