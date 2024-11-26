@@ -150,12 +150,15 @@ Data_comb$ID=seq_along(Data_comb$File_Names)
 
 # * Create size categories ####
 # Custom size categories [um]:          
-cat.min=50
-cat.max=1550#1800
-cat.bin=250
+cat.min=80
+cat.max=1400#1400 #1800
+cat.bin=220
 Cat.um=seq(cat.min, cat.max, by=cat.bin)
-Cat.um.txt=c("50-300", "300-550", "550-800",
-             "800-1050", "1050-1300", "1300-1550", "1550-1800")
+# Cat.um.txt=c("50-300", "300-550", "550-800",
+#              "800-1050", "1050-1300", "1300-1550", "1550-1800")
+Cat.um.txt=c("80-300", "300-520", "520-740",
+             "740-960", "960-1180", "1180-1400")
+
 
 Data_comb$Size_cat.um="Too small"
 # Build categories by succesive replacement "upward"
@@ -523,9 +526,11 @@ uP_Colnames[uP_Colnames %!in% colnames(Data_comb_red_blank)]
 length(unique(Data_comb_red_blank$File_Names[Data_comb_red_blank$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Names[Data_comb$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Names))
-# write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241113.csv",sep = "/"))
 
-# write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241113.csv",sep = "/"))
+
+ write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241113.csv",sep = "/"))
+
+ write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241113.csv",sep = "/"))
 
 
 
