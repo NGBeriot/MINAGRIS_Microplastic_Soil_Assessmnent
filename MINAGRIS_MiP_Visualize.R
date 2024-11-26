@@ -51,29 +51,161 @@ Summary4c_Soil=read.csv("Outputs/Summary4c_Soil_20241118.csv") # Mean per soil s
   Summary7c_MINAGRIS=read.csv("Outputs/Summary7c_MINAGRIS_20241118.csv")
 
   # 2. Size distribution histogram ####
-Cat.um.txt=c("50-300", "300-550", "550-800",
-             "800-1050", "1050-1300", "1300-1550", "1550-1800")
+  
+  
+  A=subset(Data_comb_red_blank, Area.um2.cor !=0 & Area.um2.cor <7885.44 & Length.um<88.042)
+  B=subset(Data_comb_red_blank, Area.um2.cor > 1180^2)
+  
+  Cat.um.txt=c("80-300", "300-520", "520-740",
+               "740-960", "960-1180", "1180-1400")
+
 # source("MINAGRIS_Custom_Histogram.R") Work in progress
 # MINAGRIS_Custom_Histogram(Data) 
 
   
-# x. Particles per CSS ####
-  
-  
-  
-  df_plot_bar=Summary6c_CSS
-  
-  y_max=50
-  df_plot_dot_css$Max.particles.CSS[ df_plot_dot_css$Max.particles.CSS> y_max]= y_max
-  
-    df_plot_dot_css=subset(Summary6c_CSS,  Preparation_Type=="Field_samples")
-    df_plot_bar_css=subset( df_plot_bar,  Preparation_Type=="Field_samples")
+  # * All CSS All Polymers #### 
+    # One value per Size_cat.um
+    Summary7f_MINAGRIS$Size_cat.um= factor(Summary7f_MINAGRIS$Size_cat.um,
+                                           levels =  Cat.um.txt )
+    
+    
+    PLOT= ggplot( subset(Summary7f_MINAGRIS, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles.MM*200)) +
+      geom_bar(position="stack", stat="identity", fill="steelblue4")+ 
+      ggtitle("MINAGRIS, Micoplastic size distribution")+
+      theme_minimal()+
+      labs(y = "Average number of plastic particles per kg of soil",
+           x= "Size categories [µm]") +
+      theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
+    
+    PLOT
+    
+    ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_AllCSS_AllPolymers", ".png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
+    
 
-    df_plot_bar_css$CSS=factor(df_plot_bar_css$CSS)
   
+  # * All CSS Per Polymers   #####
+    # One value per {CSS Polymer per Size_cat.um
+    
+    Summary7a_MINAGRIS$Size_cat.um= factor(Summary7a_MINAGRIS$Size_cat.um,
+                               levels =  Cat.um.txt )
+  
+    
+    PLOT= ggplot( subset(Summary7a_MINAGRIS, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12)) +
+      geom_bar(position="stack", stat="identity")+ 
+      scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                   "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                   "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                   "CA"= "#FFD39B") , 
+                        # Relabel  "Other.Plastic"                 
+                        labels = c( "Other.Plastic"="Other Plastic" ) ) +
+      ggtitle("MINAGRIS, Micoplastic size distribution")+
+      theme_minimal()+
+      labs(y = "Average number of plastic particles per kg of soil",
+           x= "Size categories [µm]",
+           fill = "Polymers identified") +
+      theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
+    
+    PLOT
+    
+    ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_ALLCSS_Polymer12", ".png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
+    
+  
+  
+  # * Per CSS All Polymers #### 
+  # One value per CSS* Size_cat.um
+  
+  # Order per Size_cat.um
+  Summary6f_CSS$Size_cat.um= factor(Summary6f_CSS$Size_cat.um,
+                                    levels =  Cat.um.txt )
+  
+  for (css in 1:11){  
+    
+    PLOT= ggplot( subset(Summary6f_CSS, Size_cat.um %in%  Cat.um.txt & CSS == css), aes(x=Size_cat.um, y=Mean.particles.CSS*200)) +
+      geom_bar(position="stack", stat="identity", fill="steelblue4")+ 
+      ggtitle(paste("CSS ", css, ", Microplastic size distribution", sep = ""))+
+      theme_minimal()+
+      labs(y = "Average number of plastic particles per kg of soil",
+           x= "Size categories [µm]") +
+      theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
+    
+    PLOT
+    
+    ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_CSS", css, "_AllPolymers.png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
+    
+  }
+  
+ 
+  
+  # * Per CSS Per Polymers   #####
+  # One value per CSS*Polymer*Size_cat.um
+  
+  
+  # Order per Size_cat.um
+
+  
+  Summary6a_CSS$Size_cat.um= factor(Summary6a_CSS$Size_cat.um,
+                                    levels =  Cat.um.txt )
+  
+  
+  for (css in 1:11){  
+      
+    PLOT= ggplot( subset(Summary6a_CSS, Size_cat.um %in%  Cat.um.txt & CSS == css), aes(x=Size_cat.um, y=Mean.particles.CSS*200, fill=Polymer.red12)) +
+      geom_bar(position="stack", stat="identity")+ 
+      scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                   "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                   "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                   "CA"= "#FFD39B") , 
+                        # Relabel  "Other.Plastic"                 
+                        labels = c( "Other.Plastic"="Other Plastic" ) ) +
+      ggtitle(paste("CSS ", css, ", Microplastic size distribution", sep = ""))+
+      theme_minimal()+
+      labs(y = "Average number of plastic particles per kg of soil",
+           x= "Size categories [µm]",
+           fill = "Polymers identified") +
+      theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
+    
+    PLOT
+    
+    ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_AllCSS", css, "_Polymer12.png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
+  }
+  
+   
+  
+  
+# 3. Content Particles All CSS ####
+  
+  # Data frame for the bars 
+  df_plot_bar=Summary6c_CSS
+   df_plot_bar_css=subset( df_plot_bar,  Preparation_Type=="Field_samples")
+   
+  # Data frame for the min-max 
+  df_plot_dot_css=subset(Summary6e_CSS,  Preparation_Type=="Field_samples")
+   
+  # Truncation over 50 MiP/ sample <-> 10 000 MiP/ kg soil
+    y_max=50
+    
+    # text if the max is met
+    df_plot_dot_css$Trunc=NA
+    df_plot_dot_css$Trunc[ df_plot_dot_css$Max.particles.CSS> y_max]= paste( "max=",
+                                                                             df_plot_dot_css$Max.particles.CSS[ df_plot_dot_css$Max.particles.CSS> y_max] *200,
+                                                                             sep = "" )
+   
+    
+    # Cut at y_max
+    df_plot_dot_css$Max.particles.CSS[ df_plot_dot_css$Max.particles.CSS> y_max]= y_max
+  
+  # Add "CSS"abreviation in x-axis   
+    df_plot_bar_css$CSS=factor(paste("CSS", df_plot_bar_css$CSS),
+                               levels =  c("CSS 1", "CSS 2", "CSS 3", "CSS 4", "CSS 5", "CSS 6",
+                                           "CSS 7", "CSS 8", "CSS 9", "CSS 10", "CSS 11") )
+    
+    
+  # Initialise Plot
     PLOT= ggplot( df_plot_bar_css) +
       # Stack bars with Polymer 12 
-      geom_bar( aes(x=CSS, y=Mean.particles.CSS*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+      geom_bar( aes(x=CSS, y=Mean.particles.CSS*200, fill=Polymer.red12), position="stack", stat="identity") + 
       # Custum color palette
       scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                    "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
@@ -85,46 +217,45 @@ Cat.um.txt=c("50-300", "300-550", "550-800",
       # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
       geom_bar( aes(x=CSS, y=Mean.particles.CSS*200, group=CSS, color = CSS), position="stack", stat="summary", fun=sum, fill = "transparent",
                 size = 1.5) +
-      scale_color_manual(values = c("1"="NA", "2"="NA", "3"="NA", "4"="NA", "5"="NA", "6"="NA", 
-                                    "7"="NA", "8"="NA", "9"="NA", "10"="NA", "11"="NA", "12"="NA", "MEAN"="Black" ))+
-      # # Add a min max line, from summary soil, polymer 12,   
-      geom_linerange(data=df_plot_dot_css, aes(x=CSS, y=Mean.particles.CSS*200, ymin = Min.particles.CSS*200, ymax = Max.particles.CSS*200))+
+      scale_color_manual(values = c("CSS 1"="NA", "CSS 2"="NA", "CSS 3"="NA", "CSS 4"="NA", "CSS 5"="NA", "CSS 6"="NA", 
+                                    "CSS 7"="NA", "CSS 8"="NA", "CSS 9"="NA", "CSS 10"="NA", "CSS 11"="NA", "CSS 12"="NA", "MEAN"="Black" )) +
+      # Add a min max line,   
+      geom_linerange(data=df_plot_dot_css, aes(x=CSS, y=Mean.particles.CSS*200, ymin = Min.particles.CSS*200, ymax = Max.particles.CSS*200)) +
+      # Add text when y max is reached
+      geom_text(data=df_plot_dot_css, aes(x=CSS, y=y_max*205, label=Trunc )) +
+      
+      
       # Titles
-      ggtitle(paste("Field Sample"))+
+      ggtitle(paste("All MINAGRIS, Microplastic particles per field"))+
       theme_minimal()+
       guides( color  = "none")+
-      scale_y_continuous(limits = c(0, 200* y_max))+
       labs(y = "Average number of plastic particles per kg of soil",
-           fill = "Plastics identified") +
+           fill = "Polymers identified") +
       theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5),
             axis.title.x = element_blank())
     
   
     PLOT
-    ggsave(filename = paste(wd.out,"/Bar_MiP_number_AllCSS", ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
+    ggsave(filename = paste(wd.out,"/Bar_MiP_number_AllCSS", ".png",sep =""), plot = PLOT, width = 10.5, height = 4, units = "in", dpi = 300)
     
   
-# x. Polymers all project ####  
+# 4. Polymers all project ####  
   
+  # Order plot per polymer   
   Summary7c_MINAGRIS$Polymer.red12 = factor(Summary7c_MINAGRIS$Polymer.red12,
                                             levels = Summary7c_MINAGRIS$Polymer.red12[order(-Summary7c_MINAGRIS$Mean.particles.MM)] )
+  
+  # Add percentages in the plot
   Summary7c_MINAGRIS$MiP_perc <- Summary7c_MINAGRIS$Mean.particles.MM / sum(Summary7c_MINAGRIS$Mean.particles.MM) * 100
+  # Creat percentage as text 
+  Summary7c_MINAGRIS$MiP_perc_text=paste0(round( Summary7c_MINAGRIS$MiP_perc, 0), "%")
+  
+  # Do not show percentages < 3.5% 
+  Summary7c_MINAGRIS$MiP_perc_text [Summary7c_MINAGRIS$MiP_perc < 3.5]=NA
   
   # * Pie chart ####
   
-  # ggplot(Summary4c_Soil, aes(x="", y=Mean.particles, fill= Polymer.red12 ))+
-  #   geom_bar(stat="identity", width=1, color="white") +
-  #   coord_polar("y", start=0) +
-  #   scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-  #                                "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
-  #                                "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
-  #                                "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-  #                                "CA"= "#FFD39B") , 
-  #                     # Relabel  "Other.Plastic"                 
-  #                     labels = c( "Other.Plastic"="Other Plastic" ) ) +
-  #   theme_void() 
-  
-  ggplot(Summary7c_MINAGRIS, aes(x="", y=Mean.particles.MM, fill= Polymer.red12 ))+
+  PLOT= ggplot(Summary7c_MINAGRIS, aes(x="", y=Mean.particles.MM, fill= Polymer.red12 ))+
     geom_bar(stat="identity", width=1, color="white") +
     coord_polar("y", start=0) +
     scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
@@ -134,21 +265,79 @@ Cat.um.txt=c("50-300", "300-550", "550-800",
                                  "CA"= "#FFD39B") , 
                       # Relabel  "Other.Plastic"                 
                       labels = c( "Other.Plastic"="Other Plastic" ) ) +
-    geom_text(aes(label = paste0(round(MiP_perc, 1), "%")), 
-              position = position_stack(vjust = 0.5)  )+
+    geom_text(aes(x=1.3, label = MiP_perc_text ), 
+              position = position_stack(vjust = 0.5), size=5  )+
     coord_polar("y", start=0) +
     theme_void() + 
-    
-  #ggtitle(paste("Field Samples ; CSS ", css))+
+  ggtitle("All MINAGRIS, Microplastic polymer composition" )+
    # guides( color  = "none")+
     labs(# y = "Average number of plastic particles per kg of soil",
-         fill = "Plastics identified") #+
+         fill = "Polymers identified") #+
     #theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
        #   axis.title.x = element_blank() )
   
+  PLOT
+  
+  ggsave(filename = paste(wd.out, "/Pie_MiP_number_Polymer12_ALL.png",sep =""), plot = PLOT, width = 10.5, height = 4, units = "in", dpi = 300)
+  
 
-
-
+  # details of "other polymers" #####
+  A=subset(Summary7a_MINAGRIS, Polymer.red12=="Other.Plastic")
+  ggplot(data=A, aes(x=Polymer.grp, y=Mean.particles.MM, fill=Size_cat.um))+
+    geom_bar(stat="identity", position = "stack", width=1, color="white") 
+  
+  
+  # 5. Polymers per CSS ####  
+  
+   # * Pie chart ####
+  
+  for (css in 1:11){ 
+    df_plot_pie_css=subset(Summary6c_CSS, CSS %in% c(css,"MEAN") )
+    
+    # Order plot per polymer   
+    df_plot_pie_css$Polymer.red12 = factor(df_plot_pie_css$Polymer.red12,
+                                              levels = df_plot_pie_css$Polymer.red12[order(-df_plot_pie_css$Mean.particles.CSS)] )
+    
+    
+    # Add percentages in the plot
+    df_plot_pie_css$MiP_perc <- df_plot_pie_css$Mean.particles.CSS / sum( df_plot_pie_css$Mean.particles.CSS) * 100
+    # Creat percentage as text 
+    df_plot_pie_css$MiP_perc_text=paste0(round( df_plot_pie_css$MiP_perc, 0), "%")
+    
+    # Do not show percentages < 3.5% 
+    df_plot_pie_css$MiP_perc_text [ df_plot_pie_css$MiP_perc < 3.5]=NA
+    
+    
+    
+  
+  PLOT= ggplot(df_plot_pie_css, aes(x="", y=Mean.particles.CSS, fill= Polymer.red12 ))+
+    geom_bar(stat="identity", width=1, color="white") +
+    coord_polar("y", start=0) +
+    scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                 "CA"= "#FFD39B") , 
+                      # Relabel  "Other.Plastic"                 
+                      labels = c( "Other.Plastic"="Other Plastic" ) ) +
+    geom_text(aes(x=1.3, label = MiP_perc_text ), 
+              position = position_stack(vjust = 0.5), size=5  )+
+    coord_polar("y", start=0) +
+    theme_void() + 
+    ggtitle( paste("CSS ", css, ", Microplastic polymer composition", sep=""  ))+
+    # guides( color  = "none")+
+    labs(# y = "Average number of plastic particles per kg of soil",
+      fill = "Polymers identified") #+
+  #theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
+  #   axis.title.x = element_blank() )
+  
+  PLOT
+  
+  ggsave(filename = paste(wd.out, "/Pie_MiP_number_Polymer12_CSS", css, ".png",sep =""), plot = PLOT, width = 10.5, height = 4, units = "in", dpi = 300)
+  }
+  
+  
+  
 # * Bar chart ####
 
 
@@ -168,34 +357,13 @@ ggplot(Summary7c_MINAGRIS, aes(x=Polymer.red12, y=Mean.particles.MM*200, fill= P
   #ggtitle(paste("Field Samples ; CSS ", css))+
   # guides( color  = "none")+
   labs(# y = "Average number of plastic particles per kg of soil",
-    fill = "Plastics identified") +
+    fill = "Polymers identified") +
 theme(axis.text.x = element_blank(),
       axis.title.x = element_blank())
 
-#
 
 
 
-df <- data.frame(
-  Category = c("A", "B", "C", "D", "E"),
-  Value = c(5, 2, 9, 4, 17)
-)
-
-# Reorder 'Category' based on 'Value'
-df$Category <- factor(df$Category, levels = df$Category[order(df$Value)])
-
-# Plot using geom_bar()
-ggplot(df, aes(x = Category, y = Value)) +
-  geom_bar(stat = "identity", fill = "skyblue") +
-  labs(title = "Ordered Bar Plot", x = "Category", y = "Value") +
-  theme_minimal()
-
-
-
-# details of "other polymers"
-A=subset(Summary7a_MINAGRIS, Polymer.red12=="Other.Plastic")
-ggplot(data=A, aes(x=Polymer.grp, y=Mean.particles.MM, fill=Size_cat.um))+
-  geom_bar(stat="identity", position = "stack", width=1, color="white") 
   
   # * Bar chart
   
@@ -319,23 +487,23 @@ ggplot(data=A, aes(x=Polymer.grp, y=Mean.particles.MM, fill=Size_cat.um))+
     # Add a min max line, from summary soil, polymer 12,   
     geom_linerange(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, ymin = Min.particles.F*200, ymax = Max.particles.F*200))+
     # Titles
-    ggtitle(paste("Field Samples ; CSS ", css))+
+    ggtitle(paste("CSS ", css, ", Microplastic particles per field", sep = ""))+
     theme_minimal()+
     guides( color  = "none")+
     labs(y = "Average number of plastic particles per kg of soil",
-         fill = "Plastics identified") +
+         fill = "Polymers identified") +
     theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
           axis.title.x = element_blank())
   
   
   print(PLOT)
   # Export plots ####
-   ggsave(filename = paste(wd.out,"/Bar_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
+   ggsave(filename = paste(wd.out,"/Bar_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 10.5, height = 4, units = "in", dpi = 300)
   
   } 
   
   
-  # x. Points S1-S2 per Field, min-max with lab color and range bar  ####
+  # 4. Points S1-S2 per Field, min-max with lab color and range bar  ####
   Summary5e_Field$Farm.Field=paste(Summary5e_Field$Farm, Summary5e_Field$Field, sep=".")
   Summary4e_Soil$Farm.Field=paste( Summary4e_Soil$Farm, Summary4e_Soil$Field, sep=".")
   
@@ -377,7 +545,7 @@ ggplot(data=A, aes(x=Polymer.grp, y=Mean.particles.MM, fill=Size_cat.um))+
      
      PLOT
      
-      ggsave(filename = paste(wd.out,"/Dot_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 8, height = 4, units = "in", dpi = 300)
+      ggsave(filename = paste(wd.out,"/Dot_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 10.5, height = 4, units = "in", dpi = 300)
   } #end for css  
 
 
@@ -388,9 +556,9 @@ ggplot(data=A, aes(x=Polymer.grp, y=Mean.particles.MM, fill=Size_cat.um))+
   
   
   
-  # 4. Bar Plot CSS Area ####
+  # 5. Bar Plot CSS Area ####
 
-##########33
+
 
 for (css in 1:11){  
   df_plot=subset(Summary5c_Field_MMEAN, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
@@ -417,7 +585,7 @@ for (css in 1:11){
           axis.title.x = element_blank())
   
   
-  ggsave(filename = paste(wd.out,"/Bar_Area_CSS", css, ".png",sep =""), plot = PLOT, width = 8, height = 6, units = "in", dpi = 300)
+  ggsave(filename = paste(wd.out,"/Bar_Area_CSS", css, ".png",sep =""), plot = PLOT, width = 10.5, height = 6, units = "in", dpi = 300)
 }
 
 
