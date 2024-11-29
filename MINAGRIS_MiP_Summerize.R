@@ -43,15 +43,17 @@ rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+#only set wd when RStudio project is not used
 setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
 
 wd.out= "Outputs" # W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Purency Microplastic Finder/PMF_Results_Summary"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
 
 
 # Initialization 
+#MC - see comment in previous script about dates in output file names.
 Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
     
-
+#MC - this section is unclear - add documentation
     colnames(Data_comb_red_blank)
     
     # "File_Names"
@@ -87,6 +89,8 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
     # CSS, Farm, Field, Filter_div, Filter_name, IR_rep, PMF_rep, Operator 
     # ID, Q_index, Polymer.grp, Polymer.red12, Polymer.red3, N.px, Area.um2.cor, Length.um, Width.um, Aspect_ratio, Mass.ng, Size_cat.um 
 
+#MC - until here, the documentation below is clear!
+    
 # For all Files:   
   # 1. Sum per Processed and manually checked results file / "File_Names" <-> "ID". "Q_index" 
   # 2. Mean per multiple IR Acquisition, Processing or manually checking results file <-> "IR_rep", "PMF_rep", "Operator"

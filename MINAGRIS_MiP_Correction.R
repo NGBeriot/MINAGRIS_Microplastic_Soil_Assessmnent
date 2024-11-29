@@ -70,6 +70,7 @@ uP_Colnames=c("File_Names", "Lab", "Batch_Name", "Preparation_Type", "Sample_typ
 # Completing WUR data: 
 uP_Colnames[uP_Colnames %!in% colnames(Data_WUR)]
 
+#MC - in the file you send me these names were already correct, and running these lines caused an error!!
 Data_WUR$File_Names=Data_WUR$PMF_File_name
 Data_WUR$PMF_rep="pmf"
 Data_WUR$Q_index=Data_WUR$Relevance #OR Similarity
@@ -454,7 +455,7 @@ PE_Ubern_Areamedian=median(subset(df_Blanks_red, Polymer.red12 %in% c("PE") & La
 # Number rest of plastic particle per blank:
 sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %!in% c("PE", "PP", "No.plastic")& Lab=="Ubern", select="N.particles" ) )/ nrow(subset(Summary_Blanks4_Batch_SumPol12_red, Lab=="Ubern"))
 
-
+#MC- you print all these number to the terminal, but don't save them anywhere?
 
 # * Calculate correction ####
 Data_comb_red_blank= Data_comb_red
