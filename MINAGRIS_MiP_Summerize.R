@@ -49,7 +49,7 @@ wd.out= "Outputs" # W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessmen
 
 
 # Initialization 
-Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241113.csv")
+Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
     
 
     colnames(Data_comb_red_blank)
@@ -103,7 +103,15 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241113.csv")
   # .c: per Polymer.red12
   # .d: sum up all polymers, "Other.Plastic" excluded 
     
-
+# /!\ WORK in Progress: 
+    # Replace all the following sections with a unique function
+    # that makes summaries with inputs as : 
+    # - level  (File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,  CSS, Farm, Field, Filter_div, Filter_name, IR_rep, PMF_rep, Operator)
+    # - factors (Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um)
+    # - option include/ exclude "Other.Plastic"
+    
+    
+    
 # 1. Summaries, processed (PMF) File ####   
     # *1.a Sum up per processed (PMF) File, all factors  ####
     Summary1a_File = Data_comb_red_blank %>% 
@@ -812,10 +820,22 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241113.csv")
                 Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
     
+# 8.Summaries per CSS  ####    
+    ####################### Work in progress ####################
+    # * Custom summary per CSS, polymer and size category 
+    
+    
+    css=1
+    for (css in 1:11){   
+      
+      
+      write.csv(Summary1d_File, paste(wd.out,"/Summary_c_CSS",css, Date, sep = ""))
+    }
+    
     
 # Export ####
   
-  Date="_20241118.csv"    
+  Date="_20241127.csv"    
    write.csv(Summary1a_File, paste(wd.out,"/Summary1a_File", Date, sep = ""))
    write.csv(Summary1b_File, paste(wd.out,"/Summary1b_File", Date, sep = ""))
    write.csv(Summary1c_File, paste(wd.out,"/Summary1c_File", Date, sep = ""))
@@ -861,7 +881,7 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241113.csv")
    write.csv(Summary7e_MINAGRIS, paste(wd.out,"/Summary7e_MINAGRIS", Date, sep = ""))
   
 
-   
+   #########################################################################################33
    
     # Check CSS6F6F1 ####
    CSS6F6F1 =subset(Data_comb_red_blank, CSS==6 & Farm ==6 & Field == 1 )
@@ -972,54 +992,7 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241113.csv")
     
     
     
-    ####################### Work in progress ####################
-    # * Custom summary per CSS, polymer and size category 
-    
-    # Into a CSS loop to be more efficient? 
-    
-    css=1
-    for (css in 1:11){   
-      Summary_CSS_Polymer.red12_SizeCat = subset(Data_comb_red_blank, Preparation_Type=="Field_samples" & CSS==css) %>% 
-        # 1. All the particles have to be summed up per sample, per sizecat and per polymer category  : Group by "File_Names" (I just keep other columns for convenience)
-        group_by(  File_Names, Soil_sample, Sample_type, Preparation_Type, CSS, Farm, Field, Lab, Polymer.grp, Polymer.red12, Polymer.red3, Size_cat.um  ) %>% # For each PMF_File_name, get the summary
-        summarise( N.particles= sum(N.px!=0),      # Count the lines that have at least 1px (leave out the empty lines( empty samples))
-                   Tot.Area.um2=sum(Area.um2.cor), # Area are summed up per sample and per polymer category 
-                   Tot.Mass.ng=sum( Mass.ng) ) %>% # IN the future we will include an estimation of the mass (or not but at least it is ready, let me dream)
-        # 2. Add a 0 in the "empty categories" File_Names * CSS * Polymer.red12 * Size_cat.um
-        ungroup() %>% # Ungroup before using complete to avoid issues with full_join
-        complete(File_Names,CSS,Polymer.red12,Size_cat.um,
-                 fill=list(N.particles=0, 
-                           Tot.Area.um2=0,
-                           Tot.Mass.ng=0)) %>%
-        # 3. The particle results are averaged per CSS, SizeCat and per polymer, over the labs, operators, replicates (I just keep other columns for convenience)
-        group_by(  CSS,Polymer.red12,Size_cat.um ) %>%  # Group per polymer cluster
-        summarise( 
-          Mean.particles= mean(N.particles),    # Mean particle number in this CSS, this sizecat, this polymer category
-          Mean.Tot.Area.um2=mean(Tot.Area.um2!=0), # Mean area in this CSS, this sizecat, this polymer category
-          Mean.Tot.Mass.ng=mean(Tot.Mass.ng!=0),   # Mean mass in this CSS, this sizecat, this polymer category (one day...)
-          sd.particles=sd(N.particles),         # Standard deviation of particle number in this CSS, this sizecat, this polymer category
-          sd.Area=sd(Tot.Area.um2!=0)   )     %>%      # Standard deviation of area in this CSS, this sizecat, this polymer category
-        # 4. Make sure that SizeCat is in the right order
-        mutate(
-          Polymer.red12 = factor(Polymer.red12, levels = c("Other.Plastic", "PE", "PP", "PA","PS", "PVC", "PET",  "PLA", "PU", "PMMA", "PC" )), # specify the desired order
-          Size_cat.um = factor(Size_cat.um, levels = c("50-300","300-550","550-800", "800-1050","1050-1300","1300-1550","1550-1800")) # specify the desired order
-        )
-      # write.csv(  Summary_Fields_Polymer12, paste(wd.out,"Summary_Fields_Polymer12.csv",sep = "/"))
-      # write.csv(  Summary_Fields_AllPolymer, paste(wd.out,"Summary_Fields_AllPolymer.csv",sep = "/"))
-      
-      PLOT= ggplot( subset(Summary_CSS_Polymer.red12_SizeCat, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles, fill=Polymer.red12)) +
-        geom_bar(position="stack", stat="identity")+ 
-        scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                     "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
-                                     "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
-                                     "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                     "CA"= "#FFD39B"  ) ) +
-        ggtitle(paste("Field Samples ; CSS ", css))+
-        theme_minimal()
-      
-      print(PLOT)
-    }
-
+   
     
     
         

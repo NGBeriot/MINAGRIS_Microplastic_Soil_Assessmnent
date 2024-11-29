@@ -55,13 +55,11 @@ wd.out= "Outputs" # W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessmen
 # 1. Load MiP tables ####
 
 # * From WUR ####
-Data_WUR=read.csv("Outputs/WUR_MiP_Particles_2024.11.13.csv")
+Data_WUR=read.csv("Outputs/WUR_MiP_Particles_2024.11.28.csv")
 
 # * From Ubern ####
 wd.in.Ubern="C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent/UBern_Data"
-Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_1029.csv", sep = "")) # "results_1024.csv")
-
-
+Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_1124.csv", sep = "")) # "results_1024.csv")
 
 # 2. Merge MiP tables ####
 
@@ -75,6 +73,8 @@ uP_Colnames[uP_Colnames %!in% colnames(Data_WUR)]
 Data_WUR$File_Names=Data_WUR$PMF_File_name
 Data_WUR$PMF_rep="pmf"
 Data_WUR$Q_index=Data_WUR$Relevance #OR Similarity
+Data_WUR$Width.um =Data_WUR$Width.um.cor         
+Data_WUR$Length.um=Data_WUR$Length.um.cor
 
 # Completing Ubern data: 
 uP_Colnames[uP_Colnames %!in% colnames(Data_Ubern)]
@@ -148,33 +148,50 @@ Data_comb$Filter_name=paste(Data_comb$Batch_Name, Data_comb$Soil_sample, Data_co
 # Add a unique ID per particle 
 Data_comb$ID=seq_along(Data_comb$File_Names)
 
+# * Size range
+min(subset (Data_comb, N.px >=1, select="Area.um2.cor"))
+min(subset (Data_comb, N.px >=1, select="Length.um"))
+  
+
 # * Create size categories ####
+
 # Custom size categories [um]:          
-cat.min=80
-cat.max=1400#1400 #1800
-cat.bin=220
+cat.min=90
+cat.max=1350#1400 #1800
+cat.bin=210
 Cat.um=seq(cat.min, cat.max, by=cat.bin)
 # Cat.um.txt=c("50-300", "300-550", "550-800",
 #              "800-1050", "1050-1300", "1300-1550", "1550-1800")
-Cat.um.txt=c("80-300", "300-520", "520-740",
-             "740-960", "960-1180", "1180-1400")
+# Cat.um.txt=c("80-300", "300-520", "520-740",
+#              "740-960", "960-1180", "1180-1400")
+ Cat.um.txt=c("90-300", "300-510", "510-720",
+              "720-930", "930-1140", "1140-1350")
+
 
 
 Data_comb$Size_cat.um="Too small"
-# Build categories by succesive replacement "upward"
+# Build categories by successive replacement "upward"
 for (c in 1:length(Cat.um)){
   Data_comb$Size_cat.um[Data_comb$Area.um2.cor>Cat.um[c]^2]=Cat.um.txt[c]
 }
 
-# Exclude the "Too small" and "Too big"
-Data_comb$Size_cat.um[Data_comb$Area.um2.cor<cat.min^2]="Too small"
+# Label the "Too small"
+Data_comb[Data_comb$N.px>=1 & Data_comb$Length.um<86 & Data_comb$Width.um<86,]
+
+# Extend the size categories to include until 86um in "90-300"
+Data_comb$Size_cat.um[Data_comb$Size_cat.um=="Too small" & (Data_comb$Length.um>86 | Data_comb$Width.um>86) ]="90-300"
+Data_comb$Size_cat.um[Data_comb$N.px>=1 & Data_comb$Length.um<86 & Data_comb$Width.um<86]="Too small"
+
+# Label the "Too big"
+Data_comb[Data_comb$N.px>=1 & Data_comb$Length.um>2000 & Data_comb$Width.um>2000,]
 Data_comb$Size_cat.um[Data_comb$Area.um2.cor>cat.max^2]="Too big"
 
-
-uP_Colnames[uP_Colnames %!in% colnames(Data_comb)]
+Data_comb[Data_comb$N.px>=1 & Data_comb$Size_cat.um %in% c("Too small", "Too big") ,]
 
 
 # 3. Mass estimations ####
+
+# /!\ Work in progress /!\
 # Create a separate function ?
 
 
@@ -528,9 +545,9 @@ length(unique(Data_comb$File_Names[Data_comb$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Names))
 
 
- write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241113.csv",sep = "/"))
+ write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241127.csv",sep = "/"))
 
- write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241113.csv",sep = "/"))
+ write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241127.csv",sep = "/"))
 
 
 
