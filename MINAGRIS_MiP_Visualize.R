@@ -60,8 +60,9 @@ wd.out="Outputs"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
   A=subset(Data_comb_red_blank, Area.um2.cor !=0 & Area.um2.cor <7885.44 & Length.um<88.042)
   B=subset(Data_comb_red_blank, Area.um2.cor > 1180^2)
   
-  Cat.um.txt=c("80-300", "300-520", "520-740",
-               "740-960", "960-1180", "1180-1400")
+  Cat.um.txt=c("90-300", "300-510", "510-720",
+               "720-930", "930-1140", "1140-1350")
+  
 
 # source("MINAGRIS_Custom_Histogram.R") Work in progress
 # MINAGRIS_Custom_Histogram(Data) 

@@ -825,6 +825,11 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
     # * Custom summary per CSS, polymer and size category 
     
     
+    
+# 9. Summary per Farm     
+    # Export the summary per polymer.grp per soil Custom summary per CSS, polymer and size category 
+    
+    
     css=1
     for (css in 1:11){   
       
