@@ -838,6 +838,8 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
     }
     
     
+
+    
 # Export ####
   
   Date="_20241127.csv"    
@@ -887,6 +889,24 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
   
 
    #########################################################################################33
+   
+   
+   # Check CSS11F8F1 ####
+   CSS11F8F1 =subset(Data_comb_red_blank, CSS==11 & Farm == 8 & Field == 1 )
+   CSS11F8F1_wur =subset(Data_WUR, CSS==11 & Farm == 8 & Field == 1 )
+   
+   
+   
+   # Check CSS4F2F1 ####
+   CSS4F2F1 =subset(Data_comb_red_blank, CSS==4 & Farm == 2& Field == 1 )
+   
+   
+   
+   
+   
+   # Check CSS4F6F1 ####
+   CSS4F6F1 =subset(Data_comb_red_blank, CSS==4 & Farm == 6& Field == 1 )
+   
    
     # Check CSS6F6F1 ####
    CSS6F6F1 =subset(Data_comb_red_blank, CSS==6 & Farm ==6 & Field == 1 )

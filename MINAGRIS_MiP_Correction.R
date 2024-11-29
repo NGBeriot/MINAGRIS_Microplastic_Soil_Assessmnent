@@ -188,6 +188,12 @@ Data_comb$Size_cat.um[Data_comb$Area.um2.cor>cat.max^2]="Too big"
 
 Data_comb[Data_comb$N.px>=1 & Data_comb$Size_cat.um %in% c("Too small", "Too big") ,]
 
+ 
+# 3. Remove "MYSP" ####
+# Remove the mysterious polymers 
+
+Data_comb=subset(Data_comb, Polymer.grp != "MYSP")
+
 
 # 3. Mass estimations ####
 

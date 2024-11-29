@@ -88,6 +88,6 @@ source("MINAGRIS_Read_Labels_Function.R")
   #Set WD in the project: 
   setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")   
       
-  # write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2024.11.13.csv",sep = "/"))
-  # write.csv( Summary_Data.IR.CSS, paste(wd.out,"IR_SummaryCSS_2024.11.13.csv",sep = "/"))
-  # write.csv( Summary_Data.IR.QC, paste(wd.out,"IR_SummaryQC_2024.11.13.csv",sep = "/"))    
+   write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2024.11.13.csv",sep = "/"))
+   write.csv( Summary_Data.IR.CSS, paste(wd.out,"IR_SummaryCSS_2024.11.13.csv",sep = "/"))
+   write.csv( Summary_Data.IR.QC, paste(wd.out,"IR_SummaryQC_2024.11.13.csv",sep = "/"))    
