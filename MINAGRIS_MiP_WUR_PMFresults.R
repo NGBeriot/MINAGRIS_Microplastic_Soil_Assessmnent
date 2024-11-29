@@ -12,9 +12,14 @@ rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+# set encoding to read csv files correctly
+options(encoding = "latin1")
+
 # Set WD in the project: 
-setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
-wd.out= "Outputs" 
+# only needed when RStudio projects are not used.
+#setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
+
+wd.out= "Outputs"   # output directory
 
 # Load the MINAGRIS_Read_Labels_function.R
 source("MINAGRIS_Read_Labels_Function.R") 
@@ -52,13 +57,12 @@ METADATA_PMF=Read_MINAGRIS_label(METADATA)
 # Total number of files: 
 nrow(METADATA_PMF)
 
-
-
 # * Number of unique soil samples per CSS ####
 
 # Number of CSS
 unique(METADATA_PMF$CSS)
 
+# The below code prints the unique farm codes for each case study site (CSS) 
 for (css in 1:11) {
   print( paste("CSS",css, ";", length(unique(METADATA_PMF$Farm[METADATA_PMF$CSS==paste(css)])),"Unique Farms", ";", length(unique(METADATA_PMF$Soil_sample[METADATA_PMF$CSS==paste(css)])), "Unique soils"))
   print(sort(unique(METADATA_PMF$Soil_sample[METADATA_PMF$CSS==paste(css)])))
@@ -83,9 +87,10 @@ Summary_Data.PMF.QC = subset(METADATA_PMF, Soil_sample %in% c("bcm","pfsr","st")
 
 #2. Load the data From PMF ####
 # Expected Header:   
-Header=c("X","Particle.id","N.px","Area.um2","Class.Idx","Polymer.grp","XPos.um","YPos.um",
-         "LeftEdge.um","RightEdge.um","BottomEdge.um","TopEdge.um","CenterX.um","CenterY.um",
-         "PC1LdX","PC1LdY","Length.um","Width.um","Aspect_ratio","Direction.deg","Relevance","Similarity","Done")
+Header=c("X","Particle.id","N.px","Area.um2","Class.Idx","Polymer.grp","XPos.um",
+         "YPos.um","LeftEdge.um","RightEdge.um","BottomEdge.um","TopEdge.um",
+         "CenterX.um","CenterY.um","PC1LdX","PC1LdY","Length.um","Width.um",
+         "Aspect_ratio","Direction.deg","Relevance","Similarity","Done")
 
 # Create a list to load all the PMF results files
 Loading_list <- vector("list", length = length(PMF_File_names))  
@@ -98,7 +103,8 @@ for( i in seq_along(PMF_File_names)) {
   
   # Column separator is read from the "metada description of the PMF exported file
   METADATA_PMF$col.sep[i] = substr(readLines(file_i_dir)[8],1,1)
-  METADATA_PMF$dec.sep[i] = substr(sub(";Minimum Relevance:;0",replacement = "", readLines(file_i_dir)[grep("Minimum Relevance", readLines(file_i_dir))]),1,1)
+  METADATA_PMF$dec.sep[i] = substr(sub(";Minimum Relevance:;0",replacement = "", 
+                                       readLines(file_i_dir)[grep("Minimum Relevance", readLines(file_i_dir))]),1,1)
   
   # Check the number of Metadata lines to skip before reading the table. 
   METADATA_PMF$skip[i]=grep( "Particle Properties:", readLines(file_i_dir))
@@ -180,10 +186,8 @@ for( i in seq_along(PMF_File_names)) {
 } # End Files 'for loop' 
 
 METADATA_PMF$PMF_File_name[METADATA_PMF$col.sep==METADATA_PMF$dec.sep] # /!\ if col.sep==dec.sep
+# the result should be : character(0) - the colum separator and decimal sign should be different in every file
 METADATA_PMF$IR_File_name=  gsub("_PMF.*", "", METADATA_PMF$PMF_File_name)
-
-
-
 
 # 3. Merge uP data frame and add labels #### 
 # Bind the Loading_list into a data frame of all microplastics identified at WUR:
@@ -235,6 +239,7 @@ MiP_wur$uPID=c(1:nrow(MiP_wur))
 # The default calibration of PMF is 88.04 um/px
 
 # * Open the table Tiles_per_sample.csv. ####
+# MC - file not available...
 Tile_per_sample=read.csv("//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Tiles_per_sample.csv") 
 
 # * Check if all samples are already in the Tiles_per_sample.csv. ####
@@ -450,6 +455,9 @@ MiP_wur_cor=subset(MiP_wur_cor, Area.um2.cor ==0 | Length.um.cor>86)
 MiP_wur_cor=subset(MiP_wur_cor, Area.um2.cor<2000*2000)
 # 4. Export Results ####
 
+
+#MC - give names without dates and overwrite them. Otherwise the workflow cannot be flexible.
+# I fyou think you need an older versio of the file, store it in an folder called e.g.'/Archive'
 write.csv(Summary_Data.PMF.CSS.n, paste(wd.out,"PMF_SummaryCSS_2024.11.13.csv",sep = "/"))
 write.csv( Summary_Data.PMF.QC, paste(wd.out,"PMF_SummaryQC_2024.11.13.csv",sep = "/"))
 write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA_2024.11.13.csv",sep = "/"))

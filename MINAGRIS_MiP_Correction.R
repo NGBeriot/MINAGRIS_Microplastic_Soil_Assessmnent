@@ -43,22 +43,22 @@ rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
+# only use when RStudio project is not used
 setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
 
 
 wd.out= "Outputs" # W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Purency Microplastic Finder/PMF_Results_Summary"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
 
 
-
-
-
 # 1. Load MiP tables ####
 
 # * From WUR ####
-Data_WUR=read.csv("Outputs/WUR_MiP_Particles_2024.11.28.csv")
+#MC - again I would remove dates from file names (and the dots in the date :)
+#MC - alternative is to make a 'initialization file' where you update all your file names everytime, than the code stays flexible.
+Data_WUR=read.csv("Outputs/WUR_MiP_Particles_20241128.csv")
 
 # * From Ubern ####
-wd.in.Ubern="C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent/UBern_Data"
+wd.in.Ubern="UBern_Data"
 Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_1124.csv", sep = "")) # "results_1024.csv")
 
 # 2. Merge MiP tables ####
@@ -119,6 +119,7 @@ Data_comb$Preparation_Type[ Data_comb$Soil_sample %in% c( "st")  ]="Standard_Soi
 Data_comb[Data_comb$Preparation_Type=="Not",]
 
 # Re-label Soil_sample:
+#MC - unclear what the printed numbers below mean - add comment
 nrow( subset(Data_comb, Soil_sample=="bcm"))
 nrow( subset(Data_WUR, Soil_sample=="bcm"))
 nrow( subset(Data_Ubern, Soil_sample=="bcm"))
