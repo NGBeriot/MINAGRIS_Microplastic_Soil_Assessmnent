@@ -240,7 +240,7 @@ MiP_wur$uPID=c(1:nrow(MiP_wur))
 
 # * Open the table Tiles_per_sample.csv. ####
 # MC - file not available...
-Tile_per_sample=read.csv("//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Tiles_per_sample.csv") 
+Tile_per_sample=read.csv("Tiles_per_sample.csv") 
 
 # * Check if all samples are already in the Tiles_per_sample.csv. ####
 
@@ -272,9 +272,9 @@ if (length(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_s
   warning("recreate/ update Tiles_per_sample.csv.")
   
   # Load the FTIR_tiles_per_IRsample_Function.R: 
-  source("W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/FTIR_tiles_per_IRsample_Function.R") 
+  source("FTIR_tiles_per_IRsample_Function.R") 
   
-  #Directory of raw IR data folder:
+  # Directory of raw IR data folder:
   wd.raw="//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/1_FTIR_rawdata/uFTIR_files"
   
   Tile_per_sample=uFTIR_n_tiles(wd.raw)
