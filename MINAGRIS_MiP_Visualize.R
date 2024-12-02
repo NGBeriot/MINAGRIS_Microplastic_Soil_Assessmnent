@@ -473,6 +473,9 @@ theme(axis.text.x = element_blank(),
   df_plot_dot_css=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
   df_plot_bar_css=subset( df_plot_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
   
+  #df_plot_dot_css=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples" & Farm.Field %!in% c("F.10.1", "F.10.2") ) # Exclude extreme case in CSS11
+  #df_plot_bar_css=subset( df_plot_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples"& Farm.Field %!in% c("F.10.1", "F.10.2") ) # Exclude extreme case in CSS11
+  
   PLOT= ggplot( df_plot_bar_css) +
     # Stack bars with Polymer 12 
     geom_bar( aes(x=Farm.Field, y=Mean.particles.F*200, fill=Polymer.red12), position="stack", stat="identity")+ 
@@ -536,6 +539,8 @@ theme(axis.text.x = element_blank(),
         scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
         ggtitle(paste("Field Samples ; CSS ", css))+
         theme_minimal()
+     p2
+     
   
      PLOT=  
   p1+ 

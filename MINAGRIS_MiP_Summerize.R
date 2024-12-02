@@ -51,7 +51,7 @@ wd.out= "Outputs" # W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessmen
 
 # Initialization 
 #MC - see comment in previous script about dates in output file names.
-Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
+Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241128.csv")
     
 #MC - this section is unclear - add documentation
     colnames(Data_comb_red_blank)
@@ -830,7 +830,7 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
     
     
     
-# 9. Summary per Farm     
+# 9. Summary per Farm     ####
     # Export the summary per polymer.grp per soil Custom summary per CSS, polymer and size category 
     
     
@@ -895,16 +895,29 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
    #########################################################################################33
    
    
+   # Check CSS4F7F1 ####
+   CSS4F7F1=subset(Data_comb, CSS==4 & Farm == 7 & Field == 1 )
+   CSS4F7F1_red =subset(Data_comb_red, CSS==4 & Farm == 7 & Field == 1 )
+   CSS4F7F1_red_blank =subset(Data_comb_red_blank, CSS==4 & Farm == 7 & Field == 1 )
+   
+   CSS4F7F1_Summary4e= subset(Summary4e_Soil, CSS==4 & Farm == 7 & Field == 1 )
+   CSS4F7F1_Summary3e= subset(Summary3e_Filter, CSS==4 & Farm == 7 & Field == 1 )
+   CSS4F7F1_WUR =subset(MiP_wur, CSS==4 & Farm == 7 & Field == 1 )
+   CSS4F7F1_WUR2 =subset(MiP_wur_cor, CSS==4 & Farm == 7 & Field == 1 )
+   CSS4F7F1_WUR3 =subset(Data_WUR, CSS==4 & Farm == 7 & Field == 1 )
+   
+   # Check CSS4F2F1 ####
+   CSS4F2F1=subset(Data_comb, CSS==4 & Farm == 2 & Field == 1 )
+   CSS4F2F1_red =subset(Data_comb_red, CSS==4 & Farm == 2 & Field == 1 )
+   CSS4F2F1_red_blank =subset(Data_comb_red_blank, CSS==4 & Farm == 2 & Field == 1 )
+   CSS4F2F1_WUR3 =subset(Data_WUR, CSS==4 & Farm == 2 & Field == 1 )
+  
+   
+   
+   
    # Check CSS11F8F1 ####
    CSS11F8F1 =subset(Data_comb_red_blank, CSS==11 & Farm == 8 & Field == 1 )
    CSS11F8F1_wur =subset(Data_WUR, CSS==11 & Farm == 8 & Field == 1 )
-   
-   
-   
-   # Check CSS4F2F1 ####
-   CSS4F2F1 =subset(Data_comb_red_blank, CSS==4 & Farm == 2& Field == 1 )
-   
-   
    
    
    

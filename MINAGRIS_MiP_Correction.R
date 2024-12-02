@@ -55,7 +55,7 @@ wd.out= "Outputs" # W:/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessmen
 # * From WUR ####
 #MC - again I would remove dates from file names (and the dots in the date :)
 #MC - alternative is to make a 'initialization file' where you update all your file names everytime, than the code stays flexible.
-Data_WUR=read.csv("Outputs/WUR_MiP_Particles_20241128.csv")
+Data_WUR=read.csv("Outputs/WUR_MiP_Particles_2024.11.28.csv")
 
 # * From Ubern ####
 wd.in.Ubern="UBern_Data"
@@ -194,7 +194,13 @@ Data_comb[Data_comb$N.px>=1 & Data_comb$Size_cat.um %in% c("Too small", "Too big
 # 3. Remove "MYSP" ####
 # Remove the mysterious polymers 
 
-Data_comb=subset(Data_comb, Polymer.grp != "MYSP")
+Data_comb=Data_comb%>%
+  mutate(N.px =         if_else(Polymer.grp == "MYSP", 0, N.px),
+         Length.um =if_else(Polymer.grp == "MYSP", 0, Length.um),
+         Width.um = if_else(Polymer.grp == "MYSP", 0, Width.um),
+         Area.um2.cor = if_else(Polymer.grp == "MYSP", 0,  Area.um2.cor),
+         Mass.ng =      if_else(Polymer.grp == "MYSP", 0,  Mass.ng),
+         Polymer.grp=   if_else(Polymer.grp == "MYSP", "No.plastic", Polymer.grp) )
 
 
 # 3. Mass estimations ####
@@ -309,9 +315,14 @@ Summary_Blanks4_Batch_SumPol12$Batch_Name[ Summary_Blanks4_Batch_SumPol12$N.part
 Data_comb_red=subset(Data_comb, Batch_Name %!in%  Summary_Blanks4_Batch_SumPol12$Batch_Name[ Summary_Blanks4_Batch_SumPol12$N.particles>5]  )
 
 
-# * Remove "Other.plastics" with low Q_index (>0.35) ####
-Data_comb_red=subset(Data_comb_red, Q_index ==0 | Q_index >0.35 | Polymer.red12 !="Other.Plastic")
-
+# * Remove "Other.plastics" with low Q_index (<0.35) ####
+Data_comb_red=Data_comb_red %>%
+  mutate(N.px =     if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0, N.px),
+         Length.um =if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0, Length.um),
+         Width.um = if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0, Width.um),
+         Area.um2.cor = if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0,  Area.um2.cor),
+         Mass.ng =      if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0,  Mass.ng),
+         Polymer.grp=   if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", "No.plastic", Polymer.grp) )
 
 # * Characterize the remaining contamination #### 
 df_Blanks_red=subset(Data_comb_red, Soil_sample=="bcm" )
@@ -473,6 +484,7 @@ Data_comb_red_blank= Data_comb_red
 # Start For loop per sample: 
 for (s in unique(Data_comb_red_blank$File_Names)){
   # Find all the particles in sample s: 
+  # test with s="M16040701_S2_results.csv"
   Sample=Data_comb_red_blank[Data_comb_red_blank$File_Names==s,]
   
   # For Ubern: 
@@ -490,7 +502,13 @@ for (s in unique(Data_comb_red_blank$File_Names)){
       # ID of the FIRST[1] particle with the min Median_diff:
       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
       # remove this particle  
-      Data_comb_red_blank=subset(Data_comb_red_blank, ID!= ID_PE ) 
+      Data_comb_red_blank = Data_comb_red_blank %>%
+        mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
+               Length.um =if_else(ID== ID_PE, 0, Length.um),
+               Width.um = if_else(ID== ID_PE, 0, Width.um),
+               Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
+               Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
+               Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
       
       # 2. If there is no PE particle but PP, remove a PP,    
     } else if  ("PP" %in% Sample$Polymer.grp){ 
@@ -504,7 +522,14 @@ for (s in unique(Data_comb_red_blank$File_Names)){
       # ID of the FIRST[1] particle with the min Median_diff:
       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
       # remove this particle  
-      Data_comb_red_blank=subset(Data_comb_red_blank, ID!= ID_PP ) 
+      Data_comb_red_blank=Data_comb_red_blank %>%
+        mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
+               Length.um =if_else(ID== ID_PP, 0, Length.um),
+               Width.um = if_else(ID== ID_PP, 0, Width.um),
+               Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
+               Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
+               Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
+
     }
     # 3. If no PE, no PP don't do any thing
   } # end if UBern
@@ -524,7 +549,13 @@ for (s in unique(Data_comb_red_blank$File_Names)){
       # ID of the FIRST[1] particle with the min Median_diff:
       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
       # remove this particle  
-      Data_comb_red_blank=subset(Data_comb_red_blank, ID!= ID_PP ) 
+      Data_comb_red_blank=Data_comb_red_blank %>%
+        mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
+               Length.um =if_else(ID== ID_PP, 0, Length.um),
+               Width.um = if_else(ID== ID_PP, 0, Width.um),
+               Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
+               Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
+               Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
       
       # 2. If there is no PP particle but PE, remove a PE,        
     } else if  ("PE" %in% Sample$Polymer.grp){ # If there is no PP particle, but a PE 
@@ -538,7 +569,13 @@ for (s in unique(Data_comb_red_blank$File_Names)){
       # ID of the FIRST[1] particle with the min Median_diff:
       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
       # remove this particle  
-      Data_comb_red_blank=subset(Data_comb_red_blank, ID!= ID_PE ) 
+      Data_comb_red_blank=Data_comb_red_blank %>%
+        mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
+               Length.um =if_else(ID== ID_PE, 0, Length.um),
+               Width.um = if_else(ID== ID_PE, 0, Width.um),
+               Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
+               Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
+               Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
     }
     # 3. If no PE, no PP don't do any thing    
   } # end if WUR
@@ -553,9 +590,9 @@ length(unique(Data_comb$File_Names[Data_comb$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Names))
 
 
- write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241127.csv",sep = "/"))
+ write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241128.csv",sep = "/"))
 
- write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241127.csv",sep = "/"))
+ write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241128.csv",sep = "/"))
 
 
 

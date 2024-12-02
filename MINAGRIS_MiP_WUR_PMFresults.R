@@ -449,10 +449,24 @@ Small_86l=MiP_wur_cor[MiP_wur_cor$Area.um2.cor !=0 & MiP_wur_cor$Length.um.cor<8
 Big_2000a=MiP_wur_cor[ MiP_wur_cor$Area.um2.cor>2000^2,]
 
 # Filter out Small particles [3 particles removed]  ####
-MiP_wur_cor=subset(MiP_wur_cor, Area.um2.cor ==0 | Length.um.cor>86)
+
+MiP_wur_cor = MiP_wur_cor %>%
+  mutate(N.px =    if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, N.px),
+    Width.um.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Width.um.cor),
+    Area.um2.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Area.um2.cor),
+    Mass.ng =      if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Mass.ng),
+    Length.um.cor =if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Length.um.cor) )
 
 # Filter out big particles  ####
 MiP_wur_cor=subset(MiP_wur_cor, Area.um2.cor<2000*2000)
+MiP_wur_cor = MiP_wur_cor %>%
+  mutate(N.px =    if_else(Area.um2.cor>2000*2000, 0, N.px),
+         Length.um.cor =if_else(Area.um2.cor>2000*2000, 0, Length.um.cor),
+         Width.um.cor = if_else(Area.um2.cor>2000*2000, 0, Width.um.cor),
+         Mass.ng =      if_else(Area.um2.cor>2000*2000, 0,  Mass.ng),
+         Area.um2.cor = if_else(Area.um2.cor>2000*2000, 0,  Area.um2.cor) )
+
+
 # 4. Export Results ####
 
 
