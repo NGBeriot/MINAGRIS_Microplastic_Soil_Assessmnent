@@ -12,8 +12,8 @@ graphics.off() # cleaning plots
 setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
 wd.out="Outputs"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
 
-
-
+# set encoding to read csv files correctly
+options(encoding = "latin1")
 
 # 1. Load data####
 
@@ -46,34 +46,34 @@ wd.out="Outputs"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
     
     # * Titles and translations #### 
     
-    Hist_Title_All=c("All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "Kõik MiNAGRIS-e kohad; Mikroplasti suuruse jaotus", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", 
+    Hist_Title_All=c("All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "KÃµik MiNAGRIS-e kohad; Mikroplasti suuruse jaotus", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", 
                      "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution",       "All MINAGRIS, Microplastic size distribution")
     
-    Pie_Title_All=c("All MINAGRIS, Microplastic polymer composition", "All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition","Kõik MiNAGRIS-e kohad; Mikroplasti polümeeride koostis","All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition",
+    Pie_Title_All=c("All MINAGRIS, Microplastic polymer composition", "All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition","KÃµik MiNAGRIS-e kohad; Mikroplasti polÃ¼meeride koostis","All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition",
                     "All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition",         "All MINAGRIS, Microplastic polymer composition")
     
-    Bar_Title_All=c("All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","Kõik MiNAGRIS-e kohad; Mikroplasti osakest põllu kohta","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field",
+    Bar_Title_All=c("All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","KÃµik MiNAGRIS-e kohad; Mikroplasti osakest pÃµllu kohta","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field",
                     "All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field",       "All MINAGRIS, Microplastic particules per field")
       
     Hist_Title_CSS=c("Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution", "Mikroplasti suuruse jaotus", "Microplastic size distribution", "Microplastic size distribution", 
                      "Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution")
     
-    Pie_Title_CSS=c("Microplastic polymer composition", "Microplastic polymer composition","Microplastic polymer composition","Mikroplasti polümeeride koostis","Microplastic polymer composition","Microplastic polymer composition",
+    Pie_Title_CSS=c("Microplastic polymer composition", "Microplastic polymer composition","Microplastic polymer composition","Mikroplasti polÃ¼meeride koostis","Microplastic polymer composition","Microplastic polymer composition",
                     "Microplastic polymer composition","Microplastic polymer composition","Microplastic polymer composition","Microplastic polymer composition","Microplastic polymer composition")
     
-    Bar_Title_CSS=c("Microplastic particules per field","Microplastic particules per field","Microplastic particules per field","Mikroplasti osakest põllu kohta","Microplastic particules per field","Microplastic particules per field",
+    Bar_Title_CSS=c("Microplastic particules per field","Microplastic particules per field","Microplastic particules per field","Mikroplasti osakest pÃµllu kohta","Microplastic particules per field","Microplastic particules per field",
                     "Microplastic particules per field","Microplastic particules per field","Microplastic particules per field","Microplastic particules per field","Microplastic particules per field")
     
     y_nMiP_txt= c("Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Keskmine plasti osakeste arv kg mullas",             "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", 
                   "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil")
       
-    Size_categories_txt= c("Size categories [µm]", "Size categories [µm]", "Size categories [µm]", "Suuruse kategooriad [µm]", "Size categories [µm]", "Size categories [µm]", 
-                           "Size categories [µm]", "Size categories [µm]", "Size categories [µm]", "Size categories [µm]",     "Size categories [µm]")
+    Size_categories_txt= c("Size categories [Âµm]", "Size categories [Âµm]", "Size categories [Âµm]", "Suuruse kategooriad [Âµm]", "Size categories [Âµm]", "Size categories [Âµm]", 
+                           "Size categories [Âµm]", "Size categories [Âµm]", "Size categories [Âµm]", "Size categories [Âµm]",     "Size categories [Âµm]")
     
     Other_Plastic= c("Other Plastic", "Other Plastic", "Other Plastic", "Muu plastik", "Other Plastic", "Other Plastic",
                      "Other Plastic", "Other Plastic", "Other Plastic", "Other Plastic", "Other Plastic")
     
-    Polymers_identified=c("Polymers identified", "Polymers identified", "Polymers identified", "Tuvastatud polümeerid", "Polymers identified", "Polymers identified", 
+    Polymers_identified=c("Polymers identified", "Polymers identified", "Polymers identified", "Tuvastatud polÃ¼meerid", "Polymers identified", "Polymers identified", 
                           "Polymers identified", "Polymers identified", "Polymers identified", "Polymers identified", "Polymers identified")
     
     Cat.um.txt=c("90-300", "300-510", "510-720",
@@ -203,7 +203,7 @@ wd.out="Outputs"  #//\\ #wd.out="//WURNET.NL/Homes/berio001/My Documents/R"
            fill =  Polymers_identified[css]) +
       theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
     
-    ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_AllCSS", css, "_Polymer12.png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
+    ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_CSS", css, "_Polymer12.png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
   }
   
 

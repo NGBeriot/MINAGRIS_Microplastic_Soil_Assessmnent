@@ -15,10 +15,9 @@ graphics.off() # cleaning plots
 # set encoding to read csv files correctly
 options(encoding = "latin1")
 
-# Set WD in the project: 
-# only needed when RStudio projects are not used.
-#setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
+# Set WD in the project  only needed when RStudio projects are not used.
 
+# Outputs folder
 wd.out= "Outputs"   # output directory
 
 # Load the MINAGRIS_Read_Labels_function.R
@@ -62,7 +61,7 @@ nrow(METADATA_PMF)
 # Number of CSS
 unique(METADATA_PMF$CSS)
 
-# The below code prints the unique farm codes for each case study site (CSS) 
+# Print the unique farm codes for each case study site (CSS) 
 for (css in 1:11) {
   print( paste("CSS",css, ";", length(unique(METADATA_PMF$Farm[METADATA_PMF$CSS==paste(css)])),"Unique Farms", ";", length(unique(METADATA_PMF$Soil_sample[METADATA_PMF$CSS==paste(css)])), "Unique soils"))
   print(sort(unique(METADATA_PMF$Soil_sample[METADATA_PMF$CSS==paste(css)])))
@@ -472,10 +471,10 @@ MiP_wur_cor = MiP_wur_cor %>%
 
 #MC - give names without dates and overwrite them. Otherwise the workflow cannot be flexible.
 # I fyou think you need an older versio of the file, store it in an folder called e.g.'/Archive'
-write.csv(Summary_Data.PMF.CSS.n, paste(wd.out,"PMF_SummaryCSS_2024.11.13.csv",sep = "/"))
-write.csv( Summary_Data.PMF.QC, paste(wd.out,"PMF_SummaryQC_2024.11.13.csv",sep = "/"))
-write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA_2024.11.13.csv",sep = "/"))
-write.csv(MiP_wur_cor, paste(wd.out,"WUR_MiP_Particles_2024.11.28.csv",sep = "/"))
+write.csv(Summary_Data.PMF.CSS.n, paste(wd.out,"PMF_SummaryCSS_20241113.csv",sep = "/"))
+write.csv( Summary_Data.PMF.QC, paste(wd.out,"PMF_SummaryQC_20241113.csv",sep = "/"))
+write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA_20241113.csv",sep = "/"))
+write.csv(MiP_wur_cor, paste(wd.out,"WUR_MiP_Particles_20241128.csv",sep = "/"))
 
 
 
