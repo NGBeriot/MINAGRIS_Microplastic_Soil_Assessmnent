@@ -9,7 +9,7 @@
 # Preparation_Type	The kind of preparation for the samples: 	                                    {"Blank_chemical", "Spiked", "Reference_Soil", "Standard_Soil", "Field_samples"}
 # Sample_type	      Type of samples taken into account during the analysis                      	{n, s, r, st}
 # Soil_sample	      Soil code (CSS, Farm, Field) used for the preparation	                        {bcm, rs, st, c(#CSS, #Farm, #Field)}
-# Filter_name 	    Name of the extracted filter	                                                Batch_"Soil_sample"_"Sample_type"
+# Filter_Name 	    Name of the extracted filter	                                                Batch_"Soil_sample"_"Sample_type"
 # IR_rep 	          Only if a specific filter is acquired twice in IR	                            {ir1, ir2, ir3}
 # PMF_rep	          Only if a specific acquired IR file is processed twice by the same operator	  {pmf1, pmf2, pmf3}
 # Operator	        Operator who processed the IR file and did the manual checking	              {"EC", "JM", "SR", "AG"}
@@ -62,14 +62,14 @@ Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_1124.csv", sep = "")) # "resu
 # 2. Merge MiP tables ####
 
 # Expected Column names
-uP_Colnames=c("File_Names", "Lab", "Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_name", "IR_rep", "PMF_rep", "Operator",
+uP_Colnames=c("File_Names", "Lab", "Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_Name", "IR_rep", "PMF_rep", "Operator",
               "ID", "Q_index",	"Polymer.grp", "Polymer.red12", "Polymer.red3", "Area.um2.cor", "Length.um" , "Width.um", "Aspect_ratio", "Mass.ng", "Size_cat.um")
 
 # Completing WUR data: 
 uP_Colnames[uP_Colnames %!in% colnames(Data_WUR)]
 
 #MC - in the file you send me these names were already correct, and running these lines caused an error!!
-Data_WUR$File_Names=Data_WUR$PMF_File_name
+Data_WUR$File_Names=Data_WUR$PMF_File_Name
 Data_WUR$PMF_rep="pmf"
 Data_WUR$Q_index=Data_WUR$Relevance #OR Similarity
 Data_WUR$Width.um =Data_WUR$Width.um.cor         
@@ -80,7 +80,7 @@ uP_Colnames[uP_Colnames %!in% colnames(Data_Ubern)]
 
 Data_Ubern$File_Names=Data_Ubern$source_file
 Data_Ubern$Area.um2.cor=Data_Ubern$area
-Data_Ubern$Filter_name=NA
+Data_Ubern$Filter_Name=NA
 Data_Ubern$Q_index=Data_Ubern$index_results/1000 # normalize over 1
 Data_Ubern$Soil_sample=Data_Ubern$Soil.sample
 Data_Ubern$Lab="Ubern"
@@ -108,6 +108,8 @@ Data_Ubern$Polymer.red3[Data_Ubern$Polymer.grp %!in% Polymer.red3]="Other.Plasti
 # * Merge ####
 Data_comb=rbind(subset(Data_WUR, select = colnames(Data_WUR)[colnames(Data_WUR)%in% colnames(Data_Ubern)]),
                 subset(Data_Ubern, select = colnames(Data_Ubern)[colnames(Data_Ubern)%in% colnames(Data_WUR)]  ) )
+
+# Add Preparation Type description
 Data_comb$Preparation_Type="Not"
 Data_comb$Preparation_Type[ Data_comb$Sample_type %in% c("n","r")]="Field_samples"
 Data_comb$Preparation_Type[ Data_comb$Sample_type %in% c("s","s2")] = "Spiked"
@@ -141,12 +143,21 @@ Data_comb$Soil_sample[Data_comb$Preparation_Type=="Standard_Soil"]= "st"
 nrow( subset(Data_comb, Soil_sample=="bcm"))
 
 
-# Re-label Filter_name:
-Data_comb$Filter_name=paste(Data_comb$Batch_Name, Data_comb$Soil_sample, Data_comb$Sample_type, Data_comb$Filter_div, sep = "_")
+# Re-label Filter_Name:
+Data_comb$Filter_Name=paste(Data_comb$Batch_Name, Data_comb$Soil_sample, Data_comb$Sample_type, Data_comb$Filter_div, sep = "_")
 
 
 # Add a unique ID per particle 
 Data_comb$ID=seq_along(Data_comb$File_Names)
+
+# Add Extraction_Name: 
+  # Name of the extracted soil (note: one extracted soil can be divided in several filters when needs be, e.g CSS11.10.1 )
+  # Filter_Name = Batch_"Soil_sample"_"Sample_type"_"Filter_div"
+  # Extraction_Name = Batch_"Soil_sample"_"Sample_type"
+
+Data_comb$Extraction_Name= paste(Data_comb$Batch_Name, 
+                                 Data_comb$Soil_sample,
+                                 Data_comb$Sample_type, sep = "_")
 
 # * Size range
 min(subset (Data_comb, N.px >=1, select="Area.um2.cor"))
@@ -223,7 +234,7 @@ df_Blanks=subset(Data_comb, Soil_sample=="bcm"  ) # & Polymer.red12 != "Other.Pl
 
 # *a. Sum up per IR File ####
 Summary_Blanks1_File = df_Blanks %>% 
-  group_by(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  group_by(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
@@ -233,7 +244,7 @@ Summary_Blanks1_File = df_Blanks %>%
 
 # *b. Mean per Filter (if in one batch, one filter, multiple IR files (IR_rep or Operator_rep)) ####
 Summary_Blanks2_Filter =  Summary_Blanks1_File %>% 
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
              Num.px=mean(Num.px),           # Number of pixels
              Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
@@ -306,7 +317,11 @@ Out=subset(Data_comb, Q_index !=0 & Q_index <0.35 & Polymer.red12 =="Other.Plast
 
 # 5. Blank correction ####
 
-# * Remove batches with more than 5 particles #### 
+# * Remove samples with more than one particle in batches with blank of more than 5 particles ####
+# if the batch has more than 5 particles we consider something went wrong in this batch so other samples might be contaminated. 
+# However if a samples has <=1 particle it is likely not affected by the contamination
+
+##### ************Work in progress**************** ####
 
 Summary_Blanks4_Batch_SumPol12$Batch_Name[ Summary_Blanks4_Batch_SumPol12$N.particles>5]
 
@@ -330,7 +345,7 @@ df_Blanks_red=subset(Data_comb_red, Soil_sample=="bcm" )
 
 # 1. Sum up per IR File 
 Summary_Blanks1_File_red =  df_Blanks_red%>% 
-  group_by(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  group_by(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
@@ -340,7 +355,7 @@ Summary_Blanks1_File_red =  df_Blanks_red%>%
 
 # 2. Mean per Filter (if in one batch, one filter, multiple IR files (IR_rep or Operator_rep))
 Summary_Blanks2_Filter_red =  Summary_Blanks1_File_red %>% 
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.Name,Sample_type,Operator for info
   summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
              Num.px=mean(Num.px),           # Number of pixels
              Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
@@ -350,7 +365,7 @@ Summary_Blanks2_Filter_red =  Summary_Blanks1_File_red %>%
 
 # 3. Mean per Batch (if in one batch, multiple  filter, (Extract_rep))    
 Summary_Blanks3_Batch_red =   Summary_Blanks2_Filter_red %>%    
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.Name,Sample_type,Operator for info
   summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
              Num.px=mean(Num.px),           # Number of pixels
              Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
@@ -362,7 +377,7 @@ Summary_Blanks3_Batch_red =   Summary_Blanks2_Filter_red %>%
 # /!\ "Other.Plastic" excluded /!\
 
 Summary_Blanks4_Batch_SumPol12_red=   Summary_Blanks3_Batch_red %>%
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample ) %>%              # Group per file, Filter.Name,Sample_type,Operator for info
   summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
              Num.px=sum(Num.px),           # Number of pixels
              Tot.Area.mm2=sum( Tot.Area.mm2), # Total plastic area 
@@ -466,7 +481,7 @@ sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %!in% c("PE", "PP", "No.plas
 
 #MC- you print all these number to the terminal, but don't save them anywhere?
 
-# * Calculate correction ####
+# * Apply correction ####
 Data_comb_red_blank= Data_comb_red
 # For Ubern: 
 # 1. If there is PE, remove 1 PE particle with the closest area from the median:

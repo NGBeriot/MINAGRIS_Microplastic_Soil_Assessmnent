@@ -4,6 +4,7 @@ library(tidyverse)
 library(hrbrthemes)
 library(dplyr)
 library(stats)
+library(readxl)
 
 rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
@@ -46,35 +47,8 @@ options(encoding = "latin1")
     
     # * Titles and translations #### 
     
-    Hist_Title_All=c("All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "Kõik MiNAGRIS-e kohad; Mikroplasti suuruse jaotus", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", 
-                     "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution", "All MINAGRIS, Microplastic size distribution",       "All MINAGRIS, Microplastic size distribution")
+   Txt_translation=read_excel("Txt_translation_table.xlsx")
     
-    Pie_Title_All=c("All MINAGRIS, Microplastic polymer composition", "All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition","Kõik MiNAGRIS-e kohad; Mikroplasti polümeeride koostis","All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition",
-                    "All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition","All MINAGRIS, Microplastic polymer composition",         "All MINAGRIS, Microplastic polymer composition")
-    
-    Bar_Title_All=c("All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","Kõik MiNAGRIS-e kohad; Mikroplasti osakest põllu kohta","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field",
-                    "All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field","All MINAGRIS, Microplastic particules per field",       "All MINAGRIS, Microplastic particules per field")
-      
-    Hist_Title_CSS=c("Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution", "Mikroplasti suuruse jaotus", "Microplastic size distribution", "Microplastic size distribution", 
-                     "Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution", "Microplastic size distribution")
-    
-    Pie_Title_CSS=c("Microplastic polymer composition", "Microplastic polymer composition","Microplastic polymer composition","Mikroplasti polümeeride koostis","Microplastic polymer composition","Microplastic polymer composition",
-                    "Microplastic polymer composition","Microplastic polymer composition","Microplastic polymer composition","Microplastic polymer composition","Microplastic polymer composition")
-    
-    Bar_Title_CSS=c("Microplastic particules per field","Microplastic particules per field","Microplastic particules per field","Mikroplasti osakest põllu kohta","Microplastic particules per field","Microplastic particules per field",
-                    "Microplastic particules per field","Microplastic particules per field","Microplastic particules per field","Microplastic particules per field","Microplastic particules per field")
-    
-    y_nMiP_txt= c("Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Keskmine plasti osakeste arv kg mullas",             "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", 
-                  "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil", "Average number of plastic particles per kg of soil")
-      
-    Size_categories_txt= c("Size categories [µm]", "Size categories [µm]", "Size categories [µm]", "Suuruse kategooriad [µm]", "Size categories [µm]", "Size categories [µm]", 
-                           "Size categories [µm]", "Size categories [µm]", "Size categories [µm]", "Size categories [µm]",     "Size categories [µm]")
-    
-    Other_Plastic= c("Other Plastic", "Other Plastic", "Other Plastic", "Muu plastik", "Other Plastic", "Other Plastic",
-                     "Other Plastic", "Other Plastic", "Other Plastic", "Other Plastic", "Other Plastic")
-    
-    Polymers_identified=c("Polymers identified", "Polymers identified", "Polymers identified", "Tuvastatud polümeerid", "Polymers identified", "Polymers identified", 
-                          "Polymers identified", "Polymers identified", "Polymers identified", "Polymers identified", "Polymers identified")
     
     Cat.um.txt=c("90-300", "300-510", "510-720",
                  "720-930", "930-1140", "1140-1350")
@@ -118,10 +92,10 @@ options(encoding = "latin1")
     
     PLOT= ggplot( subset(Summary7f_MINAGRIS, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles.MM*200)) +
       geom_bar(position="stack", stat="identity", fill="steelblue4")+ 
-      ggtitle(Hist_Title_All[css])+
+      ggtitle(Txt_translation$Hist_Title_All[Txt_translation$CSS==css])+
       theme_minimal()+
-      labs(y = y_nMiP_txt[css],
-           x= Size_categories_txt[css]) +
+      labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
+           x= Txt_translation$Size_categories_txt[Txt_translation$CSS==css]) +
       theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
 
     ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_AllCSS_AllPolymers_txtCSS", css, ".png",sep =""), plot = PLOT, width = 5, height = 4, units = "in", dpi = 300)
@@ -144,12 +118,12 @@ options(encoding = "latin1")
                                    "PMMA"="#a1d99b",   "PC"="#FFF8DC",
                                    "CA"= "#FFD39B") , 
                         # Relabel  "Other.Plastic"                 
-                        labels = c( "Other.Plastic"=Other_Plastic[css] ) ) +
-      ggtitle(Hist_Title_All[css])+
+                        labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css] ) ) +
+      ggtitle(Txt_translation$Hist_Title_All[Txt_translation$CSS==css])+
       theme_minimal()+
-      labs(y = y_nMiP_txt[css],
-           x= Size_categories_txt[css],
-           fill =  Polymers_identified[css]) +
+      labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
+           x= Txt_translation$Size_categories_txt[Txt_translation$CSS==css],
+           fill =  Txt_translation$Polymers_identified[ Txt_translation$CSS==css]) +
       theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
     
     ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_ALLCSS_Polymer12_txtCSS", css, ".png",sep =""), plot = PLOT, width = 5, height = 4, units = "in", dpi = 300)
@@ -167,10 +141,10 @@ options(encoding = "latin1")
     
     PLOT= ggplot( subset(Summary6f_CSS, Size_cat.um %in%  Cat.um.txt & CSS == css), aes(x=Size_cat.um, y=Mean.particles.CSS*200)) +
       geom_bar(position="stack", stat="identity", fill="steelblue4")+ 
-      ggtitle(paste("CSS ", css, ", ", Hist_Title_CSS[css], sep = ""))+
+      ggtitle(paste("CSS ", css, ", ", Txt_translation$Hist_Title_CSS[Txt_translation$CSS==css], sep = ""))+
       theme_minimal()+
-      labs(y = y_nMiP_txt[css],
-           x= Size_categories_txt[css]) +
+      labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
+           x= Txt_translation$Size_categories_txt[Txt_translation$CSS==css]) +
       theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
 
     ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_CSS", css, "_AllPolymers.png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
@@ -195,12 +169,12 @@ options(encoding = "latin1")
                                    "PMMA"="#a1d99b",   "PC"="#FFF8DC",
                                    "CA"= "#FFD39B") , 
                         # Relabel  "Other.Plastic"                 
-                        labels = c( "Other.Plastic"=Other_Plastic[css]  ) ) +
-      ggtitle(paste("CSS ", css, ", ", Hist_Title_CSS[css], sep = ""))+
+                        labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
+      ggtitle(paste("CSS ", css, ", ", Txt_translation$Hist_Title_CSS[Txt_translation$CSS==css], sep = ""))+
       theme_minimal()+
-      labs(y = y_nMiP_txt[css],
-           x= Size_categories_txt[css],
-           fill =  Polymers_identified[css]) +
+      labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
+           x= Txt_translation$Size_categories_txt[Txt_translation$CSS==css],
+           fill =  Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
       theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
     
     ggsave(filename = paste(wd.out,"/Hist_MiP_SizeDistribution_CSS", css, "_Polymer12.png",sep =""), plot = PLOT, width = 4, height = 4, units = "in", dpi = 300)
@@ -246,7 +220,7 @@ options(encoding = "latin1")
                                      "PMMA"="#a1d99b",   "PC"="#FFF8DC",
                                      "CA"= "#FFD39B") , 
                           # Relabel  "Other.Plastic"                 
-                          labels = c( "Other.Plastic"=Other_Plastic[css] ) ) +
+                          labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css] ) ) +
         # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
         geom_bar( aes(x=CSS, y=Mean.particles.CSS*200, group=CSS, color = CSS), position="stack", stat="summary", fun=sum, fill = "transparent",
                   size = 1.5) +
@@ -257,13 +231,15 @@ options(encoding = "latin1")
         # Add text when y max is reached
         geom_text(data=df_plot_dot_css, aes(x=CSS, y=y_max*205, label=Trunc )) +
         
+      
+        
         
         # Titles
-        ggtitle(Bar_Title_All[css])+
+        ggtitle(Txt_translation$Bar_Title_All[Txt_translation$CSS==css])+
         theme_minimal()+
         guides( color  = "none")+
-        labs(y = y_nMiP_txt[css],
-             fill = Polymers_identified[css]) +
+        labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
+             fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
         theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5),
               axis.title.x = element_blank())
       
@@ -374,7 +350,7 @@ options(encoding = "latin1")
                                        "PMMA"="#a1d99b",   "PC"="#FFF8DC",
                                        "CA"= "#FFD39B") , 
                             # Relabel  "Other.Plastic"                 
-                            labels = c( "Other.Plastic"=Other_Plastic[css]  ) ) +
+                            labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
           # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
           geom_bar( aes(x=Farm.Field, y=Mean.particles.F*200, group=Farm.Field, color = Farm.Field), position="stack", stat="summary", fun=sum, fill = "transparent",
                     size = 1.5) + 
@@ -382,12 +358,15 @@ options(encoding = "latin1")
                                         "F.7.1"="NA", "F.7.2"="NA", "F.8.1"="NA","F.8.2"="NA", "F.9.1"="NA", "F.9.2"="NA", "F.10.1"="NA", "F.10.2"="NA", "F.11.1"="NA", "F.11.2"="NA", "F.12.1"="NA", "F.12.2"="NA","F.12.3"="NA","F.12.4"="NA", "MEAN"="Black" ))+ 
           # Add a min max line, from summary soil, polymer 12,   
           geom_linerange(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, ymin = Min.particles.F*200, ymax = Max.particles.F*200))+
-          # Titles
-          ggtitle(paste("CSS ", css, ", ", Bar_Title_CSS[css], sep = ""))+
+          # Add a dot when Min.particles.F == Max.particles.F and n>1
+          
+          
+           # Titles
+          ggtitle(paste("CSS ", css, ", ", Txt_translation$Bar_Title_CSS[Txt_translation$CSS==css], sep = ""))+
           theme_minimal()+
           guides( color  = "none")+
-          labs(y = y_nMiP_txt[css],
-               fill = Polymers_identified[css]) +
+          labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
+               fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
           theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
                 axis.title.x = element_blank())
         
@@ -427,15 +406,15 @@ options(encoding = "latin1")
                                  "PMMA"="#a1d99b",   "PC"="#FFF8DC",
                                  "CA"= "#FFD39B") , 
                       # Relabel  "Other.Plastic"                 
-                      labels = c( "Other.Plastic"=Other_Plastic[css] ) ) +
+                      labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css] ) ) +
     geom_text(aes(x=1.3, label = MiP_perc_text ), 
               position = position_stack(vjust = 0.5), size=5  )+
     coord_polar("y", start=0) +
     theme_void() + 
-  ggtitle(Pie_Title_All[css] )+
+  ggtitle(Txt_translation$Pie_Title_All[Txt_translation$CSS==css] )+
    # guides( color  = "none")+
     labs(# y = "Average number of plastic particles per kg of soil",
-         fill = Polymers_identified[css]) #+
+         fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) #+
     #theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
        #   axis.title.x = element_blank() )
   
@@ -476,15 +455,15 @@ options(encoding = "latin1")
                                  "PMMA"="#a1d99b",   "PC"="#FFF8DC",
                                  "CA"= "#FFD39B") , 
                       # Relabel  "Other.Plastic"                 
-                      labels = c( "Other.Plastic"=Other_Plastic[css]  ) ) +
+                      labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
     geom_text(aes(x=1.3, label = MiP_perc_text ), 
               position = position_stack(vjust = 0.5), size=5  )+
     coord_polar("y", start=0) +
     theme_void() + 
-    ggtitle( paste("CSS ", css, ", ", Pie_Title_CSS[css], sep=""  ))+
+    ggtitle( paste("CSS ", css, ", ", Txt_translation$Pie_Title_CSS[Txt_translation$CSS==css], sep=""  ))+
     # guides( color  = "none")+
     labs(# y = "Average number of plastic particles per kg of soil",
-      fill = Polymers_identified[css]) #+
+      fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) #+
   #theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
   #   axis.title.x = element_blank() )
   
@@ -507,7 +486,7 @@ ggplot(Summary7c_MINAGRIS, aes(x=Polymer.red12, y=Mean.particles.MM*200, fill= P
                                "PMMA"="#a1d99b",   "PC"="#FFF8DC",
                                "CA"= "#FFD39B") , 
                     # Relabel  "Other.Plastic"                 
-                    labels = c( "Other.Plastic"=Other_Plastic[css]  ) ) +
+                    labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
   theme_minimal() + 
   geom_text(aes(label=Polymer.red12) , vjust = -0.5, hjust = 0 , nudge_x = -.5) +
   geom_text(aes(label = paste0(round(MiP_perc, 1), "%")), vjust = 1, nudge_y = 0.2)+
@@ -625,7 +604,7 @@ ggplot(df_plot ) +
   
 # lab 
   Summary5c_Field_MMEAN2 = subset(Data, Preparation_Type=="Field_samples") %>% 
-  group_by( File_Names, Polymer.red12, Sample_type, Preparation_Type, CSS, Farm, Field, Lab   ) %>% # For each PMF_File_name, get the summary
+  group_by( File_Names, Polymer.red12, Sample_type, Preparation_Type, CSS, Farm, Field, Lab   ) %>% # For each PMF_File_Name, get the summary
   summarise( N.particles= sum(N.px!=0),           # Number of particles
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.um2=sum(Area.um2.cor), # Total plastic area 

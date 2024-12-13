@@ -33,24 +33,24 @@ source("MINAGRIS_Read_Labels_Function.R")
 wd.in="WUR_Data"
 
 # * Create a list of available PMF files  ####
-PMF_File_names <- dir(wd.in, full.names = F, recursive = T)
-PMF_File_names <- PMF_File_names[grepl("*.csv$", PMF_File_names)] # select only .csv files
+PMF_File_Names <- dir(wd.in, full.names = F, recursive = T)
+PMF_File_Names <- PMF_File_Names[grepl("*.csv$", PMF_File_Names)] # select only .csv files
 
-PMF_File_names <- PMF_File_names[grepl("m.*", PMF_File_names, ignore.case = F)] # select only files starting with 'm' // I would have liked to select files with PMF in the name but not all results follow this rule.
+PMF_File_Names <- PMF_File_Names[grepl("m.*", PMF_File_Names, ignore.case = F)] # select only files starting with 'm' // I would have liked to select files with PMF in the name but not all results follow this rule.
 # Excluded file, for checking: 
-PMF_File_names[PMF_File_names %!in% PMF_File_names[grep("m.*", PMF_File_names, ignore.case = F)] ]
+PMF_File_Names[PMF_File_Names %!in% PMF_File_Names[grep("m.*", PMF_File_Names, ignore.case = F)] ]
 
-PMF_File_names <- PMF_File_names[!grepl("Excluded_Analysis", PMF_File_names, ignore.case = F)] # select only files not in 'Excluded_Analysis'
+PMF_File_Names <- PMF_File_Names[!grepl("Excluded_Analysis", PMF_File_Names, ignore.case = F)] # select only files not in 'Excluded_Analysis'
 
 # /!\ There should not be Duplicated files! 
-if (any(duplicated( PMF_File_names))){
+if (any(duplicated( PMF_File_Names))){
   warning("Duplicated PMF File names")
-  PMF_File_names[duplicated( PMF_File_names)]
+  PMF_File_Names[duplicated( PMF_File_Names)]
 }
 
 # * Create Data Frame of PMF files available
-METADATA=data.frame(File.dir=PMF_File_names, col.sep=NA, dec.sep=NA, skip=NA, n.uP.detected=NA )
-METADATA$PMF_File_name <- gsub(".*/", "", METADATA$File.dir)   # Remove the working directory name
+METADATA=data.frame(File.dir=PMF_File_Names, col.sep=NA, dec.sep=NA, skip=NA, n.uP.detected=NA )
+METADATA$PMF_File_Name <- gsub(".*/", "", METADATA$File.dir)   # Remove the working directory name
 METADATA_PMF=Read_MINAGRIS_label(METADATA)
 
 # Total number of files: 
@@ -92,11 +92,11 @@ Header=c("X","Particle.id","N.px","Area.um2","Class.Idx","Polymer.grp","XPos.um"
          "Aspect_ratio","Direction.deg","Relevance","Similarity","Done")
 
 # Create a list to load all the PMF results files
-Loading_list <- vector("list", length = length(PMF_File_names))  
+Loading_list <- vector("list", length = length(PMF_File_Names))  
 
 # Start For loop across all PMF files available
-for( i in seq_along(PMF_File_names)) {
-  file_i_dir= paste(wd.in, PMF_File_names[i], sep="/")
+for( i in seq_along(PMF_File_Names)) {
+  file_i_dir= paste(wd.in, PMF_File_Names[i], sep="/")
   # * Check the column and decimal separators format ####
   # The expected format is [col.sep = "," ; dec.sep="."]
   
@@ -142,7 +142,7 @@ for( i in seq_along(PMF_File_names)) {
         Relevance = 0,
         Similarity = 0,
         Done = NA,
-        Filter_name = NA
+        Filter_Name = NA
       )
     } # end if no particles detected
     
@@ -152,20 +152,20 @@ for( i in seq_along(PMF_File_names)) {
   #/////// WORK IN PROGRESS \\\\\\\\\\\\\\\\\
   
   # * Extract info from the file name: ####
-  # Filter_name, in between the working directory and "PMF" 
-  file_i$PMF_File_name <- file_i_dir # PMF File name
-  file_i$PMF_File_name <- gsub(".*/", "",  file_i_dir)   # Remove the working directory name
+  # Filter_Name, in between the working directory and "PMF" 
+  file_i$PMF_File_Name <- file_i_dir # PMF File name
+  file_i$PMF_File_Name <- gsub(".*/", "",  file_i_dir)   # Remove the working directory name
   
-  file_i$Filter_name <- gsub(".*/", "",  file_i_dir)   # Remove the working directory name
-  file_i$Filter_name <- gsub(".*/", "",  file_i$Filter_name)   # Remove the working directory name bis
-  file_i$Filter_name <- gsub(".csv", "", file_i$Filter_name) # Remove 'the working directory name'.csv'
+  file_i$Filter_Name <- gsub(".*/", "",  file_i_dir)   # Remove the working directory name
+  file_i$Filter_Name <- gsub(".*/", "",  file_i$Filter_Name)   # Remove the working directory name bis
+  file_i$Filter_Name <- gsub(".csv", "", file_i$Filter_Name) # Remove 'the working directory name'.csv'
   
-  file_i$Filter_name <- gsub("_PMF_compleate_.*", "", ignore.case = T, file_i$Filter_name)
-  file_i$Filter_name <- gsub("_PMF_.*", "", ignore.case = T, file_i$Filter_name)
-  file_i$Filter_name <- gsub("_compleate_.*", "", ignore.case = T, file_i$Filter_name)
-  file_i$Filter_name <- gsub("_manual_.*", "", ignore.case = T, file_i$Filter_name)
-  file_i$Filter_name <- gsub("_ir2", "", ignore.case = T, file_i$Filter_name)
-  file_i$Filter_name <- gsub("_ir3", "", ignore.case = T, file_i$Filter_name)
+  file_i$Filter_Name <- gsub("_PMF_compleate_.*", "", ignore.case = T, file_i$Filter_Name)
+  file_i$Filter_Name <- gsub("_PMF_.*", "", ignore.case = T, file_i$Filter_Name)
+  file_i$Filter_Name <- gsub("_compleate_.*", "", ignore.case = T, file_i$Filter_Name)
+  file_i$Filter_Name <- gsub("_manual_.*", "", ignore.case = T, file_i$Filter_Name)
+  file_i$Filter_Name <- gsub("_ir2", "", ignore.case = T, file_i$Filter_Name)
+  file_i$Filter_Name <- gsub("_ir3", "", ignore.case = T, file_i$Filter_Name)
   
   
   # Make sure that numerical parameters are numerical values:
@@ -184,9 +184,9 @@ for( i in seq_along(PMF_File_names)) {
   
 } # End Files 'for loop' 
 
-METADATA_PMF$PMF_File_name[METADATA_PMF$col.sep==METADATA_PMF$dec.sep] # /!\ if col.sep==dec.sep
+METADATA_PMF$PMF_File_Name[METADATA_PMF$col.sep==METADATA_PMF$dec.sep] # /!\ if col.sep==dec.sep
 # the result should be : character(0) - the colum separator and decimal sign should be different in every file
-METADATA_PMF$IR_File_name=  gsub("_PMF.*", "", METADATA_PMF$PMF_File_name)
+METADATA_PMF$IR_File_Name=  gsub("_PMF.*", "", METADATA_PMF$PMF_File_Name)
 
 # 3. Merge uP data frame and add labels #### 
 # Bind the Loading_list into a data frame of all microplastics identified at WUR:
@@ -197,11 +197,11 @@ MiP_wur <- Read_MINAGRIS_label(MiP_wur)
 unique(MiP_wur$CSS)
 
 # Some re labeling: 
-METADATA_PMF$IR_File_name[METADATA_PMF$PMF_File_name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
-MiP_wur$Filter_name[MiP_wur$Filter_name=="m4_281_rs_n"]="m4_RS2_n"
+METADATA_PMF$IR_File_Name[METADATA_PMF$PMF_File_Name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
+MiP_wur$Filter_Name[MiP_wur$Filter_Name=="m4_281_rs_n"]="m4_RS2_n"
 
-MiP_wur$IR_File_name=  gsub("_PMF.*", "", MiP_wur$PMF_File_name)
-MiP_wur$IR_File_name[MiP_wur$PMF_File_name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
+MiP_wur$IR_File_Name=  gsub("_PMF.*", "", MiP_wur$PMF_File_Name)
+MiP_wur$IR_File_Name[MiP_wur$PMF_File_Name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
 
 # * Add WUR lab ####
 MiP_wur$Lab="WUR"
@@ -243,15 +243,15 @@ Tile_per_sample=read.csv("Tiles_per_sample.csv")
 
 # * Check if all samples are already in the Tiles_per_sample.csv. ####
 
-length(unique(MiP_wur$PMF_File_name) )
-length(unique(MiP_wur$Filter_name) )
+length(unique(MiP_wur$PMF_File_Name) )
+length(unique(MiP_wur$Filter_Name) )
 length(unique(MiP_wur$Soil_sample) )
 
-unique(unique(MiP_wur$PMF_File_name) %in% METADATA_PMF$PMF_File_name) # Check all MiP_wur$PMF_File_name are in METADATA_PMF$PMF_File_name
+unique(unique(MiP_wur$PMF_File_Name) %in% METADATA_PMF$PMF_File_Name) # Check all MiP_wur$PMF_File_Name are in METADATA_PMF$PMF_File_Name
 
-unique(METADATA_PMF$IR_File_name %in% Tile_per_sample$File_Names)
+unique(METADATA_PMF$IR_File_Name %in% Tile_per_sample$File_Names)
 
-METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Names]
+METADATA_PMF$PMF_File_Name[METADATA_PMF$IR_File_Name %!in% Tile_per_sample$File_Names]
 
 # Re-name samples that contain an error: 
 
@@ -262,12 +262,12 @@ Tile_per_sample$File_Names[Tile_per_sample$File_Names=="m5_311_n_ir2"]="m5_311_n
 Tile_per_sample$File_Names[Tile_per_sample$File_Names=="m5_css3_rs_n"]="m5_RS3_n"
 
 
-METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Names]
+METADATA_PMF$PMF_File_Name[METADATA_PMF$IR_File_Name %!in% Tile_per_sample$File_Names]
 
 # * If not, create the table again.####
 
-if (length(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Names])!=0){
-  METADATA_PMF$IR_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Names]
+if (length(METADATA_PMF$PMF_File_Name[METADATA_PMF$IR_File_Name %!in% Tile_per_sample$File_Names])!=0){
+  METADATA_PMF$IR_File_Name[METADATA_PMF$IR_File_Name %!in% Tile_per_sample$File_Names]
   warning("recreate/ update Tiles_per_sample.csv.")
   
   # Load the FTIR_tiles_per_IRsample_Function.R: 
@@ -282,14 +282,14 @@ if (length(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_s
 # * If yes, load tile numbers ####
 
 
-#METADATA_PMF2=merge(METADATA_PMF, Tile_per_sample, by.x = "IR_File_name",  by.y = "File_Names", all.x = TRUE)
+#METADATA_PMF2=merge(METADATA_PMF, Tile_per_sample, by.x = "IR_File_Name",  by.y = "File_Names", all.x = TRUE)
 
-unique(MiP_wur$IR_File_name[(MiP_wur$IR_File_name %!in% Tile_per_sample$File_Names)])
+unique(MiP_wur$IR_File_Name[(MiP_wur$IR_File_Name %!in% Tile_per_sample$File_Names)])
 
-unique(Tile_per_sample$File_Names[(Tile_per_sample$File_Names %!in% MiP_wur$IR_File_name )])
+unique(Tile_per_sample$File_Names[(Tile_per_sample$File_Names %!in% MiP_wur$IR_File_Name )])
 
 # Add Tile_per_sample in MiP_wur
-MiP_wur_cor=merge(Tile_per_sample, MiP_wur, by.x="File_Names", by.y ="IR_File_name", all.y = TRUE)
+MiP_wur_cor=merge(Tile_per_sample, MiP_wur, by.x="File_Names", by.y ="IR_File_Name", all.y = TRUE)
 
 
 #Check NAs
@@ -307,13 +307,13 @@ Px_Sizes= MiP_wur %>%
             Px_size_ium=sqrt(unique(Px_size_ium2)))
 
 # Samples far out from the default: 
-unique(MiP_wur$PMF_File_name[MiP_wur$Px_size_ium2 > 100^2])
+unique(MiP_wur$PMF_File_Name[MiP_wur$Px_size_ium2 > 100^2])
 # => m14_822_n is wrongly calibrated
 
 
 # * Assign number of px per tiles: ####
 
-unique(MiP_wur$PMF_File_name[(MiP_wur$IR_File_name %!in% Tile_per_sample$File_Names)])
+unique(MiP_wur$PMF_File_Name[(MiP_wur$IR_File_Name %!in% Tile_per_sample$File_Names)])
 
 # Files that actually need correction: 
 unique(MiP_wur_cor$File_Names[ MiP_wur_cor$Tile_Numbers>180 & MiP_wur_cor$Tile_Numbers<560])
@@ -376,47 +376,47 @@ ToBeChecked= subset (MiP_wur_cor, Length.um.cor< 30 )
 
 
 # Manually repair m14_822_n_PMF_SR.csv
-subset (MiP_wur_cor, PMF_File_name== "m14_822_n_PMF_SR.csv" ) 
+subset (MiP_wur_cor, PMF_File_Name== "m14_822_n_PMF_SR.csv" ) 
 
 # Correct the 6 particles Length and Width: 
 # - 1 particles of 1 px, which surprisingly is only half its size
-MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m14_822_n_PMF_SR.csv" &
+MiP_wur_cor[ MiP_wur_cor$PMF_File_Name== "m14_822_n_PMF_SR.csv" &
                MiP_wur_cor$N.px ==1, c("Length.um.cor","Width.um.cor")] = c(88.04,88.04)
 
 # - 2 particles of 2 px, which surprisingly the 1000 times the expected measure
-MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m14_822_n_PMF_SR.csv" &
+MiP_wur_cor[ MiP_wur_cor$PMF_File_Name== "m14_822_n_PMF_SR.csv" &
                MiP_wur_cor$N.px ==2 &
                MiP_wur_cor$Length.um ==176084 &
                MiP_wur_cor$Width.um ==88042, c("Length.um.cor","Width.um.cor")] = c(176.08,88.04)
 
 # - 1 particles of 3 px, which surprisingly the 1000 times the expected measure
-MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m14_822_n_PMF_SR.csv" &
+MiP_wur_cor[ MiP_wur_cor$PMF_File_Name== "m14_822_n_PMF_SR.csv" &
                MiP_wur_cor$N.px ==3 &
                MiP_wur_cor$Length.um ==264126  &
                MiP_wur_cor$Width.um ==88042, c("Length.um.cor","Width.um.cor")]= c(264.12,88.04)
 
 
 # - 2 particles of 4 px, which surprisingly seem correct 
-MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m14_822_n_PMF_SR.csv" &
+MiP_wur_cor[ MiP_wur_cor$PMF_File_Name== "m14_822_n_PMF_SR.csv" &
                MiP_wur_cor$N.px ==4 &
                MiP_wur_cor$Length.um ==176.084 &
                MiP_wur_cor$Width.um ==176.084, c("Length.um.cor","Width.um.cor")] = c(176.08,176.08)
 
 
-MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m14_822_n_PMF_SR.csv" ,]
+MiP_wur_cor[ MiP_wur_cor$PMF_File_Name== "m14_822_n_PMF_SR.csv" ,]
 
 
 # Manually repair m18_9102_n_PMF_SR.csv
 # Length.um and Width.um of m18_9102_n_PMF_SR.csv are <3 um !
-subset (MiP_wur_cor, PMF_File_name== "m18_9102_n_PMF_SR.csv" ) 
+subset (MiP_wur_cor, PMF_File_Name== "m18_9102_n_PMF_SR.csv" ) 
 
 # Correct the 17 particles Length and Width: 
 # - 10 particles of 1 px,
 # - 3 particles of 2 px, 
 # - 3 particles of 3 px, 
 # - 1 particles of 4 px, 
-MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m18_9102_n_PMF_SR.csv" , c("Length.um.cor","Width.um.cor")] = 
-  MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m18_9102_n_PMF_SR.csv" , c("Length.um","Width.um")]*88.04
+MiP_wur_cor[ MiP_wur_cor$PMF_File_Name== "m18_9102_n_PMF_SR.csv" , c("Length.um.cor","Width.um.cor")] = 
+  MiP_wur_cor[ MiP_wur_cor$PMF_File_Name== "m18_9102_n_PMF_SR.csv" , c("Length.um","Width.um")]*88.04
 
 
 
@@ -425,7 +425,7 @@ MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m18_9102_n_PMF_SR.csv" , c("Length.um.
 unique(is.na(MiP_wur_cor$ Class.Idx))
 unique(is.na(MiP_wur_cor$File_Names))
 
-unique(MiP_wur_cor$PMF_File_name=="<NA>")
+unique(MiP_wur_cor$PMF_File_Name=="<NA>")
 
 
 # Plot the ratio 
