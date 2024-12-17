@@ -5,6 +5,7 @@ library(hrbrthemes)
 library(dplyr)
 library(stats)
 library(readxl)
+library(ggnewscale)
 
 rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
@@ -231,9 +232,9 @@ options(encoding = "latin1")
         # Add text when y max is reached
         geom_text(data=df_plot_dot_css, aes(x=CSS, y=y_max*205, label=Trunc )) +
         
+        geom_jitter(data= Summary4e_Soil, aes(x=CSS, y=Mean.particles*200), alpha = 0.25)+
       
-        
-        
+        ylim(0,10500)+
         # Titles
         ggtitle(Txt_translation$Bar_Title_All[Txt_translation$CSS==css])+
         theme_minimal()+
@@ -243,6 +244,14 @@ options(encoding = "latin1")
         theme(axis.text.x = element_text(angle = 0, vjust = 0.5, hjust=0.5),
               axis.title.x = element_blank())
       
+        PLOT
+        
+        
+        
+        ggplot( )+
+        geom_jitter(data= Summary4e_Soil, aes(x=CSS, y=Mean.particles*200))
+        
+        
       ggsave(filename = paste(wd.out,"/Bar_MiP_number_AllCSS_txtCSS", css, ".png",sep =""), plot = PLOT, width = 10.5, height = 4, units = "in", dpi = 300)
       
       }
@@ -340,7 +349,10 @@ options(encoding = "latin1")
         #df_plot_dot_css=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples" & Farm.Field %!in% c("F.10.1", "F.10.2") ) 
         #df_plot_bar_css=subset( df_plot_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples"& Farm.Field %!in% c("F.10.1", "F.10.2") )
         
-        PLOT= ggplot( df_plot_bar_css) +
+        ggplot()+
+        geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)))
+  
+          PLOT= ggplot( df_plot_bar_css) +
           # Stack bars with Polymer 12 
           geom_bar( aes(x=Farm.Field, y=Mean.particles.F*200, fill=Polymer.red12), position="stack", stat="identity")+ 
           # Custom color palette
@@ -358,13 +370,17 @@ options(encoding = "latin1")
                                         "F.7.1"="NA", "F.7.2"="NA", "F.8.1"="NA","F.8.2"="NA", "F.9.1"="NA", "F.9.2"="NA", "F.10.1"="NA", "F.10.2"="NA", "F.11.1"="NA", "F.11.2"="NA", "F.12.1"="NA", "F.12.2"="NA","F.12.3"="NA","F.12.4"="NA", "MEAN"="Black" ))+ 
           # Add a min max line, from summary soil, polymer 12,   
           geom_linerange(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, ymin = Min.particles.F*200, ymax = Max.particles.F*200))+
+            guides( color  = "none", )+
           # Add a dot when Min.particles.F == Max.particles.F and n>1
-          
-          
+            new_scale_color() +
+          geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)))+
+            scale_color_manual(values = c("1"="NA","2"="Black" ))+ 
+            
+            
            # Titles
           ggtitle(paste("CSS ", css, ", ", Txt_translation$Bar_Title_CSS[Txt_translation$CSS==css], sep = ""))+
           theme_minimal()+
-          guides( color  = "none")+
+          guides( color  = "none", )+
           labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
                fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
           theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
@@ -520,6 +536,10 @@ theme(axis.text.x = element_blank(),
     df_p1$Farm.Field= factor( df_p1$Farm.Field, 
                               levels= c("1.1", "1.2", "2.1", "2.2", "3.1", "3.2", "4.1", "4.2", "5.1", "5.2", "6.1", "6.2",
                                         "7.1", "7.2", "8.1","8.2", "9.1", "9.2", "10.1", "10.2", "11.1", "11.2", "12.1", "12.2","12.3","12.4", "MEAN"))
+    
+    
+    
+    
     
     p1= ggplot()+
       geom_linerange(data=df_p1, aes(x=Farm.Field, y=Mean.particles.F, ymin = Min.particles.F, ymax = Max.particles.F))+
