@@ -53,11 +53,19 @@ wd.out= "Outputs"
 # * From WUR ####
 #MC - again I would remove dates from file names (and the dots in the date :)
 #MC - alternative is to make a 'initialization file' where you update all your file names everytime, than the code stays flexible.
-Data_WUR=read.csv("Outputs/WUR_MiP_Particles_20241128.csv")
+Data_WUR=read.csv("Outputs/WUR_MiP_Particles_20241218.csv")
+# Number of particles: 
+nrow(Data_WUR[Data_WUR$N.px>0,])
+# Number of files: 
+length(unique(Data_WUR$File_Names))
 
 # * From Ubern ####
 wd.in.Ubern="UBern_Data"
 Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_1124.csv", sep = "")) # "results_1024.csv")
+# Number of particles: 
+nrow(Data_Ubern[Data_Ubern$area>0,])
+# Number of files: 
+length(unique(Data_Ubern$File_Names))
 
 # 2. Merge MiP tables ####
 
@@ -81,7 +89,9 @@ uP_Colnames[uP_Colnames %!in% colnames(Data_Ubern)]
 Data_Ubern$File_Names=Data_Ubern$source_file
 Data_Ubern$Area.um2.cor=Data_Ubern$area
 Data_Ubern$Filter_Name=NA
-Data_Ubern$Q_index=Data_Ubern$index_results/1000 # normalize over 1
+Data_Ubern$Q_index=Data_Ubern$rsq
+
+
 Data_Ubern$Soil_sample=Data_Ubern$Soil.sample
 Data_Ubern$Lab="Ubern"
 Data_Ubern$Operator="AG"
@@ -108,6 +118,11 @@ Data_Ubern$Polymer.red3[Data_Ubern$Polymer.grp %!in% Polymer.red3]="Other.Plasti
 # * Merge ####
 Data_comb=rbind(subset(Data_WUR, select = colnames(Data_WUR)[colnames(Data_WUR)%in% colnames(Data_Ubern)]),
                 subset(Data_Ubern, select = colnames(Data_Ubern)[colnames(Data_Ubern)%in% colnames(Data_WUR)]  ) )
+
+# Number of particles: 
+nrow(Data_comb[Data_comb$Area.um2.cor>0,])
+# Number of files: 
+length(unique(Data_comb$File_Names))
 
 # Add Preparation Type description
 Data_comb$Preparation_Type="Not"
@@ -200,17 +215,6 @@ Data_comb$Size_cat.um[Data_comb$Area.um2.cor>cat.max^2]="Too big"
 Data_comb[Data_comb$N.px>=1 & Data_comb$Size_cat.um %in% c("Too small", "Too big") ,]
 
  
-# 3. Remove "MYSP" ####
-# Remove the mysterious polymers 
-
-Data_comb=Data_comb%>%
-  mutate(N.px =         if_else(Polymer.grp == "MYSP", 0, N.px),
-         Length.um =if_else(Polymer.grp == "MYSP", 0, Length.um),
-         Width.um = if_else(Polymer.grp == "MYSP", 0, Width.um),
-         Area.um2.cor = if_else(Polymer.grp == "MYSP", 0,  Area.um2.cor),
-         Mass.ng =      if_else(Polymer.grp == "MYSP", 0,  Mass.ng),
-         Polymer.grp=   if_else(Polymer.grp == "MYSP", "No.plastic", Polymer.grp) )
-
 
 # 3. Mass estimations ####
 
@@ -328,14 +332,8 @@ Summary_Blanks4_Batch_SumPol12$Batch_Name[ Summary_Blanks4_Batch_SumPol12$N.part
 Data_comb_red=subset(Data_comb, Batch_Name %!in%  Summary_Blanks4_Batch_SumPol12$Batch_Name[ Summary_Blanks4_Batch_SumPol12$N.particles>5]  )
 
 
-# * Remove "Other.plastics" with low Q_index (<0.35) ####
-Data_comb_red=Data_comb_red %>%
-  mutate(N.px =     if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0, N.px),
-         Length.um =if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0, Length.um),
-         Width.um = if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0, Width.um),
-         Area.um2.cor = if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0,  Area.um2.cor),
-         Mass.ng =      if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", 0,  Mass.ng),
-         Polymer.grp=   if_else(Q_index <0.35 & Polymer.red12 =="Other.Plastic", "No.plastic", Polymer.grp) )
+# Number of particles: 
+nrow(Data_comb_red[Data_comb_red$Area.um2.cor>0,])
 
 # * Characterize the remaining contamination #### 
 df_Blanks_red=subset(Data_comb_red, Soil_sample=="bcm" )
@@ -395,10 +393,12 @@ ggplot( Summary_Blanks3_Batch, aes(Lab, N.particles)) +
   geom_jitter(height=0,width=0.25, aes(color=Polymer.red12 ))+
   ggtitle("Particles summ per Polymer.red12 per batch")+
   scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
-                                "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                "CA"= "#FFD39B" , "No.plastic"= "black"   ) ) +
+                                "CA"= "#FFD39B") , 
+                     # Relabel  "Other.Plastic"                 
+                     labels = c( "Other.Plastic"= "Other Plastics" ) ) +
   theme_minimal()
 
 # All batches, Polymer12
@@ -407,10 +407,12 @@ ggplot(  Summary_Blanks3_Batch_red, aes( Lab_Batch, N.particles)) +
   geom_jitter(height=0,width=0.25, aes(color=Polymer.red12, shape=Lab ))+
   ggtitle("Particles summ per Polymer.red12 per batch")+
   scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
-                                "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                "CA"= "#FFD39B", "No.plastic"= "black"  ) ) +
+                                "CA"= "#FFD39B") , 
+                     # Relabel  "Other.Plastic"                 
+                     labels = c( "Other.Plastic"= "Other Plastics" ) ) +
   theme_minimal()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
         axis.title.x = element_blank())
@@ -594,6 +596,16 @@ for (s in unique(Data_comb_red_blank$File_Names)){
   } # end if WUR
 } # end loop Samples
 
+# Number of particles:
+nrow(Data_comb[Data_comb_red$N.px>0,])
+nrow(Data_comb_red[Data_comb_red$N.px>0,])
+nrow(Data_comb_red_blank[Data_comb_red_blank$N.px>0,])
+
+
+# Number of files: 
+length(unique(Data_comb$File_Names))
+length(unique(Data_comb_red$File_Names))
+length(unique(Data_comb_red_blank$File_Names))
 
 # 7. Export table ####  
 length(unique(Data_comb_red_blank$File_Names))
@@ -603,7 +615,7 @@ length(unique(Data_comb$File_Names[Data_comb$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Names))
 
 
- write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241128.csv",sep = "/"))
+ write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241218.csv",sep = "/"))
 
  write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241128.csv",sep = "/"))
 

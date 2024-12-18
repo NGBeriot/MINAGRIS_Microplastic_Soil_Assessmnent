@@ -447,7 +447,14 @@ Small_86l=MiP_wur_cor[MiP_wur_cor$Area.um2.cor !=0 & MiP_wur_cor$Length.um.cor<8
 
 Big_2000a=MiP_wur_cor[ MiP_wur_cor$Area.um2.cor>2000^2,]
 
-# Filter out Small particles [3 particles removed]  ####
+
+# 5. Particle filters ####
+# * Filter out Small particles [3 particles removed]  ####
+  # Number of particles: 
+  nrow(MiP_wur_cor[MiP_wur_cor$N.px>0,])
+  nrow(MiP_wur_cor[MiP_wur_cor$N.px>0 & MiP_wur_cor$Polymer.grp == "MYSP",])
+
+Filtered_out=subset(MiP_wur_cor, Area.um2.cor !=0 & Length.um.cor<86 )
 
 MiP_wur_cor = MiP_wur_cor %>%
   mutate(N.px =    if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, N.px),
@@ -456,8 +463,10 @@ MiP_wur_cor = MiP_wur_cor %>%
     Mass.ng =      if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Mass.ng),
     Length.um.cor =if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Length.um.cor) )
 
-# Filter out big particles  ####
-MiP_wur_cor=subset(MiP_wur_cor, Area.um2.cor<2000*2000)
+# * Filter out big particles  ####
+
+Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, Area.um2.cor>2000*2000 ))
+
 MiP_wur_cor = MiP_wur_cor %>%
   mutate(N.px =    if_else(Area.um2.cor>2000*2000, 0, N.px),
          Length.um.cor =if_else(Area.um2.cor>2000*2000, 0, Length.um.cor),
@@ -466,7 +475,42 @@ MiP_wur_cor = MiP_wur_cor %>%
          Area.um2.cor = if_else(Area.um2.cor>2000*2000, 0,  Area.um2.cor) )
 
 
-# 4. Export Results ####
+
+# * Remove "Other.plastics" with low Q_index (<0.35) ####
+# "Other.plastics" are more rare, less known, not tested for recovery, and more susceptible to be mistaken to other polymers
+# Therefore, we add a matching quality filter to reduce the risk of mis-identification and over estimation
+# Set up for a matching quality filter at 0.35, which is reasonable from expert judgement and 
+# conveniently (ad-hoc) removes two EVAc particles that would otherwise bring the m16 blank over the 5 particles threshold (ad-hoc). 
+
+Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic"))
+
+MiP_wur_cor=MiP_wur_cor%>%
+  mutate(N.px =     if_else(Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic", 0, N.px),
+         Length.um =if_else(Relevance >0 & Relevance <0.35 &   Polymer.red12 =="Other.Plastic", 0, Length.um),
+         Width.um = if_else(Relevance >0 & Relevance <0.35 &   Polymer.red12 =="Other.Plastic", 0, Width.um),
+         Area.um2.cor = if_else(Relevance >0 & Relevance <0.35 &   Polymer.red12 =="Other.Plastic", 0,  Area.um2.cor),
+         Mass.ng =      if_else(Relevance >0 & Relevance <0.35 &   Polymer.red12 =="Other.Plastic", 0,  Mass.ng),
+         Polymer.grp=   if_else(Relevance >0 & Relevance <0.35 &  Polymer.red12 =="Other.Plastic", "No.plastic", Polymer.grp) )
+
+
+
+# * Remove "MYSP" ####
+# Remove the mysterious polymers 
+
+Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, Polymer.grp == "MYSP"))
+
+
+MiP_wur_cor=MiP_wur_cor%>%
+  mutate(N.px =         if_else(Polymer.grp == "MYSP", 0, N.px),
+         Length.um =if_else(Polymer.grp == "MYSP", 0, Length.um),
+         Width.um = if_else(Polymer.grp == "MYSP", 0, Width.um),
+         Area.um2.cor = if_else(Polymer.grp == "MYSP", 0,  Area.um2.cor),
+         Mass.ng =      if_else(Polymer.grp == "MYSP", 0,  Mass.ng),
+         Polymer.grp=   if_else(Polymer.grp == "MYSP", "No.plastic", Polymer.grp) )
+
+
+
+# 6. Export Results ####
 
 
 #MC - give names without dates and overwrite them. Otherwise the workflow cannot be flexible.
@@ -474,7 +518,7 @@ MiP_wur_cor = MiP_wur_cor %>%
 write.csv(Summary_Data.PMF.CSS.n, paste(wd.out,"PMF_SummaryCSS_20241113.csv",sep = "/"))
 write.csv( Summary_Data.PMF.QC, paste(wd.out,"PMF_SummaryQC_20241113.csv",sep = "/"))
 write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA_20241113.csv",sep = "/"))
-write.csv(MiP_wur_cor, paste(wd.out,"WUR_MiP_Particles_20241128.csv",sep = "/"))
+write.csv(MiP_wur_cor, paste(wd.out,"WUR_MiP_Particles_20241218.csv",sep = "/"))
 
 
 
