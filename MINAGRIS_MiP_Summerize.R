@@ -50,7 +50,7 @@ wd.out= "Outputs"
 
 # Initialization 
 #MC - see comment in previous script about dates in output file names.
-Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241128.csv")
+Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
     
 #MC - this section is unclear - add documentation
     colnames(Data_comb_red_blank)
@@ -641,9 +641,13 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241128.csv")
                 Mean.Tot.Area.mm2.F=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.F=min(Mean.Tot.Area.mm2),
                 Max.Tot.Area.mm2.F=max(Mean.Tot.Area.mm2),
-                Mean.Tot.Mass.ng.F=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                Mean.Tot.Mass.ng.F=mean( Mean.Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                Min_Max_diff=Max.particles.F-Min.particles.F,
+                Formula=Min_Max_diff-Min.particles.F/2
       ) 
    
+    Summary5e_Field$CSS_Farm_Field= paste(Summary5e_Field$CSS,Summary5e_Field$Farm, Summary5e_Field$Field, sep=".")
+    
     # Mean per CSS of the soil samples. 
     
 # 6. Summaries, CSS ####      
@@ -923,6 +927,52 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241128.csv")
 
    #########################################################################################33
    
+   
+   # Check samples with a big difference betwwen S1 and S2#### 
+   
+   # Arbitrary formula : Max > 1.5*Min +10 
+   Check_S5e=subset(Summary5e_Field, Min_Max_diff-Min.particles.F/2>10)
+   Check_S5e=subset(Summary5e_Field, Formula>10)
+   
+   Check_S5e= Check_S5e[order( Check_S5e$Formula), levels=  ]
+   df$Category <- factor(df$Category, levels = df$Category[order(df$Value)])
+   Check_S5e$CSS_Farm_Field= factor( Check_S5e$CSS_Farm_Field, levels =  Check_S5e$CSS_Farm_Field[order( -Check_S5e$Formula)])
+   
+   Summary5e_Field$CSS_Farm_Field= paste(Summary5e_Field$CSS,Summary5e_Field$Farm, Summary5e_Field$Field, sep=".")
+   
+   Summary4e_Soil$CSS_Farm_Field= paste(Summary4e_Soil$CSS,Summary4e_Soil$Farm, Summary4e_Soil$Field, sep=".")
+   
+   Check_S4e=subset(Summary4e_Soil, CSS_Farm_Field %in% Check_S5e$CSS_Farm_Field)
+   
+   
+   
+   # Plot biggest differneces 
+   # P1: Plot vertical bar min-max, from Summary5e_Field
+   df_p1= Check_S5e
+   
+   p1= ggplot()+
+     geom_linerange(data=df_p1, aes(x=CSS_Farm_Field, y=Mean.particles.F, ymin = Min.particles.F, ymax = Max.particles.F))+
+     ggtitle("Most S1-S2 difference")+
+     theme_minimal()
+   
+   #  P2: Plot Samples S1-S2, min-max with lab color, from Summary4e_Soil
+   df_p2=Check_S4e
+
+   
+   PLOT=  
+     p1+ 
+     geom_point(data = df_p2, aes(x=CSS_Farm_Field, y=Mean.particles, color=Lab, shape=Lab, size=Lab ))+
+     scale_size_manual(values = c("WUR"=2,  "Ubern"=3))+
+     scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
+     ggtitle("Most S1-S2 difference")+
+     labs(y = "Average number of plastic particles per soil sample") +
+     theme_minimal()+
+     theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
+           axis.title.x = element_blank())
+   
+   print( PLOT)
+   
+   write.csv(Summary3d_Filter, paste(wd.out,"/Summary3d_Filter", Date, sep = ""))
    
    # Check CSS4F7F1 ####
    CSS4F7F1=subset(Data_comb, CSS==4 & Farm == 7 & Field == 1 )

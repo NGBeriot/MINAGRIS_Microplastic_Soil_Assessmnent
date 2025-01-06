@@ -21,6 +21,7 @@ options(encoding = "latin1")
 
   # * MiP table ####
     Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241127.csv")
+  
 
   # * Summary tables ####
 
@@ -48,8 +49,8 @@ options(encoding = "latin1")
     
     # * Titles and translations #### 
     
-   Txt_translation=read_excel("Txt_translation_table.xlsx")
-    
+   Txt_translation=read_excel("Txt_translation_table.xlsx")%>%
+      mutate(across(everything(), ~ str_replace_all(., "\\\\n", "\n")))
     
     Cat.um.txt=c("90-300", "300-510", "510-720",
                  "720-930", "930-1140", "1140-1350")
@@ -95,7 +96,7 @@ options(encoding = "latin1")
       geom_bar(position="stack", stat="identity", fill="steelblue4")+ 
       ggtitle(Txt_translation$Hist_Title_All[Txt_translation$CSS==css])+
       theme_minimal()+
-      labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
+        labs(y = Txt_translation$y_nMiP_txt[Txt_translation$CSS==css],
            x= Txt_translation$Size_categories_txt[Txt_translation$CSS==css]) +
       theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
 
@@ -572,7 +573,7 @@ theme(axis.text.x = element_blank(),
        theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
              axis.title.x = element_blank())
      
-     PLOT
+    print( PLOT)
      
       ggsave(filename = paste(wd.out,"/Dot_MiP_number_CSS", css, ".png",sep =""), plot = PLOT, width = 10.5, height = 4, units = "in", dpi = 300)
   } #end for css  

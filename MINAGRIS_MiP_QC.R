@@ -26,7 +26,7 @@ wd.out= "Outputs"
 
 # Initialization 
 #MC - see comment in previous script about dates in output file names.
-Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241128.csv")
+Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
 
 Summary3a_Filter=read.csv("Outputs/Summary3a_Filter_20241217.csv")
 Summary3c_Filter=read.csv("Outputs/Summary3c_Filter_20241217.csv")
@@ -36,19 +36,17 @@ Summary3e_Filter=read.csv("Outputs/Summary3e_Filter_20241217.csv")
 
 # Chemical Blanks ####
 
-df_st=subset(Data_comb_red_blank, Soil_sample=="st")
+df_bcm=subset(Data_comb_red_blank, Soil_sample=="bcm")
 
-unique(df_st$File_Names)
+unique(df_bcm$File_Names)
 
-S3a_st=subset(Summary3a_Filter, Soil_sample=="st")
-S3e_st=subset(Summary3e_Filter, Soil_sample=="st")
-S3c_st=subset(Summary3c_Filter, Soil_sample=="st")
+S3a_bcm=subset(Summary3a_Filter, Soil_sample=="bcm")
+S3e_bcm=subset(Summary3e_Filter, Soil_sample=="bcm")
+S3c_bcm=subset(Summary3c_Filter, Soil_sample=="bcm")
 
-unique(df_st$File_Names)
-unique(df_st$CSS)[order(unique(df_st$CSS))]
 
 # * All filters, Sum of all polymers  ####
-ggplot( S3e_st, aes(x=Extraction_Name, y=Mean.particles, color=Lab, shape=Lab, size=Lab ))+
+ggplot( S3e_bcm, aes(x=Extraction_Name, y=Mean.particles, color=Lab, shape=Lab, size=Lab ))+
   scale_size_manual(values = c("WUR"=2.5,  "Ubern"=3))+
   scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
   geom_point()+
@@ -57,15 +55,17 @@ ggplot( S3e_st, aes(x=Extraction_Name, y=Mean.particles, color=Lab, shape=Lab, s
         axis.title.x = element_blank())
 
 # * Dots,  All filters,  polymer 12 ####
-S3c_st$Lab_Batch=paste( S3c_st$Lab, "CSS", S3c_st$Batch_Name )
-ggplot(  S3c_st, aes( Extraction_Name, Mean.particles)) +
+S3c_bcm$Lab_Batch=paste( S3c_bcm$Lab, "CSS", S3c_bcm$Batch_Name )
+ggplot(  S3c_bcm, aes( Extraction_Name, Mean.particles)) +
   geom_jitter(height=0,width=0.25, aes(color=Polymer.red12, shape=Lab ))+
   ggtitle("Particles summ per Polymer.red12 per batch")+
   scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
-                                "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
-                                "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                "CA"= "#FFD39B", "No.plastic"= "black"  ) ) +
+                               "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                               "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                               "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                               "CA"= "#FFD39B") , 
+                    # Relabel  "Other.Plastic"                 
+                    labels = c( "Other.Plastic"= "Other Plastics" ) ) +
   theme_minimal()+
   theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
         axis.title.x = element_blank())
@@ -128,10 +128,12 @@ ggplot(S3c_st, aes(x=Polymer.red12, y=Mean.particles, fill= Polymer.red12 ))+
     geom_jitter(height=0,width=0.25, aes(color=Polymer.red12, shape=Lab ))+
     ggtitle("Particles summ per Polymer.red12 per batch")+
     scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                  "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
-                                  "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                  "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                  "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                  "CA"= "#FFD39B", "No.plastic"= "black"  ) ) +
+                                  "CA"= "#FFD39B") , 
+                       # Relabel  "Other.Plastic"                 
+                       labels = c( "Other.Plastic"= "Other Plastics" ) ) +
     theme_minimal()+
     theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
           axis.title.x = element_blank())
@@ -193,10 +195,12 @@ ggplot(S3c_st, aes(x=Polymer.red12, y=Mean.particles, fill= Polymer.red12 ))+
     geom_jitter(height=0,width=0.25, aes(color=Polymer.red12, shape=Lab ))+
     ggtitle("Particles summ per Polymer.red12 per batch")+
     scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                  "PP"="#999999",  "PLA"="#FF7F00",           "PS"="#FFFF33",
-                                  "PET"="#A65628", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                  "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                  "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                  "CA"= "#FFD39B", "No.plastic"= "black"  ) ) +
+                                  "CA"= "#FFD39B") , 
+                       # Relabel  "Other.Plastic"                 
+                       labels = c( "Other.Plastic"= "Other Plastics" ) ) +
     theme_minimal()+
     theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
           axis.title.x = element_blank())
