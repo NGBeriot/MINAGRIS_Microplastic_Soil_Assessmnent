@@ -2,10 +2,8 @@
 # Create METADATA and combined result table
 # PMF data is available in the R project. 
 
-library(ggplot2)
 library(tidyverse)
 library(hrbrthemes)
-library(dplyr)
 library(stats)
 
 rm(list=ls()) # cleaning console
@@ -30,7 +28,7 @@ source("MINAGRIS_Read_Labels_Function.R")
 # There can be less than IR folders when all IR folders have not been PMF processed yet. 
 
 # Directory of the Manually checked IR files 
-wd.in="WUR_Data"
+wd.in="WUR_Data/PMF_Manual.check.csv"
 
 # * Create a list of available PMF files  ####
 PMF_File_Names <- dir(wd.in, full.names = F, recursive = T)
@@ -515,10 +513,10 @@ MiP_wur_cor=MiP_wur_cor%>%
 
 #MC - give names without dates and overwrite them. Otherwise the workflow cannot be flexible.
 # I fyou think you need an older versio of the file, store it in an folder called e.g.'/Archive'
-write.csv(Summary_Data.PMF.CSS.n, paste(wd.out,"PMF_SummaryCSS_20241113.csv",sep = "/"))
-write.csv( Summary_Data.PMF.QC, paste(wd.out,"PMF_SummaryQC_20241113.csv",sep = "/"))
-write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA_20241113.csv",sep = "/"))
-write.csv(MiP_wur_cor, paste(wd.out,"WUR_MiP_Particles_20241218.csv",sep = "/"))
+write.csv(Summary_Data.PMF.CSS.n, paste(wd.out,"PMF_SummaryCSS.csv",sep = "/"))
+write.csv( Summary_Data.PMF.QC, paste(wd.out,"PMF_SummaryQC.csv",sep = "/"))
+write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA.csv",sep = "/"))
+write.csv(MiP_wur_cor, paste(wd.out,"WUR_MiP_Particles.csv",sep = "/"))
 
 
 

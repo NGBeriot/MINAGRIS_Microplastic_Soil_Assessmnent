@@ -31,11 +31,8 @@
 #  *Excluded* from total counts (e.g. summary per farm or blanks => no blank correction) 
 
 # /!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\/!\
-
-library(ggplot2)
 library(tidyverse)
 library(hrbrthemes)
-library(dplyr)
 library(stats)
 
 
@@ -53,7 +50,7 @@ wd.out= "Outputs"
 # * From WUR ####
 #MC - again I would remove dates from file names (and the dots in the date :)
 #MC - alternative is to make a 'initialization file' where you update all your file names everytime, than the code stays flexible.
-Data_WUR=read.csv("Outputs/WUR_MiP_Particles_20241218.csv")
+Data_WUR=read.csv("Outputs/WUR_MiP_Particles.csv")
 # Number of particles: 
 nrow(Data_WUR[Data_WUR$N.px>0,])
 # Number of files: 
@@ -134,6 +131,9 @@ Data_comb$Preparation_Type[ Data_comb$Soil_sample %in% c( "st")  ]="Standard_Soi
 
 Data_comb[Data_comb$Preparation_Type=="Not",]
 
+
+
+
 # Re-label Soil_sample:
 #MC - unclear what the printed numbers below mean - add comment
 nrow( subset(Data_comb, Soil_sample=="bcm"))
@@ -157,6 +157,11 @@ Data_comb$Soil_sample[Data_comb$Preparation_Type=="Standard_Soil"]= "st"
 
 nrow( subset(Data_comb, Soil_sample=="bcm"))
 
+# Add the CSS in Soil sample description 
+Data_comb$Soil_sample[Data_comb$Preparation_Type=="Reference_Soil"]=paste("rs", Data_comb$CSS[Data_comb$Preparation_Type=="Reference_Soil"], sep = "_")
+Data_comb$Soil_sample[Data_comb$Soil_sample=="rs_-1" ]="pfsr"
+Data_comb$Preparation_Type[Data_comb$Soil_sample=="pfsr" ]="Blank_soil"
+Data_comb$Sample_type[Data_comb$Preparation_Type=="Reference_Soil"]="n"
 
 # Re-label Filter_Name:
 Data_comb$Filter_Name=paste(Data_comb$Batch_Name, Data_comb$Soil_sample, Data_comb$Sample_type, Data_comb$Filter_div, sep = "_")
@@ -615,9 +620,9 @@ length(unique(Data_comb$File_Names[Data_comb$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Names))
 
 
- write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles_20241218.csv",sep = "/"))
+ write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles.csv",sep = "/"))
 
- write.csv(df_Blanks, paste(wd.out,"Blanks_Particles_20241128.csv",sep = "/"))
+ write.csv(df_Blanks, paste(wd.out,"Blanks_Particles.csv",sep = "/"))
 
 
 

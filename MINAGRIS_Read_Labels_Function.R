@@ -18,10 +18,12 @@ Read_MINAGRIS_label<-function(Data, Colname_label){
   # If Colname_label not supplied
   
   if(missing(Colname_label)) {
-  Colname_label=c(colnames(Data),colnames(Data))[ grep("File.Name|File_Name" ,colnames(Data), ignore.case = T)][1] # Select the first column name that looks like a colname_label
+  Colname_label=c(colnames(Data),colnames(Data))[ grep("File.Name|File_Name|Slice|Label" ,colnames(Data), ignore.case = T)][1] # Select the first column name that looks like a colname_label
   }
   Data$Colname_label=Data[,Colname_label]
   
+
+
 
 # Reading Data$Colname_label ####  
   # m16_bcm_n_PMF_SR.csv
@@ -30,8 +32,9 @@ Read_MINAGRIS_label<-function(Data, Colname_label){
   
   # * Batch_Name {1:28} ####
   # Extract the characters starting with the first 'm' and finishing before the next '_'. e.g. "test_m27_11102_n_f3_ir2_P_SR.csv" should be "m27" 
-    Data$Batch_Name=  gsub("_.*","", str_extract(  Data$Colname_label,"m.*")) #
-  # gsub("_","",str_extract("test_m27_11102_n_f3_ir2_P_SR.csv", "m\\s*(.*?)\\s*_" ) )
+    Data$Batch_Name=  gsub("_.*","", str_extract(  Data$Colname_label,("(?i)m.*"))) #
+  
+    # gsub("_","",str_extract("test_m27_11102_n_f3_ir2_P_SR.csv", "m\\s*(.*?)\\s*_" ) )
   
     sort(unique(Data$Batch_Name ) )
     length(unique(Data$Batch_Name ) )
