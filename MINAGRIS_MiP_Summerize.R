@@ -155,7 +155,8 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles.csv")
       ungroup() %>%
       complete(nesting(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,
                        CSS, Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator),
-               nesting(Polymer.grp,Polymer.red12, Polymer.red3, Size_cat.um), 
+               nesting(Polymer.grp,Polymer.red12, Polymer.red3), 
+               nesting(Size_cat.um),
              fill=list(N.particles=0,
                        Num.px=0,
                        Tot.Area.mm2=0,
@@ -180,7 +181,8 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles.csv")
       ungroup() %>%
       complete(nesting(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,
                        CSS, Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator),
-               nesting(Polymer.red12, Polymer.red3, Size_cat.um), 
+               nesting(Polymer.red12, Polymer.red3), 
+               nesting(Size_cat.um),
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
@@ -286,7 +288,8 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles.csv")
       ungroup() %>%
       complete(nesting(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,
                        CSS, Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator),
-               nesting(Polymer.red3, Size_cat.um), 
+               nesting(Polymer.red3), 
+               nesting(Size_cat.um), 
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,

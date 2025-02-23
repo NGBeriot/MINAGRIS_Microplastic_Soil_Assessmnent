@@ -1408,7 +1408,7 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
     min(Summary4b_Soil$Mean.Tot.Area.mm2)
   
     #  * 3. Add the Mean spiked in (3h) ####
-    # for each filter (3h), Polymer red 3, Size cat
+    # *** for each filter (3h), Polymer red 3, Size cat ####
     Recovery_WUR_1h$N.particles_in=0
     Recovery_WUR_1h$Tot.Area.mm2_in=0
     
@@ -1765,7 +1765,28 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
 
     
     
+    # CSS 11 Farm 10 checks ####
     
+    S1c_plot= subset(Summary1c_File, CSS==11 &Farm==10 )
+    
+       # * PLOT Dots,  All filters,  polymer 12 ####
+    
+    PLOT=ggplot( S1c_plot, aes( x=File_Names, N.particles)) +
+      geom_jitter(height=0,width=0.25, aes(color=Polymer.red12, shape=Lab ))+
+      ggtitle("Particles summ per Polymer.red12 per batch")+
+      scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                    "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                    "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                    "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                    "CA"= "#FFD39B") , 
+                         # Relabel  "Other.Plastic"                 
+                         labels = c( "Other.Plastic"= "Other Plastics" ) ) +
+      ggtitle(paste("CSS11 Farm10 ", "Sum all Polymers"))+
+      theme_minimal()+
+      theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
+            axis.title.x = element_blank())
+    
+    print(PLOT)
     
     
     
