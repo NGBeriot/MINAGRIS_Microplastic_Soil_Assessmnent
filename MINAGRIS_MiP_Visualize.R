@@ -6,6 +6,7 @@ library(stats)
 library(readxl)
 library(ggnewscale)
 library(ggthemes)
+library(scales)
 
 rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
@@ -25,7 +26,7 @@ set.seed(42^2)
 # 1. Load data####
 
   # # * MiP table ####
-  #   Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles.csv")
+  #   Data_comb_red_blank_meta=read.csv("Outputs/Corrected_MiP_Particles.csv")
   # 
   # 
   # # * Summary tables ####
@@ -44,10 +45,10 @@ set.seed(42^2)
   #   Summary5d_Field=read.csv("Outputs/Summary5d_Field_20241118.csv") # Mean per soil sample, Sum up all polymers, "Other.Plastic" excluded 
   #   Summary5e_Field=read.csv("Outputs/Summary5e_Field_20241118.csv") # Mean per soil sample, Sum up all polymers, "Other.Plastic" excluded 
   # 
-  #   Summary6c_CSS=read.csv("Outputs/Summary7c_MINAGRIS_20241118.csv")
+  #   Summary7c_CSS=read.csv("Outputs/Summary8c_MINAGRIS_20241118.csv")
   #     
   #     
-  #   Summary7c_MINAGRIS=read.csv("Outputs/Summary7c_MINAGRIS_20241118.csv")
+  #   Summary8c_MINAGRIS=read.csv("Outputs/Summary8c_MINAGRIS_20241118.csv")
   #   
     
 # 2. Outline Format ####
@@ -60,7 +61,9 @@ set.seed(42^2)
     Cat.um.txt=c("90-300", "300-510", "510-720",
                  "720-930", "930-1140", "1140-1350")
     
-    Date="2025.02.12"
+    Cat.um.txt2=c("90-300", "300-2000")
+    
+    Date="2025.03.03"
     
     # * Color palette ####   
     
@@ -82,28 +85,28 @@ set.seed(42^2)
     # # Linda's palette: 
     # paletteer_d("ggthemr::flat_dark") 
     
-
+#
     
 # 3. Hist. Size distribution ####
   
   # Check Available sizes 
-  A=subset(Data_comb_red_blank, Area.um2.cor !=0 & Area.um2.cor <7885.44 & Length.um<88.042)
-  B=subset(Data_comb_red_blank, Area.um2.cor > 1180^2)
+  A=subset(Data_comb_red_blank_meta, Area.um2.cor !=0 & Area.um2.cor <7885.44 & Length.um<88.042)
+  B=subset(Data_comb_red_blank_meta, Area.um2.cor > 1180^2)
 
   # source("MINAGRIS_Custom_Histogram.R") Work in progress
   # MINAGRIS_Custom_Histogram(Data) 
 
   # For loop per version: # (Maybe not the most eleguant coding but at least it is more organized)
   
-  # * 3.1. Per CSS, Mean Farms, Sum Polymers #### 
+  # * 3.1. Number Per CSS, Mean Farms, Sum Polymers #### 
     # One value per Size_cat.um
-    Summary7f_MINAGRIS$Size_cat.um= factor(Summary7f_MINAGRIS$Size_cat.um,
+    Summary8f_MINAGRIS$Size_cat.um= factor(Summary8f_MINAGRIS$Size_cat.um,
                                            levels =  Cat.um.txt )
     
   # Translation for each css: 
   for (css in 1:11){  
     
-    PLOT= ggplot( subset(Summary7f_MINAGRIS, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles.MM*200)) +
+    PLOT= ggplot( subset(Summary8f_MINAGRIS, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles.MM*200)) +
       geom_bar(position="stack", stat="identity", fill="steelblue4")+ 
       ggtitle(Txt_translation$Hist_Title_All[Txt_translation$CSS==css])+
       theme_minimal()+
@@ -117,15 +120,15 @@ set.seed(42^2)
     
   }
   
-  # * 3.2. Per CSS, Mean Farms, Per Polymer   #####
+  # * 3.2. Number Per CSS, Mean Farms, Per Polymer   #####
     # One value per {CSS Polymer per Size_cat.um
     
-    Summary7a_MINAGRIS$Size_cat.um= factor(Summary7a_MINAGRIS$Size_cat.um,
+    Summary8a_MINAGRIS$Size_cat.um= factor(Summary8a_MINAGRIS$Size_cat.um,
                                levels =  Cat.um.txt )
   
   # Translation for each css: 
   for (css in 1:11){  
-    PLOT= ggplot( subset(Summary7a_MINAGRIS, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12)) +
+    PLOT= ggplot( subset(Summary8a_MINAGRIS, Size_cat.um %in%  Cat.um.txt), aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12)) +
       geom_bar(position="stack", stat="identity")+ 
       scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                    "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
@@ -147,16 +150,16 @@ set.seed(42^2)
   }
   
   
-  # * 3.3. Per CSS, Per Farm, Sum Polymers #### 
+  # * 3.3. Number Per CSS, Per Farm, Sum Polymers #### 
   # One value per CSS* Size_cat.um
   
   # Order per Size_cat.um
-  Summary6f_CSS$Size_cat.um= factor(Summary6f_CSS$Size_cat.um,
+  Summary7f_CSS$Size_cat.um= factor(Summary7f_CSS$Size_cat.um,
                                     levels =  Cat.um.txt )
   
   for (css in 1:11){  
     
-    PLOT= ggplot( subset(Summary6f_CSS, Size_cat.um %in%  Cat.um.txt & CSS == css), aes(x=Size_cat.um, y=Mean.particles.CSS*200)) +
+    PLOT= ggplot( subset(Summary7f_CSS, Size_cat.um %in%  Cat.um.txt & CSS == css), aes(x=Size_cat.um, y=Mean.particles.CSS*200)) +
       geom_bar(position="stack", stat="identity", fill="steelblue4")+ 
       ggtitle(paste("CSS ", css, ", ", Txt_translation$Hist_Title_CSS[Txt_translation$CSS==css], sep = ""))+
       theme_minimal()+
@@ -170,15 +173,15 @@ set.seed(42^2)
   
  
   
-  # * 3.4. Per CSS, Per Farm, Per Polymer   #####
+  # * 3.4. Number Per CSS, Per Farm, Per Polymer   #####
   # One value per CSS*Polymer*Size_cat.um
   
   # Order per Size_cat.um
-  Summary6a_CSS$Size_cat.um= factor(Summary6a_CSS$Size_cat.um,
+  Summary7a_CSS$Size_cat.um= factor(Summary7a_CSS$Size_cat.um,
                                     levels =  Cat.um.txt )
   
   for (css in 1:11){  
-    PLOT= ggplot( subset(Summary6a_CSS, Size_cat.um %in%  Cat.um.txt & CSS == css), aes(x=Size_cat.um, y=Mean.particles.CSS*200, fill=Polymer.red12)) +
+    PLOT= ggplot( subset(Summary7a_CSS, Size_cat.um %in%  Cat.um.txt & CSS == css), aes(x=Size_cat.um, y=Mean.particles.CSS*200, fill=Polymer.red12)) +
       geom_bar(position="stack", stat="identity")+ 
       scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                    "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
@@ -208,11 +211,11 @@ set.seed(42^2)
   
   # Initialise Plot
   # Data frame for the bars 
-  df_plot_bar=  Summary6c_CSS_outlier 
+  df_plot_bar=  Summary7c_CSS_outlier 
   df_plot_bar_css=subset( df_plot_bar,  Preparation_Type=="Field_samples")
   
   # Data frame for the min-max 
-  df_plot_dot_css=subset(Summary6e_CSS,  Preparation_Type=="Field_samples")
+  df_plot_dot_css=subset(Summary7e_CSS,  Preparation_Type=="Field_samples")
   # Truncation over 50 MiP/ sample <-> 10 000 MiP/ kg soil
   y_max=50
   # text if the max is met
@@ -242,7 +245,7 @@ set.seed(42^2)
       geom_text(data=df_plot_dot_css, aes(x=CSS, y=y_max*201.9, label=Trunc )) +
       
       # Add the x-axis line
-      geom_segment(aes(x = 0.4, xend = nrow(Summary6d_CSS)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
+      geom_segment(aes(x = 0.4, xend = nrow(Summary7d_CSS)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
       
       # Add the y-axis 
       geom_segment(aes(x = 0.4, xend = 0.4, y =  y_max*200, yend = 0), color = "black", size = 1) +
@@ -293,10 +296,10 @@ set.seed(42^2)
   # -> Average (and median), no dot, no min-max, no max
   
   # Data frame for the bars 
-  df_plot_bar_css=subset( Summary6c_CSS_outlier ,  Preparation_Type=="Field_samples")
+  df_plot_bar_css=subset( Summary7c_CSS_outlier ,  Preparation_Type=="Field_samples")
   
   # Data frame for the min-max 
-  df_plot_dot_css=subset(Summary6e_CSS,  Preparation_Type=="Field_samples")
+  df_plot_dot_css=subset(Summary7e_CSS,  Preparation_Type=="Field_samples")
   
   # Truncation over 30 MiP/ sample <-> 6 000 MiP/ kg soil # /!\ Ad Hoc
   y_max=30
@@ -343,7 +346,7 @@ set.seed(42^2)
       ggtitle(Txt_translation$Bar_Title_All[Txt_translation$CSS==css])+
       
       # Add the x-axis line
-      geom_segment(aes(x = 0.4, xend = nrow(Summary6d_CSS)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
+      geom_segment(aes(x = 0.4, xend = nrow(Summary7d_CSS)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
       
       # Add the y-axis 
       geom_segment(aes(x = 0.4, xend = 0.4, y =  y_max*200, yend = 0), color = "black", size = 1) +
@@ -401,7 +404,7 @@ set.seed(42^2)
     #   ggtitle(Txt_translation$Bar_Title_All[Txt_translation$CSS==css])+
     #   
     #   # Add the x-axis line
-    #   geom_segment(aes(x = 0.4, xend = nrow(Summary6d_CSS)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
+    #   geom_segment(aes(x = 0.4, xend = nrow(Summary7d_CSS)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
     #   
     #   # Add the y-axis 
     #   geom_segment(aes(x = 0.4, xend = 0.4, y =  y_max*200, yend = 0), color = "black", size = 1) +
@@ -625,9 +628,130 @@ set.seed(42^2)
         
       } # End for CSS loop, 4.4
   
+      
+      
+      # *** PLOT outlier farm (CSS11 Farm 10)  ####
+
+
+      # Select outlier (CSS11 Farm 10)
+      df_plot_bar_css11f10=subset(Summary5c_Field, CSS==11 & Farm ==10 )
+      Summary5e_Field_css11f10=subset(Summary5e_Field, CSS==11 & Farm ==10)
+
+      df_plot_dot_css=subset(Summary5e_Field_css11f10,  Preparation_Type=="Field_samples")
+      df_plot_bar_css=subset(df_plot_bar_css11f10,  Preparation_Type=="Field_samples")
+
+        # Add vertical ticks between farms: 
+        # finds the separations between the farms  
+        Farms_csum <- df_plot_dot_css %>%
+          group_by(Farm) %>%
+          summarise(
+            n_farm=n()) %>%
+          mutate( sum_farm=cumsum(n_farm)) 
+        #Farm_boundaries <-  Farms_csum$sum_farm[1:nrow( Farms_csum)-1]+0.5 # Removing the last tick 
+        Farm_boundaries <-  Farms_csum$sum_farm+0.5 # including the last tick 
+        
+        
+        # Calculate gap between breaks: 
+        gap= round(max(df_plot_dot_css$Mean.particles.F)/5)*100
+        if (gap>1000){
+          gap=round(gap/500)*500
+        }
+        
+        gap=10000
+        
+        
+        PLOT_11.10= ggplot( ) +
+          # Stack bars with Polymer 12 
+          geom_bar( data=df_plot_bar_css,aes(x=Farm.Field, y=Mean.particles.F*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+          # Custom color palette
+          scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                       "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                       "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                       "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                       "CA"= "#FFD39B") , 
+                            # Relabel  "Other.Plastic"                 
+                            labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
+          
+          
+          
+          # Titles
+          # ggtitle(paste("CSS ", css, ", ", Txt_translation$Bar_Title_CSS[Txt_translation$CSS==css]," ",Txt_translation$Field[Txt_translation$CSS==css], sep = ""))+
+          
+          # Add the x-axis line
+          geom_segment(aes(x = 0.4, xend = max(Farm_boundaries), y = 0, yend = 0), color = "black", size = 1) + #geom_hline(yintercept = 0, color = "black", size = 1) +
+          
+          # Add the y-axis 
+          geom_segment(aes(x = 0.4, xend = 0.4, y = max(df_plot_dot_css$Mean.particles.F)*200, yend = -gap/2), color = "black", size = 1) +
+          
+          # Add vertical ticks between farms: 
+          geom_segment(data = data.frame(x = Farm_boundaries), aes(x = x, xend = x, y = 0, yend = -gap/2),
+                       color = "black", size = .8) +
+          
+          # custom y scale 
+          # scale_y_continuous(breaks = seq(0, max(df_plot_dot_css$Mean.particles.F)*200, gap), # Have a break for each gap  
+          #                    labels = label_at(gap*2),                                        # label every second break  
+          #                    limits = c(-3*gap/4, max(df_plot_dot_css$Mean.particles.F)*200))+ #limits goes beyond to allow the vertical ticks between farms
+          
+          scale_y_continuous(
+            breaks = seq(0, 110000, 10000),  # Ticks every 10,000
+            labels = function(x) ifelse(x %% 20000 == 0, label_number()(x), ""),  # Labels only for multiples of 20,000
+            limits = c(-3*gap/4, 110000)
+          ) +
+          
+          # # Add the min-max bar 
+          # geom_linerange(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, ymin = Min.particles.F*200, ymax = Max.particles.F*200))+
+          
+          # # Add a dot when Min.particles.F == Max.particles.F and n>1
+          #  geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)))+
+          #  scale_color_manual(values = c("1"="NA","2"="Black" ))+
+          # Guides
+          guides( color  = "none", )+
+          
+          # # Add a star when n<=1
+          # new_scale_color() +
+          # geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)), shape = 8,size=2)+
+          # scale_color_manual(values = c("1"="Black","2"="NA"))+
+          
+          # Guides
+          guides( color  = "none", )+
+          # Translate axis and legend
+          labs(y = Txt_translation$y_nMiP_av[Txt_translation$CSS==css],                
+               fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
+          # Theme
+          theme_minimal()+
+          theme(
+            axis.text.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.ticks.length.y = unit(0.15, "cm"),
+            axis.ticks.y = element_line(color = "black"), 
+            axis.line.y = element_blank() )+
+          
+          # Add the axis.text.x at the right position
+          annotate("text", x = df_plot_dot_css$Farm.Field, y = -gap/10, label = df_plot_dot_css$Farm.Field,angle=90,  hjust=1) +
+          # Clip the graph to the right size
+          coord_cartesian(ylim = c(-gap/2, NA), clip = "off")
+        
+        
+        print(PLOT_11.10)
+        
+        # Export plots
+        ggsave(filename = paste(wd.out,"/CSS",css,"/4.4.Bar_MiP_number_nobar_CSS", css, "_",Date, ".png",sep =""), plot = PLOT, width = 10.5, height = 5, units = "in", dpi = 300)
+        ggsave(filename = paste(wd.out,"/CSS",css,"/Bar_MiP_number_CSS11Farm10_",Date, ".png",sep =""), plot = PLOT_11.10, width = 3.35, height = 5, units = "in", dpi = 300)
+        
+        
+        
+        
+        print(PLOT)
+        
+        grid.arrange(PLOT, PLOT_11.10, ncol = 2) 
+        ggarrange(PLOT, PLOT_11.10, ncol = 2)
+
+       
+      
+      
+      
   
-  
-  # * 4.5. Per CSS, Per Sample, Per Polymer ####
+  # * 4.5. Per CSS, Per Sample, Per Polymer ???? ####
   
     # Plot, one bar per Sample  #
       # Prepare the data all sum all per Soil Sample
@@ -808,86 +932,205 @@ set.seed(42^2)
         
       }
       
-      # # / PLOT outlier (CSS11 Farm 10)  ####
-      # 
-      # 
-      # # Remove outlier (CSS11 Farm 10) 
-      # df_plot_bar_css11f10=subset(Summary5c_Field, CSS==11 & Farm ==10 )
-      # Summary5e_Field_css11f10=subset(Summary5e_Field, CSS==11 & Farm ==10)
-      # 
-      # df_plot_dot_css=subset(Summary5e_Field_css11f10,  Preparation_Type=="Field_samples")
-      #   df_plot_bar_css=subset(  df_plot_bar_css11f10,  Preparation_Type=="Field_samples")
-      #   
-      #   # OR Exclude extreme case in CSS11: 
-      #   #df_plot_dot_css=subset(Summary5e_Field, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples" & Farm.Field %!in% c("F.10.1", "F.10.2") ) 
-      #   #df_plot_bar_css=subset( df_plot_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples"& Farm.Field %!in% c("F.10.1", "F.10.2") )
-      #   
-      #   ggplot()+
-      #     geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)))
-      #   
-      #   PLOT= ggplot( df_plot_bar_css) +
-      #     # Stack bars with Polymer 12 
-      #     geom_bar( aes(x=Farm.Field, y=Mean.particles.F*200, fill=Polymer.red12), position="stack", stat="identity")+ 
-      #     # Custom color palette
-      #     scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-      #                                  "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
-      #                                  "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
-      #                                  "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-      #                                  "CA"= "#FFD39B") , 
-      #                       # Relabel  "Other.Plastic"                 
-      #                       labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
-      #     # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
-      #     geom_bar( aes(x=Farm.Field, y=Mean.particles.F*200, group=Farm.Field, color = Farm.Field), position="stack", stat="summary", fun=sum, fill = "transparent",
-      #               size = 1.5) + 
-      #     scale_color_manual(values = c("F.1.1"="NA", "F.1.2"="NA", "F.2.1"="NA", "F.2.2"="NA", "F.3.1"="NA", "F.3.2"="NA", "F.4.1"="NA", "F.4.2"="NA", "F.5.1"="NA", "F.5.2"="NA", "F.6.1"="NA", "F.6.2"="NA",
-      #                                   "F.7.1"="NA", "F.7.2"="NA", "F.8.1"="NA","F.8.2"="NA", "F.9.1"="NA", "F.9.2"="NA", "F.10.1"="NA", "F.10.2"="NA", "F.11.1"="NA", "F.11.2"="NA", "F.12.1"="NA", "F.12.2"="NA","F.12.3"="NA","F.12.4"="NA", "MEAN"="Black" ))+ 
-      #     # Add a min max line, from summary soil, polymer 12,   
-      #     geom_linerange(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, ymin = Min.particles.F*200, ymax = Max.particles.F*200))+
-      #     guides( color  = "none", )+
-      #     # Add a dot when Min.particles.F == Max.particles.F and n>1
-      #     new_scale_color() +
-      #     geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)))+
-      #     scale_color_manual(values = c("1"="NA","2"="Black" ))+ 
-      #     
-      #     
-      #     # Titles
-      #     ggtitle(paste("CSS ", css, ", ", Txt_translation$Bar_Title_CSS[Txt_translation$CSS==css], sep = ""))+
-      #     theme_minimal()+
-      #     guides( color  = "none", )+
-      #     labs(y = Txt_translation$y_nMiP_av[Txt_translation$CSS==css],
-      #          fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
-      #     theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5),
-      #           axis.title.x = element_blank())
-      #   
-      #   
-      #   print(PLOT)
-      #   # Export plots 
-      #   ggsave(filename = paste(wd.out,"/CSS",css,"/Bar_MiP_number_CSS11Farm10_",Date, ".png",sep =""), plot = PLOT, width = 3.5, height = 4, units = "in", dpi = 300)
-      #   
-      # 
+    
+
       
       
+      
+      # * 4.6. Per cropping system, Sum Polymers (CSS translation?) #####     
+      # -> Average (and median), jitter dots, no min-max, max out of bound as label
+      
+      
+      # Initialise Plot
+      # Data frame for the bars 
+      df_plot_bar=  Summary9c_Crop_outlier
+      df_plot_bar_css=subset( df_plot_bar,  Preparation_Type=="Field_samples")
+      
+      # Data frame for the min-max 
+      df_plot_dot_css=subset(Summary9e_Crop,  Preparation_Type=="Field_samples")
+      # Truncation over 50 MiP/ sample <-> 10 000 MiP/ kg soil
+      y_max=50
+      # text if the max is met
+      df_plot_dot_css$Trunc=NA
+      df_plot_dot_css$Trunc[ df_plot_dot_css$Max.particles.Crop> y_max]= paste( "max=",
+                                                                               df_plot_dot_css$Max.particles.Crop[ df_plot_dot_css$Max.particles.Crop> y_max] *200,
+                                                                               sep = "" )
+      # Cut at y_max
+      df_plot_dot_css$Max.particles.Crop[ df_plot_dot_css$Max.particles.Crop> y_max]= y_max
+      
+      # Add "Crop"abreviation in x-axis   
+      #df_plot_bar_css$CSS=factor(paste("CSS", df_plot_bar_css$CSS),
+                                 # levels =  c("CSS 1", "CSS 2", "CSS 3", "CSS 4", "CSS 5", "CSS 6",
+                                 #             "CSS 7", "CSS 8", "CSS 9", "CSS 10", "CSS 11") )
+      
+      # Translation for each css: 
+      for (css in 1:11){ 
+        # *** MEAN #####
+        PLOT= ggplot() +
+          # Stack bars with Polymer 12 
+          geom_bar(data=df_plot_bar_css, aes(x=CropDominant4, y=Mean.particles.Crop*200, fill="Average all Soils"),  stat="identity") + 
+          scale_fill_manual(values = "brown", labels="Average all Soils")+ # labels=Txt_translation$Average_Soil[Txt_translation$CSS==css]
+          
+          # # Add a min max line,
+          # geom_linerange(data=df_plot_dot_css, aes(x=CSS, y=Mean.particles.CSS*200, ymin = Min.particles.CSS*200, ymax = Max.particles.CSS*200)) +
+          # Add text when y max is reached
+          geom_text(data=df_plot_dot_css, aes(x=CropDominant4, y=y_max*201.9, label=Trunc )) +
+          
+          # Add the x-axis line
+          geom_segment(aes(x = 0.4, xend = nrow(Summary9d_Crop)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
+          
+          # Add the y-axis 
+          geom_segment(aes(x = 0.4, xend = 0.4, y =  y_max*200, yend = 0), color = "black", size = 1) +
+          
+          # Add jitter
+          #geom_jitter(data= Summary4e_Soil, aes(x=CSS, y=Mean.particles*200), alpha = 0.25)+
+          geom_point(data= Summary4e_Soil, aes(x=CropDominant4, y=Mean.particles*200, color="Individual field sample" ), alpha = 0.25, position = position_jitter(seed=43^3))+
+          scale_color_manual(values = "black", labels=Txt_translation$Field_sample[Txt_translation$CSS==css])+
+          
+          ylim(0,10500)+
+          # Titles
+          ggtitle(Txt_translation$Bar_Title_All[Txt_translation$CSS==css])+
+          
+          
+          # custom y scale 
+          scale_y_continuous(breaks = seq(0, y_max*200, 500), # Have a break for each gap
+                             labels = label_at(1000), #,                                        # label every second break
+                             limits = c(-y_max*200/40, y_max*202))+ #limits goes beyond to allow the vertical ticks between farms
+          
+          theme_minimal()+
+          #guides( color  = "none")+
+          labs(y = Txt_translation$y_nMiP_av[Txt_translation$CSS==css],
+               #fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css],
+               color=element_blank() ) +
+          theme(#axis.text.x = element_blank(),
+                axis.title.x = element_blank(),
+                axis.ticks.y = element_line(color = "black"),
+                axis.line.y = element_blank(),
+                legend.title = element_text(color = "NA"), # Add an invisible text to make sure the size is the same as the plot 4.2 
+                panel.grid.minor.y = element_blank())#+ # Remove the minor grid 
+          
+          # Add the axis.text.x at the right position
+          #annotate("text", x = df_plot_dot_css$CSS, y = -y_max*200/40, label = paste("CSS ", df_plot_dot_css$CSS,sep = ""), angle=0,  hjust=0.5, vjust=1) +
+          # Clip the graph to the right size
+          #coord_cartesian(ylim = c(-y_max*200/40, NA), clip = "off")
+        
+        
+        print( PLOT)
+        ggsave(filename = paste(wd.out,"/4.1.Bar_Mean_MiP_SumPolymer_Crop_txtCSS", css,"_",Date, ".png",sep =""), plot = PLOT, width = 11, height = 4, units = "in", dpi = 300)
+        
+      } # end Translation for each css, 4.1
+      
+      
+      
+    
+      # * 4.7. Per cropping system, Per Polymers (CSS translation?) #####   
+      # -> Average (and median), no dot, no min-max, no max
+      
+      # Data frame for the bars 
+      df_plot_bar_css=subset( Summary9c_Crop_outlier ,  Preparation_Type=="Field_samples" )
+      
+      # Data frame for the min-max 
+      df_plot_dot_css=subset(Summary9e_Crop,  Preparation_Type=="Field_samples")
+      
+      # Truncation over 30 MiP/ sample <-> 6 000 MiP/ kg soil # /!\ Ad Hoc
+      y_max=30
+      # text if the max is met
+      df_plot_dot_css$Trunc=NA
+      df_plot_dot_css$Trunc[ df_plot_dot_css$Max.particles.Crop> y_max]= paste( "max=",
+                                                                               df_plot_dot_css$Max.particles.Crop[ df_plot_dot_css$Max.particles.Crop> y_max] *200,
+                                                                               sep = "" )
+      # Cut at y_max
+      df_plot_dot_css$Max.particles.Crop[ df_plot_dot_css$Max.particles.Crop> y_max]= y_max
+      
+      # # Add "CSS"abreviation in x-axis   
+      # df_plot_bar_css$CSS=factor(paste("CSS", df_plot_bar_css$CSS),
+      #                            levels =  c("CSS 1", "CSS 2", "CSS 3", "CSS 4", "CSS 5", "CSS 6",
+      #                                        "CSS 7", "CSS 8", "CSS 9", "CSS 10", "CSS 11") )
+      
+      # Translation for each css: 
+      for (css in 1:11){  
+        # *** MEAN #####
+        PLOT= ggplot( df_plot_bar_css) +
+          # Stack bars with Polymer 12 
+          geom_bar( aes(x= CropDominant4, y=Mean.particles.Crop*200, fill=Polymer.red12), position="stack", stat="identity") + 
+          # Custom color palette
+          scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                       "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                       "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                       "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                       "CA"= "#FFD39B") , 
+                            # Relabel  "Other.Plastic"                 
+                            labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css] ) ) +
+          # # Add box around the bars: transparent for all fields, black for the MINAGRIS MEAN
+          # geom_bar( aes(x=CSS, y=Mean.particles.CSS*200, group=CSS, color = CSS), position="stack", stat="summary", fun=sum, fill = "transparent",
+          #           size = 1.5) +
+          # scale_color_manual(values = c("CSS 1"="NA", "CSS 2"="NA", "CSS 3"="NA", "CSS 4"="NA", "CSS 5"="NA", "CSS 6"="NA", 
+          #                               "CSS 7"="NA", "CSS 8"="NA", "CSS 9"="NA", "CSS 10"="NA", "CSS 11"="NA", "CSS 12"="NA", "MEAN"="Black" )) +
+          # # Add a min max line,   
+          # geom_linerange(data=df_plot_dot_css, aes(x=CSS, y=Mean.particles.CSS*200, ymin = Min.particles.CSS*200, ymax = Max.particles.CSS*200)) +
+          # # Add text when y max is reached
+          # geom_text(data=df_plot_dot_css, aes(x=CSS, y=y_max*201.9, label=Trunc )) +
+          # # Add jitter
+          # geom_jitter(data= Summary4e_Soil, aes(x=CSS, y=Mean.particles*200), alpha = 0.25)+
+          
+          # Titles
+          ggtitle(Txt_translation$Bar_Title_All[Txt_translation$CSS==css])+
+          
+          # Add the x-axis line
+          geom_segment(aes(x = 0.4, xend = nrow(Summary9d_Crop)+0.5, y = 0, yend = 0), color = "black", size = 0.5) + #geom_hline(yintercept = 0, color = "black", size = 1) +
+          
+          # Add the y-axis 
+          geom_segment(aes(x = 0.4, xend = 0.4, y =  y_max*200/2, yend = 0), color = "black", size = 1) +
+          
+          # custom y scale 
+          scale_y_continuous(breaks = seq(0, y_max*200, 500), # Have a break for each gap # y_max*200/8
+                             labels = label_at(1000), #,                                        # label every second break
+                             limits = c(-y_max*200/40, y_max*202/2))+ #limits goes beyond to allow the vertical ticks between farms
+          
+          # Theme 
+          theme_minimal()+
+          guides( color  = "none")+
+          labs(y = Txt_translation$y_nMiP_av[Txt_translation$CSS==css],
+               fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
+          theme(#axis.text.x = element_blank(),
+                axis.title.x = element_blank(),
+                axis.ticks.y = element_line(color = "black"),
+                axis.line.y = element_blank(),
+                panel.grid.minor.y = element_blank())+
+          
+          # Add the axis.text.x at the rite position
+          #annotate("text", x = df_plot_dot_css$CSS, y = -y_max*200/40, label = paste("CSS ", df_plot_dot_css$CSS,sep = ""), angle=0,  hjust=0.5, vjust=1) +
+          # Clip the graph to the right size
+          coord_cartesian(ylim = c(-y_max*200/40, NA), clip = "off")
+        
+        
+        print( PLOT)
+        ggsave(filename = paste(wd.out,"/4.2.Bar_Mean_MiP_Polymer12_Crop_txtCSS", css,"_",Date, ".png",sep =""), plot = PLOT, width = 11, height = 4, units = "in", dpi = 300)
+        
+      
+      
+            
   
 # 5. Pie. Polymer composition ####
   # * All CSS ####
   
   # Order plot per polymer   
-  Summary7c_MINAGRIS$Polymer.red12 = factor(Summary7c_MINAGRIS$Polymer.red12,
-                                            levels = Summary7c_MINAGRIS$Polymer.red12[order(-Summary7c_MINAGRIS$Mean.particles.MM)] )
+  Summary8c_MINAGRIS$Polymer.red12 = factor(Summary8c_MINAGRIS$Polymer.red12,
+                                            levels = Summary8c_MINAGRIS$Polymer.red12[order(-Summary8c_MINAGRIS$Mean.particles.MM)] )
   
   # Add percentages in the plot
-  Summary7c_MINAGRIS$MiP_perc <- Summary7c_MINAGRIS$Mean.particles.MM / sum(Summary7c_MINAGRIS$Mean.particles.MM) * 100
+  Summary8c_MINAGRIS$MiP_perc <- Summary8c_MINAGRIS$Mean.particles.MM / sum(Summary8c_MINAGRIS$Mean.particles.MM) * 100
   # Creat percentage as text 
-  Summary7c_MINAGRIS$MiP_perc_text=paste0(round( Summary7c_MINAGRIS$MiP_perc, 0), "%")
+  Summary8c_MINAGRIS$MiP_perc_text=paste0(round( Summary8c_MINAGRIS$MiP_perc, 0), "%")
   
   # Do not show percentages < 3.5% 
-  Summary7c_MINAGRIS$MiP_perc_text [Summary7c_MINAGRIS$MiP_perc < 3.5]=NA
+  Summary8c_MINAGRIS$MiP_perc_text [Summary8c_MINAGRIS$MiP_perc < 3.5]=NA
   
   
   # Translation for each css: 
   for (css in 1:11){  
   
-  PLOT= ggplot(Summary7c_MINAGRIS, aes(x="", y=Mean.particles.MM, fill= Polymer.red12 ))+
+  PLOT= ggplot(Summary8c_MINAGRIS, aes(x="", y=Mean.particles.MM, fill= Polymer.red12 ))+
     geom_bar(stat="identity", width=1, color="white") +
     coord_polar("y", start=0) +
     scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
@@ -915,14 +1158,14 @@ set.seed(42^2)
   
 
   # * details of "other polymers" #####
-  A=subset(Summary7a_MINAGRIS, Polymer.red12=="Other.Plastic")
+  A=subset(Summary8a_MINAGRIS, Polymer.red12=="Other.Plastic")
   ggplot(data=A, aes(x=Polymer.grp, y=Mean.particles.MM, fill=Size_cat.um))+
     geom_bar(stat="identity", position = "stack", width=1, color="white") 
   
   
   # * Per CSS ####  
   for (css in 1:11){ 
-    df_plot_pie_css=subset(Summary6c_CSS, CSS %in% c(css,"MEAN") )
+    df_plot_pie_css=subset(Summary7c_CSS, CSS %in% c(css,"MEAN") )
     
     # Order plot per polymer   
     df_plot_pie_css$Polymer.red12 = factor(df_plot_pie_css$Polymer.red12,
@@ -967,7 +1210,7 @@ set.seed(42^2)
 # 6. Bar.  Polymer composition ####
   # * All CSS ####
 
-ggplot(Summary7c_MINAGRIS, aes(x=Polymer.red12, y=Mean.particles.MM*200, fill= Polymer.red12 ))+
+ggplot(Summary8c_MINAGRIS, aes(x=Polymer.red12, y=Mean.particles.MM*200, fill= Polymer.red12 ))+
   geom_bar(stat="identity", width=1, color="white") +
   #coord_polar("y", start=0) +
   scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",

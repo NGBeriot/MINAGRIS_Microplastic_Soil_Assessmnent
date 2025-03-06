@@ -219,7 +219,16 @@ Data_comb$Size_cat.um[Data_comb$Area.um2.cor>cat.max^2]="Too big"
 
 Data_comb[Data_comb$N.px>=1 & Data_comb$Size_cat.um %in% c("Too small", "Too big") ,]
 
- 
+
+# * Add binary size categories ####
+Cat.um.txt2=c("90-300", "300-2000")
+
+Data_comb$Size_cat2.um="300-2000"
+Data_comb$Size_cat2.um[Data_comb$Size_cat.um == "90-300"]="90-300"
+
+
+
+
 
 # 3. Mass estimations ####
 
@@ -612,6 +621,22 @@ length(unique(Data_comb$File_Names))
 length(unique(Data_comb_red$File_Names))
 length(unique(Data_comb_red_blank$File_Names))
 
+
+
+# 6. Add the field METADATA ####
+
+Fields_METADATA=read.csv("Fields_METADATA.csv")
+
+head(Fields_METADATA)
+
+Field_METADATA_vector=colnames(Fields_METADATA)
+Field_METADATA_vector=Field_METADATA_vector[Field_METADATA_vector %!in% c("X", "CSS","Farm","Field")]
+
+Data_comb_meta=merge(Data_comb, Fields_METADATA, by=c("CSS","Farm","Field"), all.x = TRUE)
+Data_comb_red_blank_meta=merge(Data_comb_red_blank, Fields_METADATA, by=c("CSS","Farm","Field"), all.x = TRUE)
+
+
+
 # 7. Export table ####  
 length(unique(Data_comb_red_blank$File_Names))
 uP_Colnames[uP_Colnames %!in% colnames(Data_comb_red_blank)]
@@ -620,7 +645,8 @@ length(unique(Data_comb$File_Names[Data_comb$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Names))
 
 
- write.csv(Data_comb_red_blank, paste(wd.out,"Corrected_MiP_Particles.csv",sep = "/"))
+ write.csv(Data_comb_red_blank_meta, paste(wd.out,"Corrected_MiP_Particles.csv",sep = "/"))
+ write.csv(Data_comb_meta, paste(wd.out,"MiP_Particles.csv",sep = "/"))
 
  write.csv(df_Blanks, paste(wd.out,"Blanks_Particles.csv",sep = "/"))
 

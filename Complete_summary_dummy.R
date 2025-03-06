@@ -62,43 +62,33 @@ DF_complete11= DF %>%
   
   # 3x4x2 =  24 rows 
   
-  
-  
                  
 # 2.1. First do the sum per file ####
-
-  
+ DF_File21= DF %>%
+   group_by(File_name1, File_name2, Soil, Polymer1, Polymer2, SizeCat)%>%
+   summarise( N.particles= sum(Area.px!=0),
+              Tot.Area.px= sum(Area.px))
+ # 12-2 = 10 rows   
   
   
 # 2.2 Then complete the DF ####
-
-  
+ DF_File21_complete= DF_File %>%
+   ungroup() %>%
+   complete(nesting(File_name1, File_name2, Soil),
+            nesting(Polymer1, Polymer2),
+            nesting(SizeCat),
+            fill=list( N.particles=0,
+                       Tot.Area.px=0))
+  # 4x4x2 =  32 rows
   
 # 2.3 Then do the Mean per Soil  ####  
-  
-  
-  
-
-Summary1a_File = Data_comb_red_blank %>% 
-  group_by(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,          
-           CSS, Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator,
-           Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um) %>%
-  summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
-             Num.px=sum(N.px),           # Number of pixels
-             Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area converted in mm2
-             Tot.Mass.ng=sum(Mass.ng),
-             Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
-             SD.Area=sd(Area.um2.cor))  %>%  #
-  # Complete the Summary1_File: 
-  # for each file I want all the polymers represented
-  ungroup() %>%
-  complete(nesting(File_Names, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,
-                   CSS, Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator),
-           nesting(Polymer.grp,Polymer.red12, Polymer.red3, Size_cat.um), 
-           fill=list(N.particles=0,
-                     Num.px=0,
-                     Tot.Area.mm2=0,
-                     Median.Area.sqrt.um=0,
-                     SD.Area=0))
-  
-  
+ DF_complete23_Soil= DF_File21_complete %>%
+   group_by(Soil, Polymer1, Polymer2, SizeCat) %>%
+   summarise( Mean.particles= mean(N.particles),
+              Mean.Tot.Area.px= mean(Tot.Area.px) )
+ # 3x4x2 =  24 rows 
+ 
+ 
+ DF_File21_complete== DF_complete11_File
+ DF_complete23_Soil==DF_complete11_Soil
+ 
