@@ -35,7 +35,6 @@ library(tidyverse)
 library(hrbrthemes)
 library(stats)
 
-
 rm(list=ls()) # cleaning console
 graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
@@ -43,14 +42,14 @@ graphics.off() # cleaning plots
 # Set WD in the project only needed when RStudio projects are not used.
 
 # Outputs folder
-wd.out= "Outputs"
+wd.out= "Outputs/2025_03"
 
 # 1. Load MiP tables ####
 
 # * From WUR ####
 #MC - again I would remove dates from file names (and the dots in the date :)
 #MC - alternative is to make a 'initialization file' where you update all your file names everytime, than the code stays flexible.
-Data_WUR=read.csv("Outputs/WUR_MiP_Particles.csv")
+Data_WUR=read.csv(paste(wd.out,"/WUR_MiP_Particles.csv", sep=""))
 # Number of particles: 
 nrow(Data_WUR[Data_WUR$N.px>0,])
 # Number of files: 
@@ -58,34 +57,68 @@ length(unique(Data_WUR$File_Names))
 
 # * From Ubern ####
 wd.in.Ubern="UBern_Data"
-Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_1124.csv", sep = "")) # "results_1024.csv")
+# Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_1124.csv", sep = "")) # "results_1024.csv")
+Data_Ubern=read.csv(paste(wd.in.Ubern,"/Ubern_data_250314.csv", sep = "")) # "results_1024.csv")
+head(Data_Ubern)
 # Number of particles: 
 nrow(Data_Ubern[Data_Ubern$area>0,])
 # Number of files: 
-length(unique(Data_Ubern$File_Names))
+length(unique(Data_Ubern$source_file))
+(unique(Data_Ubern$source_file))
+colnames(Data_Ubern)
+
+
 
 # 2. Merge MiP tables ####
 
 # Expected Column names
-uP_Colnames=c("File_Names", "Lab", "Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_Name", "IR_rep", "PMF_rep", "Operator",
+uP_Colnames=c("File_names", "Lab", "Batch_name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_name", "IR_rep", "PMF_rep", "Operator",
               "ID", "Q_index",	"Polymer.grp", "Polymer.red12", "Polymer.red3", "Area.um2.cor", "Length.um" , "Width.um", "Aspect_ratio", "Mass.ng", "Size_cat.um")
 
-# Completing WUR data: 
+# Completing from WUR data: 
 uP_Colnames[uP_Colnames %!in% colnames(Data_WUR)]
 
+
 #MC - in the file you send me these names were already correct, and running these lines caused an error!!
-Data_WUR$File_Names=Data_WUR$PMF_File_Name
+colnames(Data_WUR)
+
 Data_WUR$PMF_rep="pmf"
 Data_WUR$Q_index=Data_WUR$Relevance #OR Similarity
 Data_WUR$Width.um =Data_WUR$Width.um.cor         
 Data_WUR$Length.um=Data_WUR$Length.um.cor
+
+Data_WUR$File_names= Data_WUR$PMF_File_Name
+unique(Data_WUR$Filter_Name[Data_WUR$Soil_sample=="rs"])
+unique(Data_WUR$Filter_name[Data_WUR$Soil_sample=="rs"])
+
+unique(Data_WUR$Filter_Name)
+unique(Data_WUR$Filter_div)
+unique(Data_WUR$Soil_sample)
+
 
 # Completing Ubern data: 
 uP_Colnames[uP_Colnames %!in% colnames(Data_Ubern)]
 
 Data_Ubern$File_Names=Data_Ubern$source_file
 Data_Ubern$Area.um2.cor=Data_Ubern$area
-Data_Ubern$Filter_Name=NA
+
+#Filter names 
+  Data_Ubern$Filter_Name=Data_Ubern$File_Names # /!\ Assuming no IR_rep and no Operator_rep
+  
+  # Find the samples associated with multiple filters:
+  unique(Data_Ubern$source_file)[grep("_F", unique(Data_Ubern$source_file))]
+  # "M22111001" and "M22111002" /!\ Manual selection!
+  Data_Ubern$Filter_div="0" 
+  for (sample in c("M22111001", "M22111002")){
+    f=1
+    for ( file in (unique( Data_Ubern$source_file[grep(sample,Data_Ubern$source_file)])) ){
+      Data_Ubern$Filter_div[Data_Ubern$source_file==file]=f
+      f=f+1
+    }
+  }
+  Data_Ubern$Filter_div[grep("M22111001",Data_Ubern$source_file)]
+  Data_Ubern$Filter_div[grep("M22111002",Data_Ubern$source_file)]
+  
 Data_Ubern$Q_index=Data_Ubern$rsq
 
 
@@ -98,7 +131,6 @@ Data_Ubern$Width.um =Data_Ubern$width
 Data_Ubern$Length.um=Data_Ubern$height
 Data_Ubern$Mass.ng=0
 Data_Ubern$Aspect_ratio=Data_Ubern$Length.um/Data_Ubern$Width.um
-Data_Ubern$Filter_div="0" 
 
 # Polymers
 Polymer.red12= c("PP", "PE",  "PS", "PET", "PVC", "PU", "PMMA", "PLA", "PC", "PA", "No.plastic") # 12 plastics , +Others  #"CA","silicone",
@@ -636,8 +668,11 @@ Data_comb_meta=merge(Data_comb, Fields_METADATA, by=c("CSS","Farm","Field"), all
 Data_comb_red_blank_meta=merge(Data_comb_red_blank, Fields_METADATA, by=c("CSS","Farm","Field"), all.x = TRUE)
 
 
+# 7. Create Table per field
 
-# 7. Export table ####  
+
+
+# 8. Export table ####  
 length(unique(Data_comb_red_blank$File_Names))
 uP_Colnames[uP_Colnames %!in% colnames(Data_comb_red_blank)]
 length(unique(Data_comb_red_blank$File_Names[Data_comb_red_blank$Polymer.grp=="No.plastic"]))

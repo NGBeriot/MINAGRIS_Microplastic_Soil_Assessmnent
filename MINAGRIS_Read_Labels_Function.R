@@ -30,14 +30,14 @@ Read_MINAGRIS_label<-function(Data, Colname_label){
   # m2_161_r_ir2_PMF_SR.csv
   # m27_11102_n_f3_ir2_PMF_SR.csv
   
-  # * Batch_Name {1:28} ####
+  # * Batch_name {1:28} ####
   # Extract the characters starting with the first 'm' and finishing before the next '_'. e.g. "test_m27_11102_n_f3_ir2_P_SR.csv" should be "m27" 
-    Data$Batch_Name=  gsub("_.*","", str_extract(  Data$Colname_label,("(?i)m.*"))) #
+    Data$Batch_name=  gsub("_.*","", str_extract(  Data$Colname_label,("(?i)m.*"))) #
   
     # gsub("_","",str_extract("test_m27_11102_n_f3_ir2_P_SR.csv", "m\\s*(.*?)\\s*_" ) )
   
-    sort(unique(Data$Batch_Name ) )
-    length(unique(Data$Batch_Name ) )
+    sort(unique(Data$Batch_name ) )
+    length(unique(Data$Batch_name ) )
     
    # * Soil_sample {sequence of >3 digits, bcm, rs, st} ####
    # Extract the first sequence of, at least 3 digits, in betwwen two '_'
@@ -107,12 +107,12 @@ Read_MINAGRIS_label<-function(Data, Colname_label){
             } else # 2nd digit is not 0 
             #  If the 1st digit is 1 and the 2nd digit is not 0 then it is "CSS 11 farm 1:9" OR "CSS 1, farm 10:12" 
             # The best way to solve it is through batch number 
-            if (Data$Batch_Name[s] %in% c("m3")) {    # "CSS 1, farm 10:12" <=> Batch m3
+            if (Data$Batch_name[s] %in% c("m3")) {    # "CSS 1, farm 10:12" <=> Batch m3
               Data$CSS[s]=substr(Data$Soil_sample[s],1,1)
               Data$Farm[s]=substr(Data$Soil_sample[s],2,3)
               Data$Field[s]=substr(Data$Soil_sample[s],4,4)
             } else
-            if (Data$Batch_Name[s] %in% c("m20","m21", "m23","m26")) {    # "CSS 11 farm 1:9" <=> Batch m20","m21", "m23","m26"
+            if (Data$Batch_name[s] %in% c("m20","m21", "m23","m26")) {    # "CSS 11 farm 1:9" <=> Batch m20","m21", "m23","m26"
               Data$CSS[s]=substr(Data$Soil_sample[s],1,2)
               Data$Farm[s]=substr(Data$Soil_sample[s],3,3)
               Data$Field[s]=substr(Data$Soil_sample[s],4,4)

@@ -25,10 +25,10 @@ uFTIR_n_tiles<-function(wd.raw){
   
   } # end loop Batches
   
-  Tile_per_sample= data.frame( File_Names=Sample_names, Tile_Numbers=Tile_numbers)
+  Tile_per_sample= data.frame( File_names=Sample_names, Tile_Numbers=Tile_numbers)
   
-  #Tile_per_sample$File_Names=gsub(wd.raw, "", Tile_per_sample$File_Names)
-  Tile_per_sample$File_Names=gsub(".*/", "", Tile_per_sample$File_Names)
+  #Tile_per_sample$File_names=gsub(wd.raw, "", Tile_per_sample$File_names)
+  Tile_per_sample$File_names=gsub(".*/", "", Tile_per_sample$File_names)
   
   
    # write.csv(Tile_per_sample,"//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/2_MP_results/Tiles_per_sample.csv")  

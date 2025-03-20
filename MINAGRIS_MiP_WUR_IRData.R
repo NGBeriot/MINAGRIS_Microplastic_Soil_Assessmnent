@@ -13,7 +13,7 @@ graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 # Set WD in the project: 
-setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")
+setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
 wd.out= "Outputs" 
 
 # Load the MINAGRIS_Read_Labels_function.R
@@ -81,12 +81,12 @@ source("MINAGRIS_Read_Labels_Function.R")
       Summary_Data.IR.QC = subset(METADATA_IR, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
         group_by(  Sample_type, Soil_sample ) %>% # Group per CSS
         summarise(N_Files=n(),
-                  Batch= unique(paste0(Batch_Name, collapse = " ; ") ))
+                  Batch= unique(paste0(Batch_name, collapse = " ; ") ))
   
   
 # 2. Export tables ####
   #Set WD in the project: 
-  setwd("C:/Users/berio001/Minagris/MINAGRIS_Microplastic_Soil_Assessmnent")   
+    setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
       
    write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2024.11.13.csv",sep = "/"))
    write.csv( Summary_Data.IR.CSS, paste(wd.out,"IR_SummaryCSS_2024.11.13.csv",sep = "/"))

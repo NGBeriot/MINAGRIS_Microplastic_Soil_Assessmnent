@@ -45,11 +45,12 @@ graphics.off() # cleaning plots
 # Set WD in the project only needed when RStudio projects are not used.
 
 # Outputs folder
-wd.out= "Outputs"
+wd.out= "Outputs/2025_03"
 
 # Initialization 
 #MC - see comment in previous script about dates in output file names.
-Data_comb_red_blank_meta=read.csv("Outputs/Corrected_MiP_Particles.csv")
+#Data_comb_red_blank_meta=read.csv("Outputs/Corrected_MiP_Particles.csv")
+Data_comb_red_blank_meta=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""))
 
 Fields_METADATA=read.csv("Fields_METADATA.csv")
 Field_METADATA_vector=colnames(Fields_METADATA)
@@ -1372,7 +1373,7 @@ Field_METADATA_vector=Field_METADATA_vector[Field_METADATA_vector %!in% c("X", "
     
 # Export ####
   
-  Date="2025.03.03.csv"    
+  Date=".csv"     # 2025.03.13
    write.csv(Summary1a_File, paste(wd.out,"/Summary1a_File", Date, sep = ""))
    write.csv(Summary1b_File, paste(wd.out,"/Summary1b_File", Date, sep = ""))
    write.csv(Summary1c_File, paste(wd.out,"/Summary1c_File", Date, sep = ""))

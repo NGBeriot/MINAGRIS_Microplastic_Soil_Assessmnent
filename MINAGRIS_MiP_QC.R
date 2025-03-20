@@ -24,7 +24,7 @@ source("MINAGRIS_Read_Labels_Function.R")
 # Set WD in the project only needed when RStudio projects are not used.
 
 # Outputs folder
-wd.out= "Outputs"
+wd.out= "Outputs/2025_03"
 
 # 0. Load Data ####
 
@@ -34,8 +34,7 @@ Cat.um.txt=c("90-300", "300-510", "510-720",
 
 
 #MC - see comment in previous script about dates in output file names.
-Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
-Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
+Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""))
 
 # Summary per PMF File: 
   Summary1e_File=read.csv("Outputs/Summary1e_File_20241217.csv") # 3e, Overall mean: NULL
@@ -635,7 +634,8 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
   # * PLOT All filters,  polymer 12 ####
   S3c_st$Lab_Batch=paste( S3c_st$Lab, "CSS", S3c_st$Batch_Name )
   ggplot(  S3c_st, aes( Extraction_Name, Mean.particles)) +
-    geom_jitter(height=0,width=0.33, aes(color=Polymer.red12, shape=Lab ))+
+    facet_wrap(~Lab,scales="free_x",nrow=1)+
+    geom_jitter(height=0,width=0.33, aes(color=Polymer.red12, shape=Lab ), size=3)+
     ggtitle("Soil standard, Polymer.red12")+
     scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                   "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
@@ -1037,6 +1037,9 @@ Data_comb_red_blank=read.csv("Outputs/Corrected_MiP_Particles_20241218.csv")
               Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
               Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
               Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
+  
+  
+  
   
   
   
