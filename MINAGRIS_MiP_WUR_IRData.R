@@ -62,10 +62,10 @@ source("MINAGRIS_Read_Labels_Function.R")
     
     Summary_IR_Batch =  METADATA_IR%>% 
       group_by( Batch_id, Batch_name) %>% # Group per CSS
-      summarise(N_Files=n(),
+      summarise(N_IR_Files=n(),
                 N_filters=length(unique(Filter_name)), 
                # N_Soil_samples=length(unique(Soil_sample)), #Number of extractions 
-                Spike_soil=  paste(Filter_name[Sample_type %in% c("s", "s2")], collapse = ", "),
+               Spike_soil=  paste(unique(Filter_name[Sample_type %in% c("s", "s2")]), collapse = ", "),
                Soil_sample_names= paste0(unique(Soil_sample), collapse = " ; "),
                 .groups = "drop") 
     
@@ -80,7 +80,7 @@ source("MINAGRIS_Read_Labels_Function.R")
     
       Summary_IR_CSS = subset( METADATA_IR, Sample_type =="n" )%>% 
         group_by(  CSS) %>% # Group per CSS
-        summarise(N_Files=n(),
+        summarise(N_IR_Files=n(),
                   n_farms= length(unique(Farm)),
                   n_fields= length(unique(Soil_sample)),
                  Sample= paste0(unique(Soil_sample), collapse = " ; ") ) 
@@ -96,15 +96,14 @@ source("MINAGRIS_Read_Labels_Function.R")
   
       Summary_IR_QC = subset(METADATA_IR, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
         group_by(  Soil_sample, Sample_type  ) %>% # Group per CSS
-        summarise(N_Files=n(),
+        summarise(N_IR_Files=n(),
                   Batch= unique(paste0(Batch_name, collapse = " ; ") ))
       
       
       
 # 2. Export tables ####
   #Set WD in the project: 
-    setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
-    setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
+   setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
     
    write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2025.08.13.csv",sep = "/"))
    write.csv( Summary_IR_Batch, paste(wd.out,"IR_SummaryBatch_2025.08.13.csv",sep = "/"))

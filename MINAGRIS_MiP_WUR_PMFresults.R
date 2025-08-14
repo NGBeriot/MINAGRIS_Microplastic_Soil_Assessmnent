@@ -54,31 +54,43 @@ METADATA_PMF=Read_MINAGRIS_label(METADATA)
 # Total number of files: 
 nrow(METADATA_PMF)
 
+# * Summary Batch ####
+
+Summary_PMF_Batch =  METADATA_PMF %>% 
+  group_by( Batch_id, Batch_name) %>% # Group per CSS
+  summarise(N_PMF_Files=n(),
+            N_filters=length(unique(Filter_name)), 
+            # N_Soil_samples=length(unique(Soil_sample)), #Number of extractions 
+            Spike_soil=  paste(unique(Filter_name[Sample_type %in% c("s", "s2")]), collapse = ", "),
+            Soil_sample_names= paste0(unique(Soil_sample), collapse = " ; "),
+            .groups = "drop") 
+
+
 # * Number of unique soil samples per CSS ####
 
 # Number of CSS
 unique(METADATA_PMF$CSS)
 
-# Print the unique farm codes for each case study site (CSS) 
-for (css in 1:11) {
-  print( paste("CSS",css, ";", length(unique(METADATA_PMF$Farm[METADATA_PMF$CSS==paste(css)])),"Unique Farms", ";", length(unique(METADATA_PMF$Soil_sample[METADATA_PMF$CSS==paste(css)])), "Unique soils"))
-  print(sort(unique(METADATA_PMF$Soil_sample[METADATA_PMF$CSS==paste(css)])))
-}  
-
-Summary_Data.PMF.CSS.n = subset( METADATA_PMF, Soil_sample %!in% c("pfsr","st", "bcm", "RS") & Sample_type =="n")   %>% 
-  group_by(  CSS, Sample_type  ) %>% # Group per CSS
-  summarise(N_Files=n(),
-            Farms= unique(paste0(Farm, collapse = " ; ") ),
-            Fields=unique(paste0(Field, collapse = " ; ") )) 
-
-
+Summary_PMF_CSS = subset( METADATA_PMF, Sample_type =="n" )%>% 
+  group_by( CSS) %>% # Group per CSS
+  summarise(N_PMF_Files=n(),
+            n_farms= length(unique(Farm)),
+            n_fields= length(unique(Soil_sample)),
+            Sample= paste0(unique(Soil_sample), collapse = " ; "),
+            Operators= (paste0(unique(Operator), collapse = " ; ") )) 
 
 # * Number of QCs
-Summary_Data.PMF.QC = subset(METADATA_PMF, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
-  group_by(  Sample_type, Soil_sample ) %>% # Group per CSS
-  summarise(N_Files=n(),
-            Batch= unique(paste0(Batch_name, collapse = " ; ") ), 
-            Operators= unique(paste0(Operator, collapse = " ; ")))
+
+Summary_PMF_QC = subset(METADATA_PMF, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
+  group_by(  Soil_sample, Sample_type  ) %>% # Group per CSS
+  summarise(N_PMF_Files=n(),
+            Batch= (paste0(unique(Batch_name), collapse = " ; ") ),
+            Operators= (paste0(unique(Operator), collapse = " ; ") ))
+
+write.csv( Summary_PMF_Batch, paste(wd.out,"PMF_SummaryBatch_2025.08.13.csv",sep = "/"))
+write.csv( Summary_PMF_QC, paste(wd.out,"PMF_SummaryQC_2025.08.13.csv",sep = "/"))
+write.csv( Summary_PMF_CSS, paste(wd.out,"PMF_SummaryCSS_2025.08.13.csv",sep = "/"))
+
 
 
 
