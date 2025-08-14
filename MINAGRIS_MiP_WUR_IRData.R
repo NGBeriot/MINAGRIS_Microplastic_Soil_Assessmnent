@@ -58,17 +58,33 @@ source("MINAGRIS_Read_Labels_Function.R")
     # Total number of IR files: 
     nrow(METADATA_IR)
   
+  # * Summary Batch ####
+    
+    Summary_IR_Batch =  METADATA_IR%>% 
+      group_by( Batch_id, Batch_name) %>% # Group per CSS
+      summarise(N_Files=n(),
+                N_filters=length(unique(Filter_name)), 
+               # N_Soil_samples=length(unique(Soil_sample)), #Number of extractions 
+                Spike_soil=  paste(Filter_name[Sample_type %in% c("s", "s2")], collapse = ", "),
+               Soil_sample_names= paste0(unique(Soil_sample), collapse = " ; "),
+                .groups = "drop") 
+    
+    
   # * Number of unique soil samples per CSS ####
   
-      for (css in 1:11) {
-        print( paste("CSS",css, ";", length(unique(METADATA_IR$Farm[METADATA_IR$CSS==paste(css)])),"Unique Farms", ";", length(unique(METADATA_IR$Soil_sample[METADATA_IR$CSS==paste(css)])), "Unique soils"))
-        print(sort(unique(METADATA_IR$Soil_sample[METADATA_IR$CSS==paste(css)])))
-      }  
+      # for (css in 1:11) {
+      #   print( paste("CSS",css, ";", length(unique(METADATA_IR$Farm[METADATA_IR$CSS==paste(css)])),"Unique Farms", ";", length(unique(METADATA_IR$Soil_sample[METADATA_IR$CSS==paste(css)])), "Unique soils"))
+      #   print(sort(unique(METADATA_IR$Soil_sample[METADATA_IR$CSS==paste(css)])))
+      # }  
   
-      Summary_Data.IR.CSS = METADATA_IR %>% 
-        group_by(  CSS, Sample_type  ) %>% # Group per CSS
+    
+      Summary_IR_CSS = subset( METADATA_IR, Sample_type =="n" )%>% 
+        group_by(  CSS) %>% # Group per CSS
         summarise(N_Files=n(),
-                  Farms= unique(paste0(Farm, collapse = " ; ") ))
+                  n_farms= length(unique(Farm)),
+                  n_fields= length(unique(Soil_sample)),
+                 Sample= paste0(unique(Soil_sample), collapse = " ; ") ) 
+                 
   
   
   # * Number of QCs ####
@@ -78,16 +94,20 @@ source("MINAGRIS_Read_Labels_Function.R")
         # - Replicated soil, r
         # - Operator check
   
-      Summary_Data.IR.QC = subset(METADATA_IR, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
-        group_by(  Sample_type, Soil_sample ) %>% # Group per CSS
+      Summary_IR_QC = subset(METADATA_IR, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
+        group_by(  Soil_sample, Sample_type  ) %>% # Group per CSS
         summarise(N_Files=n(),
                   Batch= unique(paste0(Batch_name, collapse = " ; ") ))
-  
-  
+      
+      
+      
 # 2. Export tables ####
   #Set WD in the project: 
     setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
-      
-   write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2024.11.13.csv",sep = "/"))
-   write.csv( Summary_Data.IR.CSS, paste(wd.out,"IR_SummaryCSS_2024.11.13.csv",sep = "/"))
-   write.csv( Summary_Data.IR.QC, paste(wd.out,"IR_SummaryQC_2024.11.13.csv",sep = "/"))    
+    setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
+    
+   write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2025.08.13.csv",sep = "/"))
+   write.csv( Summary_IR_Batch, paste(wd.out,"IR_SummaryBatch_2025.08.13.csv",sep = "/"))
+   write.csv( Summary_IR_QC, paste(wd.out,"IR_SummaryQC_2025.08.13.csv",sep = "/"))
+   write.csv( Summary_IR_CSS, paste(wd.out,"IR_SummaryCSS_2025.08.13.csv",sep = "/"))
+
