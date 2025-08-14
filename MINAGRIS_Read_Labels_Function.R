@@ -34,6 +34,7 @@ Read_MINAGRIS_label<-function(Data, Colname_label){
   # Extract the characters starting with the first 'm' and finishing before the next '_'. e.g. "test_m27_11102_n_f3_ir2_P_SR.csv" should be "m27" 
     Data$Batch_name=  gsub("_.*","", str_extract(  Data$Colname_label,("(?i)m.*"))) #
   
+    Data$Batch_id=as.numeric(gsub("m|a|b","", Data$Batch_name))
     # gsub("_","",str_extract("test_m27_11102_n_f3_ir2_P_SR.csv", "m\\s*(.*?)\\s*_" ) )
   
     sort(unique(Data$Batch_name ) )
