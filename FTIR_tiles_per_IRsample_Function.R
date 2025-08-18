@@ -1,6 +1,8 @@
 # List the number of tiles in an uFTIR file
 
-uFTIR_n_tiles<-function(wd.raw){
+#wd.raw = "//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/1_FTIR_rawdata/uFTIR_files"
+
+uFTIR_n_tiles<-function(wd.raw){ 
 
   start.time <- Sys.time()
   

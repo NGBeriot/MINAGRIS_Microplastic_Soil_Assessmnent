@@ -218,7 +218,7 @@ MiP_wur$IR_File_name=  gsub("_PMF.*", "", MiP_wur$PMF_File_name)
 
 MiP_wur$IR_File_name[MiP_wur$PMF_File_name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
 MiP_wur$IR_File_name[MiP_wur$PMF_File_name=="m2_122_n_RS1_PMF_EC.csv"]="m2_RS1_n"
-
+MiP_wur$IR_File_name[MiP_wur$IR_File_name=="m29_bcm_n__ir2"]="m29_bcm_n_ir2"
 
 # * Add WUR lab ####
 MiP_wur$Lab="WUR"
@@ -254,9 +254,15 @@ MiP_wur$uPID=c(1:nrow(MiP_wur))
 
 # The default calibration of PMF is 88.04 um/px
 
-# * Open the table Tiles_per_sample.csv. ####
-# MC - file not available...
-Tile_per_sample=read.csv("Tile_per_sample.csv") 
+# * Table Tiles_per_sample.csv. ####
+
+# Function uFTIR_n_tiles()
+source("FTIR_tiles_per_IRsample_Function.R")
+wd.raw = "//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/1_FTIR_rawdata/uFTIR_files"
+# Create a new file
+# Tile_per_sample=uFTIR_n_tiles(wd.raw)
+# Or load existing one: 
+ Tile_per_sample=read.csv("Tile_per_sample.csv") 
 
 # * Check if all samples are already in the Tiles_per_sample.csv. ####
 
@@ -274,7 +280,7 @@ METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_
 
 Tile_per_sample$File_names[Tile_per_sample$File_names=="m2_121_n2"]="m2_121_n_ir2"
 Tile_per_sample$File_names[Tile_per_sample$File_names=="m2_161_r2"]="m2_161_r_ir2"
-Tile_per_sample$File_names[Tile_per_sample$File_names=="m2_1_n_RS1"]="m2_122_n_RS1"
+Tile_per_sample$File_names[Tile_per_sample$File_names=="m2_1_n_RS1"]="m2_RS1_n"
 Tile_per_sample$File_names[Tile_per_sample$File_names=="m5_311_n_ir2"]="m5_311_n_ir3"
 Tile_per_sample$File_names[Tile_per_sample$File_names=="m5_css3_rs_n"]="m5_RS3_n"
 
@@ -303,14 +309,17 @@ if (length(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_s
 
 #METADATA_PMF2=merge(METADATA_PMF, Tile_per_sample, by.x = "IR_File_name",  by.y = "File_names", all.x = TRUE)
 
+# PMF samples without Tile number: 
+# Should be character(0)
 unique(MiP_wur$IR_File_name[(MiP_wur$IR_File_name %!in% Tile_per_sample$File_names)])
 
+# IR files, with tile number, without PMF file
 unique(Tile_per_sample$File_names[(Tile_per_sample$File_names %!in% MiP_wur$IR_File_name )])
 
 # Add Tile_per_sample in MiP_wur
 MiP_wur_cor=merge(Tile_per_sample, MiP_wur, by.x="File_names", by.y ="IR_File_name", all.y = TRUE)
 
-# Remove the double collumn
+# Remove the double column
 MiP_wur_cor=subset(MiP_wur_cor, select=-File_names)
 
 #Check NAs
@@ -318,14 +327,28 @@ MiP_wur_cor[is.na( MiP_wur_cor$Tile_Numbers),]
 
 
 # * Check existing px size  ####
-OnePx=subset(MiP_wur_cor, N.px==1)
 
-MiP_wur$Px_size_ium2= MiP_wur$Area.um2/MiP_wur$N.px
+# With One pixel particles 
+  OnePx=subset(MiP_wur_cor, N.px==1)
+  
+  # Summary number of file
+  OnePx %>%
+    group_by(Area.um2,Length.um, Width.um) %>%
+    summarise(n_files=length(unique(PMF_File_name)),
+              Mean_Tile_Number=mean(Tile_Numbers))
+  
+  # Identify file in OnePx with different scale: 
+  
+  OnePx[OnePx$Area.um2>7786 | OnePx$Area.um2<7742, c("PMF_File_name", "Tile_Numbers" )]
+    
+# With Area/px ratio
+  MiP_wur$Px_size_ium2= MiP_wur$Area.um2/MiP_wur$N.px
 
 Px_Sizes= MiP_wur %>%
   group_by(Px_size_ium2) %>%
-  summarise(num_files=n() , 
-            Px_size_ium=sqrt(unique(Px_size_ium2)))
+  summarise(n_files=length(unique(PMF_File_name)),
+            Px_size_ium=sqrt(unique(Px_size_ium2)),
+            .groups = "drop")
 
 # Samples far out from the default: 
 unique(MiP_wur$PMF_File_name[MiP_wur$Px_size_ium2 > 100^2])
@@ -333,8 +356,6 @@ unique(MiP_wur$PMF_File_name[MiP_wur$Px_size_ium2 > 100^2])
 
 
 # * Assign number of px per tiles: ####
-
-unique(MiP_wur$PMF_File_name[(MiP_wur$IR_File_name %!in% Tile_per_sample$File_names)])
 
 # Files that actually need correction: 
 unique(MiP_wur_cor$PMF_File_name[ MiP_wur_cor$Tile_Numbers>180 & MiP_wur_cor$Tile_Numbers<560])
@@ -350,16 +371,15 @@ Px44=MiP_wur_cor[ MiP_wur_cor$Tile_Numbers>180 & MiP_wur_cor$Tile_Numbers<560,]
 # The px size calculated by dividing the total number of px in the x-lenght and y-length by the measurement in the particle editor. 
 # https://wageningenur4.sharepoint.com/:x:/r/sites/SLMplasticcontaminationresearch/_layouts/15/Doc.aspx?sourcedoc=%7B676D7434-2311-4E1A-9E98-6826944954C7%7D&file=pixel%20size%20definition.xlsx&action=default&mobileredirect=true
 
-# # Values are based on the most commun px size in Px_Sizes. 
+# # Values are based on the most common px size in Px_Sizes_definition.xlsx
 
 MiP_wur_cor$px_size =0
 
 MiP_wur_cor$px_size[ MiP_wur_cor$Tile_Numbers>180 & MiP_wur_cor$Tile_Numbers<560]= 44.02 # 16 px_per_tile
 MiP_wur_cor$px_size[ MiP_wur_cor$Tile_Numbers>575 & MiP_wur_cor$Tile_Numbers<2240]= 88.04 # 8 px_per_tile
 
-MiP_wur_cor$PMF_File_name[  MiP_wur_cor$px_size==0]
-
 # Tile number not measured in range:
+MiP_wur_cor$PMF_File_name[  MiP_wur_cor$px_size==0]
 MiP_wur_cor$PMF_File_name[MiP_wur_cor$Tile_Numbers<182]
 MiP_wur_cor$PMF_File_name[ MiP_wur_cor$Tile_Numbers>560 & MiP_wur_cor$Tile_Numbers<575]
 MiP_wur_cor$PMF_File_name[MiP_wur_cor$Tile_Numbers>2240]
@@ -369,21 +389,21 @@ MiP_wur_cor$PMF_File_name[MiP_wur_cor$Tile_Numbers>2240]
 
 # * Correct Area and lengths  ####
 
-# Calculate corrected Area:  
+# Calculate corrected Area based on px number  
 MiP_wur_cor$Area.um2.cor= (MiP_wur_cor$N.px) * (MiP_wur_cor$px_size)^2
 
 # Area.cor.ratio
 MiP_wur_cor$Area.cor.ratio=MiP_wur_cor$Area.um2/MiP_wur_cor$Area.um2.cor
 MiP_wur_cor$Area.cor.ratio[MiP_wur_cor$Area.um2.cor==0]=-1
 
-# Calculate corrected length:  
+# Calculate corrected length based on Length.um and 
 MiP_wur_cor$Length.um.cor= sqrt(MiP_wur_cor$Area.um2.cor / MiP_wur_cor$Area.um2) * MiP_wur_cor$Length.um 
 
 # Calculate corrected Width: 
 MiP_wur_cor$Width.um.cor= sqrt(MiP_wur_cor$Area.um2.cor / MiP_wur_cor$Area.um2) * MiP_wur_cor$Width.um 
 
 # Check Samples far from the expected ratio: 
-Ratio_out=MiP_wur_cor[MiP_wur_cor$Area.cor.ratio>1.1 & MiP_wur_cor$Polymer.grp!="No.plastic"  ,]
+Ratio_out=MiP_wur_cor[(MiP_wur_cor$Area.cor.ratio>1.1|MiP_wur_cor$Area.cor.ratio<0.9) & MiP_wur_cor$Polymer.grp!="No.plastic"  ,]
 
 Ratio_out %>% 
   group_by(PMF_File_name) %>% 
@@ -393,7 +413,7 @@ Ratio_out %>%
 
 
 # /!\ Strange values: 
-ToBeChecked= subset (MiP_wur_cor, Length.um.cor< 30 ) 
+ToBeChecked= subset (MiP_wur_cor, Length.um.cor< 44 ) 
 
 
 # Manually repair m14_822_n_PMF_SR.csv
@@ -439,6 +459,16 @@ subset (MiP_wur_cor, PMF_File_name== "m18_9102_n_PMF_SR.csv" )
 MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m18_9102_n_PMF_SR.csv" , c("Length.um.cor","Width.um.cor")] = 
   MiP_wur_cor[ MiP_wur_cor$PMF_File_name== "m18_9102_n_PMF_SR.csv" , c("Length.um","Width.um")]*88.04
 
+# Re-check
+subset (MiP_wur_cor, Length.um.cor< 44 ) 
+subset (MiP_wur_cor, Length.um.cor< 86 ) 
+
+# Check lines with 0 px:
+
+NoPx=subset (MiP_wur_cor, N.px ==0)
+
+length(unique(NoPx$PMF_File_name))
+
 
 
 
@@ -461,22 +491,30 @@ ggplot(  data = MiP_wur_cor, aes(Area.um2, Area.um2.cor, colour= factor(px_size 
 min(subset (MiP_wur_cor, N.px >=1, select="Area.um2.cor"))
 min(subset (MiP_wur_cor, N.px >=1, select="Length.um.cor"))
 
-
+# Select small particles based on area
 Small_86a=MiP_wur_cor[MiP_wur_cor$Area.um2.cor !=0 & MiP_wur_cor$Area.um2.cor<86^2,]
+# Select small particles based on length
 Small_86l=MiP_wur_cor[MiP_wur_cor$Area.um2.cor !=0 & MiP_wur_cor$Length.um.cor<86,]
+# 10 smalest particles based on length
+SMALL=subset (MiP_wur_cor, N.px >=1)[with(subset (MiP_wur_cor, N.px >=1),order(Length.um.cor)),] [1:10,]
 
-
+# Select Big particles based on area
 Big_2000a=MiP_wur_cor[ MiP_wur_cor$Area.um2.cor>2000^2,]
-
+# 10 biggest particles 
+BIG=MiP_wur_cor[with(MiP_wur_cor,order(-Area.um2.cor)),] [1:10,]
 
 # 5. Particle filters ####
 # * Filter out Small particles [3 particles removed]  ####
+# Based on Length.um.cor<86
+# 3 particles removed ( m14_792_n_PMF_EC and m16_bcm_n_PMF_SR) because of different px size resolution
   # Number of particles: 
   nrow(MiP_wur_cor[MiP_wur_cor$N.px>0,])
   nrow(MiP_wur_cor[MiP_wur_cor$N.px>0 & MiP_wur_cor$Polymer.grp == "MYSP",])
 
-Filtered_out=subset(MiP_wur_cor, Area.um2.cor !=0 & Length.um.cor<86 )
+  subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
+Filtered_out=subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
 
+# Mutate the N.px to 0 if the Length.um.cor<86 um
 MiP_wur_cor = MiP_wur_cor %>%
   mutate(N.px =    if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, N.px),
     Width.um.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Width.um.cor),
@@ -486,7 +524,8 @@ MiP_wur_cor = MiP_wur_cor %>%
 
 # * Filter out big particles  ####
 
-Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, Area.um2.cor>2000*2000 ))
+
+Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor,  Area.um2.cor>2000*2000 ))
 
 MiP_wur_cor = MiP_wur_cor %>%
   mutate(N.px =    if_else(Area.um2.cor>2000*2000, 0, N.px),
@@ -503,7 +542,10 @@ MiP_wur_cor = MiP_wur_cor %>%
 # Set up for a matching quality filter at 0.35, which is reasonable from expert judgement and 
 # conveniently (ad-hoc) removes two EVAc particles that would otherwise bring the m16 blank over the 5 particles threshold (ad-hoc). 
 
-Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic"))
+subset(MiP_wur_cor, N.px !=0  & Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic")
+Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, N.px !=0  & Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic"))
+
+
 
 MiP_wur_cor=MiP_wur_cor%>%
   mutate(N.px =     if_else(Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic", 0, N.px),
@@ -516,9 +558,10 @@ MiP_wur_cor=MiP_wur_cor%>%
 
 
 # * Remove "MYSP" ####
-# Remove the mysterious polymers 
+# Remove the mysterious polymers (identified as polymer but unknown polymer, likely not a polymer in our cluster list)
 
-Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, Polymer.grp == "MYSP"))
+nrow(subset(MiP_wur_cor, N.px !=0  & Polymer.grp == "MYSP"))
+Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, N.px !=0 & Polymer.grp == "MYSP"))
 
 
 MiP_wur_cor=MiP_wur_cor%>%
@@ -535,9 +578,7 @@ MiP_wur_cor=MiP_wur_cor%>%
 
 
 #MC - give names without dates and overwrite them. Otherwise the workflow cannot be flexible.
-# I fyou think you need an older versio of the file, store it in an folder called e.g.'/Archive'
-write.csv(Summary_Data.PMF.CSS.n, paste(wd.out,"PMF_SummaryCSS.csv",sep = "/"))
-write.csv( Summary_Data.PMF.QC, paste(wd.out,"PMF_SummaryQC.csv",sep = "/"))
+# If you think you need an older versio of the file, store it in an folder called e.g.'/Archive'
 write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA.csv",sep = "/"))
 write.csv(MiP_wur_cor, paste("WUR_MiP_Particles.csv",sep = "/"))
 
