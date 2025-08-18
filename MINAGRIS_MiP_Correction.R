@@ -144,6 +144,25 @@ Data_Ubern$Polymer.red12[Data_Ubern$Polymer.grp %!in% Polymer.red12]="Other.Plas
 Data_Ubern$Polymer.red3=Data_Ubern$Polymer.grp
 Data_Ubern$Polymer.red3[Data_Ubern$Polymer.grp %!in% Polymer.red3]="Other.Plastic"
 
+
+# * Filtering Ubern data ####
+
+nrow(MiP_wur_cor[MiP_wur_cor$N.px>0,])
+nrow(MiP_wur_cor[MiP_wur_cor$N.px>0 & MiP_wur_cor$Polymer.grp == "MYSP",])
+
+subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
+Filtered_out=subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
+
+# Mutate the N.px to 0 if the Length.um.cor<86 um
+MiP_wur_cor = MiP_wur_cor %>%
+  mutate(N.px =    if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, N.px),
+         Width.um.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Width.um.cor),
+         Area.um2.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Area.um2.cor),
+         Mass.ng =      if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Mass.ng),
+         Length.um.cor =if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Length.um.cor) )
+
+
+
 # * Merge (Data_comb) ####
 Data_comb=rbind(subset(Data_WUR, select = colnames(Data_WUR)[colnames(Data_WUR)%in% colnames(Data_Ubern)]),
                 subset(Data_Ubern, select = colnames(Data_Ubern)[colnames(Data_Ubern)%in% colnames(Data_WUR)]  ) )
@@ -164,15 +183,8 @@ Data_comb$Preparation_Type[ Data_comb$Soil_sample %in% c( "st")  ]="Standard_Soi
 Data_comb[Data_comb$Preparation_Type=="Not",]
 
 
-
-
 # Re-label Soil_sample:
-#MC - unclear what the printed numbers below mean - add comment
-nrow( subset(Data_comb, Soil_sample=="bcm"))
-nrow( subset(Data_WUR, Soil_sample=="bcm"))
-nrow( subset(Data_Ubern, Soil_sample=="bcm"))
-nrow( subset(Data_comb, Preparation_Type=="Blank_chemical"))
-
+# MC - unclear what the printed numbers below mean - add comment
 Soil_sample_x= Data_comb$Soil_sample
 Data_comb$Soil_sample[Data_comb$Lab=="WUR"]=paste( Data_comb$CSS[Data_comb$Lab=="WUR"], ".",
                                                    Data_comb$Farm[Data_comb$Lab=="WUR"],".",
@@ -187,16 +199,14 @@ Data_comb$Soil_sample[Data_comb$Preparation_Type=="Blank_chemical"]= "bcm"
 Data_comb$Soil_sample[Data_comb$Preparation_Type=="Reference_Soil"]= "rs"
 Data_comb$Soil_sample[Data_comb$Preparation_Type=="Standard_Soil"]= "st"
 
-nrow( subset(Data_comb, Soil_sample=="bcm"))
-
 # Add the CSS in Soil sample description 
-Data_comb$Soil_sample[Data_comb$Preparation_Type=="Reference_Soil"]=paste("rs", Data_comb$CSS[Data_comb$Preparation_Type=="Reference_Soil"], sep = "_")
+Data_comb$Soil_sample[Data_comb$Preparation_Type=="Reference_Soil"]=paste("rs", "_", Data_comb$CSS[Data_comb$Preparation_Type=="Reference_Soil"], sep = "")
 Data_comb$Soil_sample[Data_comb$Soil_sample=="rs_-1" ]="pfsr"
 Data_comb$Preparation_Type[Data_comb$Soil_sample=="pfsr" ]="Blank_soil"
 Data_comb$Sample_type[Data_comb$Preparation_Type=="Reference_Soil"]="n"
 
 # Re-label Filter_Name:
-Data_comb$Filter_Name=paste(Data_comb$Batch_Name, Data_comb$Soil_sample, Data_comb$Sample_type, Data_comb$Filter_div, sep = "_")
+Data_comb$Filter_Name=paste(Data_comb$Batch_Name, "_", Data_comb$Soil_sample, "_", Data_comb$Sample_type, "_", Data_comb$Filter_div, sep = "")
 
 
 # Add a unique ID per particle 
@@ -207,14 +217,18 @@ Data_comb$ID=seq_along(Data_comb$File_Name)
   # Filter_Name = Batch_"Soil_sample"_"Sample_type"_"Filter_div"
   # Extraction_Name = Batch_"Soil_sample"_"Sample_type"
 
-Data_comb$Extraction_Name= paste(Data_comb$Batch_Name, 
-                                 Data_comb$Soil_sample,
-                                 Data_comb$Sample_type, sep = "_")
+Data_comb$Extraction_Name= paste(Data_comb$Batch_Name, "_",
+                                 Data_comb$Soil_sample,"_",
+                                 Data_comb$Sample_type, sep="")
 
 # * Size range
 min(subset (Data_comb, N.px >=1, select="Area.um2.cor"))
 min(subset (Data_comb, N.px >=1, select="Length.um"))
-  
+
+SMALL=subset (Data_comb, N.px >=1)[with(subset (Data_comb, N.px >=1),order(Length.um)),] [1:15,]
+BIG=  subset (Data_comb, N.px >=1)[with(subset (Data_comb, N.px >=1),order(-Length.um)),] [1:15,]
+write.csv(df_Blanks, paste(wd.out,"SMALL_comb_Particles.csv",sep = "/"))
+write.csv(df_Blanks, paste(wd.out,"BIG_comb_Particles.csv",sep = "/"))
 
 # * Create size categories ####
 
@@ -274,6 +288,18 @@ Data_comb$Size_cat2.um[Data_comb$Size_cat.um == "90-300"]="90-300"
 # 4. Analyse blanks ####
 # Blank data frame (WUR) 
 df_Blanks=subset(Data_comb, Soil_sample=="bcm"  ) # & Polymer.red12 != "Other.Plastic"
+
+nrow( subset(Data_comb, Soil_sample=="bcm"))
+nrow( subset(Data_WUR, Soil_sample=="bcm"))
+nrow( subset(Data_Ubern, Soil_sample=="bcm"))
+
+nrow( unique( subset(Data_comb, Soil_sample=="bcm", select = "File_Name")))
+nrow( unique( subset(Data_WUR, Soil_sample=="bcm", select = "File_Name")))
+nrow( unique( subset(Data_Ubern, Soil_sample=="bcm", select = "File_Name")))
+
+nrow( subset(Data_comb, Preparation_Type=="Blank_chemical"))
+nrow( unique( subset(Data_comb, Preparation_Type=="Blank_chemical", select = "File_Name")))
+
 
 
 # number of blanks
