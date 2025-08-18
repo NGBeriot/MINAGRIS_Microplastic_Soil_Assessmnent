@@ -57,7 +57,7 @@ nrow(METADATA_PMF)
 # * Summary Batch ####
 
 Summary_PMF_Batch =  METADATA_PMF %>% 
-  group_by( Batch_id, Batch_name) %>% # Group per CSS
+  group_by( Batch_id, Batch_Name) %>% # Group per CSS
   summarise(N_PMF_Files=n(),
             N_filters=length(unique(Filter_name)), 
             # N_Soil_samples=length(unique(Soil_sample)), #Number of extractions 
@@ -84,7 +84,7 @@ Summary_PMF_CSS = subset( METADATA_PMF, Sample_type =="n" )%>%
 Summary_PMF_QC = subset(METADATA_PMF, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
   group_by(  Soil_sample, Sample_type  ) %>% # Group per CSS
   summarise(N_PMF_Files=n(),
-            Batch= (paste0(unique(Batch_name), collapse = " ; ") ),
+            Batch= (paste0(unique(Batch_Name), collapse = " ; ") ),
             Operators= (paste0(unique(Operator), collapse = " ; ") ))
 
 write.csv( Summary_PMF_Batch, paste(wd.out,"PMF_SummaryBatch_2025.08.13.csv",sep = "/"))
@@ -470,8 +470,6 @@ NoPx=subset (MiP_wur_cor, N.px ==0)
 length(unique(NoPx$PMF_File_name))
 
 
-
-
 # Some Na checks 
 unique(is.na(MiP_wur_cor$ Class.Idx))
 unique(is.na(MiP_wur_cor$PMF_File_name))
@@ -491,48 +489,65 @@ ggplot(  data = MiP_wur_cor, aes(Area.um2, Area.um2.cor, colour= factor(px_size 
 min(subset (MiP_wur_cor, N.px >=1, select="Area.um2.cor"))
 min(subset (MiP_wur_cor, N.px >=1, select="Length.um.cor"))
 
-# Select small particles based on area
+
+# Select small particles based on area, length or width 
 Small_86a=MiP_wur_cor[MiP_wur_cor$Area.um2.cor !=0 & MiP_wur_cor$Area.um2.cor<86^2,]
-# Select small particles based on length
 Small_86l=MiP_wur_cor[MiP_wur_cor$Area.um2.cor !=0 & MiP_wur_cor$Length.um.cor<86,]
+Small_86w=MiP_wur_cor[MiP_wur_cor$Area.um2.cor !=0 & MiP_wur_cor$Width.um.cor<86,]
+
 # 10 smalest particles based on length
-SMALL=subset (MiP_wur_cor, N.px >=1)[with(subset (MiP_wur_cor, N.px >=1),order(Length.um.cor)),] [1:10,]
+SMALL=subset (MiP_wur_cor, N.px >=1)[with(subset (MiP_wur_cor, N.px >=1),order(Width.um.cor)),] [1:20,]
 
 # Select Big particles based on area
 Big_2000a=MiP_wur_cor[ MiP_wur_cor$Area.um2.cor>2000^2,]
 # 10 biggest particles 
-BIG=MiP_wur_cor[with(MiP_wur_cor,order(-Area.um2.cor)),] [1:10,]
+BIG=MiP_wur_cor[with(MiP_wur_cor,order(-Area.um2.cor)),] [1:20,]
 
 # 5. Particle filters ####
+nrow(MiP_wur_cor[MiP_wur_cor$N.px>0,])
+
+# * Filter out "No.plastic" ####
+nrow(MiP_wur_cor[MiP_wur_cor$Polymer.grp=="No.plastic",])
+subset(MiP_wur_cor, Polymer.grp=="No.plastic" )
+Filtered_out=subset(MiP_wur_cor, Polymer.grp=="No.plastic" )
+
+# Mutate the N.px to 0 if the Length.um.cor<86 um
+MiP_wur_cor = MiP_wur_cor %>%
+  mutate(N.px =    if_else( Polymer.grp=="No.plastic", 0, N.px),
+         Width.um.cor = if_else( Polymer.grp=="No.plastic", 0, Width.um.cor),
+         Area.um2.cor = if_else( Polymer.grp=="No.plastic", 0,  Area.um2.cor),
+         Mass.ng =      if_else( Polymer.grp=="No.plastic", 0,  Mass.ng),
+         Length.um.cor =if_else( Polymer.grp=="No.plastic", 0, Length.um.cor) )
+
+
+
 # * Filter out Small particles [3 particles removed]  ####
 # Based on Length.um.cor<86
 # 3 particles removed ( m14_792_n_PMF_EC and m16_bcm_n_PMF_SR) because of different px size resolution
   # Number of particles: 
-  nrow(MiP_wur_cor[MiP_wur_cor$N.px>0,])
-  nrow(MiP_wur_cor[MiP_wur_cor$N.px>0 & MiP_wur_cor$Polymer.grp == "MYSP",])
 
-  subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
-Filtered_out=subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
+  nrow(MiP_wur_cor[MiP_wur_cor$N.px>0 & MiP_wur_cor$Width.um.cor<86,])
+  subset(MiP_wur_cor, N.px !=0 & Width.um.cor<86 )
+  Filtered_out=subset(MiP_wur_cor, N.px !=0 & Width.um.cor<86 )
 
 # Mutate the N.px to 0 if the Length.um.cor<86 um
 MiP_wur_cor = MiP_wur_cor %>%
-  mutate(N.px =    if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, N.px),
-    Width.um.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Width.um.cor),
-    Area.um2.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Area.um2.cor),
-    Mass.ng =      if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Mass.ng),
-    Length.um.cor =if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Length.um.cor) )
+  mutate(N.px =    if_else( Width.um.cor<86, 0, N.px),
+    Area.um2.cor = if_else( Width.um.cor<86, 0,  Area.um2.cor),
+    Mass.ng =      if_else( Width.um.cor<86, 0,  Mass.ng),
+    Length.um.cor =if_else( Width.um.cor<86, 0, Length.um.cor),
+    Width.um.cor = if_else( Width.um.cor<86, 0, Width.um.cor) )
 
 # * Filter out big particles  ####
 
-
-Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor,  Area.um2.cor>2000*2000 ))
+Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor,   Width.um.cor>2000 ))
 
 MiP_wur_cor = MiP_wur_cor %>%
-  mutate(N.px =    if_else(Area.um2.cor>2000*2000, 0, N.px),
-         Length.um.cor =if_else(Area.um2.cor>2000*2000, 0, Length.um.cor),
-         Width.um.cor = if_else(Area.um2.cor>2000*2000, 0, Width.um.cor),
-         Mass.ng =      if_else(Area.um2.cor>2000*2000, 0,  Mass.ng),
-         Area.um2.cor = if_else(Area.um2.cor>2000*2000, 0,  Area.um2.cor) )
+  mutate(N.px =    if_else( Width.um.cor>2000, 0, N.px),
+         Length.um.cor =if_else( Width.um.cor>2000, 0, Length.um.cor),
+         Mass.ng =      if_else( Width.um.cor>2000, 0,  Mass.ng),
+         Area.um2.cor = if_else( Width.um.cor>20000, 0,  Area.um2.cor),
+         Width.um.cor = if_else( Width.um.cor>2000, 0, Width.um.cor))
 
 
 
@@ -544,8 +559,6 @@ MiP_wur_cor = MiP_wur_cor %>%
 
 subset(MiP_wur_cor, N.px !=0  & Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic")
 Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, N.px !=0  & Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic"))
-
-
 
 MiP_wur_cor=MiP_wur_cor%>%
   mutate(N.px =     if_else(Relevance >0 & Relevance <0.35 & Polymer.red12 =="Other.Plastic", 0, N.px),
@@ -563,7 +576,6 @@ MiP_wur_cor=MiP_wur_cor%>%
 nrow(subset(MiP_wur_cor, N.px !=0  & Polymer.grp == "MYSP"))
 Filtered_out=rbind(Filtered_out, subset(MiP_wur_cor, N.px !=0 & Polymer.grp == "MYSP"))
 
-
 MiP_wur_cor=MiP_wur_cor%>%
   mutate(N.px =         if_else(Polymer.grp == "MYSP", 0, N.px),
          Length.um =if_else(Polymer.grp == "MYSP", 0, Length.um),
@@ -575,12 +587,10 @@ MiP_wur_cor=MiP_wur_cor%>%
 
 
 # 6. Export Results ####
-
+nrow(MiP_wur_cor[MiP_wur_cor$N.px>0,])
 
 #MC - give names without dates and overwrite them. Otherwise the workflow cannot be flexible.
 # If you think you need an older versio of the file, store it in an folder called e.g.'/Archive'
 write.csv(METADATA_PMF, paste(wd.out,"PMF_METADATA.csv",sep = "/"))
 write.csv(MiP_wur_cor, paste("WUR_MiP_Particles.csv",sep = "/"))
-
-
 

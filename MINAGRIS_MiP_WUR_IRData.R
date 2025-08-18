@@ -61,7 +61,7 @@ source("MINAGRIS_Read_Labels_Function.R")
   # * Summary Batch ####
     
     Summary_IR_Batch =  METADATA_IR%>% 
-      group_by( Batch_id, Batch_name) %>% # Group per CSS
+      group_by( Batch_id, Batch_Name) %>% # Group per CSS
       summarise(N_IR_Files=n(),
                 N_filters=length(unique(Filter_name)), 
                # N_Soil_samples=length(unique(Soil_sample)), #Number of extractions 
@@ -97,7 +97,7 @@ source("MINAGRIS_Read_Labels_Function.R")
       Summary_IR_QC = subset(METADATA_IR, Soil_sample %in% c("bcm","pfsr","st") |  Sample_type %in% c("r","s2","s" ) )   %>% 
         group_by(  Soil_sample, Sample_type  ) %>% # Group per CSS
         summarise(N_IR_Files=n(),
-                  Batch= unique(paste0(Batch_name, collapse = " ; ") ))
+                  Batch= unique(paste0(Batch_Name, collapse = " ; ") ))
       
       
       
