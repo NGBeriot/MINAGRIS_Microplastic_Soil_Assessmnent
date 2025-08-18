@@ -40,16 +40,16 @@ source("MINAGRIS_Read_Labels_Function.R")
       } #end function
       
     # Create list of IR files available 
-    IR_File_names <-list.dirs.depth.n(wd.in.IR,2)
+    IR_File_Name <-list.dirs.depth.n(wd.in.IR,2)
         
     # Create Data Frame of IR files available
-    METADATA_IR=data.frame(File.dir=IR_File_names, n.uP.detected=NA )
+    METADATA_IR=data.frame(File.dir=IR_File_Name, n.uP.detected=NA )
     METADATA_IR$IR_File_name <- gsub(".*/", "", METADATA_IR$File.dir)   # Remove the working directory name
         
     # /!\ There should not be Duplicated files! 
     if (any(duplicated( METADATA_IR$IR_File_name))){
       warning("Duplicated IR File names")
-      METADATA_IR$File_names[duplicated( METADATA_IR$IR_File_name)]
+      METADATA_IR$File_Name[duplicated( METADATA_IR$IR_File_name)]
     }
   
     # Read labels

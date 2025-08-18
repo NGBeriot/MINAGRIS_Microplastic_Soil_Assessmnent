@@ -27,7 +27,7 @@ uFTIR_n_tiles<-function(wd.raw){
   
   } # end loop Batches
   
-  Tile_per_sample= data.frame( File_names=Sample_names, Tile_Numbers=Tile_numbers)
+  Tile_per_sample= data.frame( File_Name=Sample_names, Tile_Numbers=Tile_numbers)
   
   #Tile_per_sample$File_names=gsub(wd.raw, "", Tile_per_sample$File_names)
   Tile_per_sample$File_names=gsub(".*/", "", Tile_per_sample$File_names)
