@@ -291,11 +291,17 @@ Data_comb[Data_comb$N.px>=1 & Data_comb$Width.um<86,]
 Data_comb$Size_cat.um[Data_comb$Size_cat.um=="Too small" &  Data_comb$Width.um>86 ]="90-300"
 Data_comb$Size_cat.um[Data_comb$N.px>=1 & Data_comb$Width.um<86]="Too small"
 
+# Extend the size categories to include until 2000 um in "1140-2000"
+Data_comb$Size_cat.um[Data_comb$Area.um2.cor>Cat.um[c]^2  &  Data_comb$Width.um<2000 ]="1140-2000"
+
 # Label the "Too big"
 Data_comb[Data_comb$Width.um>2000,]
 Data_comb$Size_cat.um[Data_comb$Width.um>2000]="Too big"
 
 Data_comb[Data_comb$N.px>=1 & Data_comb$Size_cat.um %in% c("Too small", "Too big") ,]
+
+# check for NA
+subset(Data_comb, is.na(Size_cat.um))
 
 
 # * Add binary size categories ####
