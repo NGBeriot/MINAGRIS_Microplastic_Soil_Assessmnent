@@ -72,7 +72,7 @@ colnames(Data_Ubern)
 # 2. Merge MiP tables ####
 
 # Expected Column names
-uP_Colnames=c("File_Name", "Lab", "Batch_name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_name", "IR_rep", "PMF_rep", "Operator",
+uP_Colnames=c("File_Name", "Lab", "Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_name", "IR_rep", "PMF_rep", "Operator",
               "ID", "Q_index",	"Polymer.grp", "Polymer.red12", "Polymer.red3", "Area.um2.cor", "Length.um" , "Width.um", "Aspect_ratio", "Mass.ng", "Size_cat.um")
 
 # * Completing from WUR data #### 
@@ -127,8 +127,8 @@ Data_Ubern$Lab="Ubern"
 Data_Ubern$Operator="AG"
 Data_Ubern$IR_rep="ir"
 Data_Ubern$PMF_rep="pmf"
-Data_Ubern$Width.um =Data_Ubern$width             
-Data_Ubern$Length.um=Data_Ubern$height
+Data_Ubern$Width.um = pmin(Data_Ubern$height, Data_Ubern$width)         
+Data_Ubern$Length.um= pmax(Data_Ubern$height, Data_Ubern$width) 
 Data_Ubern$Mass.ng=0
 Data_Ubern$Aspect_ratio=Data_Ubern$Length.um/Data_Ubern$Width.um
 
@@ -144,28 +144,60 @@ Data_Ubern$Polymer.red12[Data_Ubern$Polymer.grp %!in% Polymer.red12]="Other.Plas
 Data_Ubern$Polymer.red3=Data_Ubern$Polymer.grp
 Data_Ubern$Polymer.red3[Data_Ubern$Polymer.grp %!in% Polymer.red3]="Other.Plastic"
 
+# Replacing NA with 0px for "no plastic 
+subset(Data_Ubern,Polymer.grp=="No.plastic")
 
-# * Filtering Ubern data ####
+Data_Ubern = Data_Ubern %>%
+  mutate(N.px =         if_else( Polymer.grp=="No.plastic", 0, N.px),
+         Area.um2.cor = if_else(Polymer.grp=="No.plastic", 0, Area.um2.cor),
+         Mass.ng =      if_else( Polymer.grp=="No.plastic", 0, Mass.ng),
+         Length.um =if_else( Polymer.grp=="No.plastic", 0, Length.um),
+         Width.um = if_else( Polymer.grp=="No.plastic", 0, Width.um ))
 
-nrow(MiP_wur_cor[MiP_wur_cor$N.px>0,])
-nrow(MiP_wur_cor[MiP_wur_cor$N.px>0 & MiP_wur_cor$Polymer.grp == "MYSP",])
+nrow(subset(Data_Ubern, is.na(Area.um2.cor) ))
 
-subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
-Filtered_out=subset(MiP_wur_cor, N.px !=0 & Length.um.cor<86 )
+# * Filtering Ubern particles ####
+nrow(subset(Data_Ubern, N.px !=0 ))
+
+# Filter out Small particles  
+Filtered_out_Data_Ubern=subset(Data_Ubern, N.px !=0 & Width.um<86 )
+nrow(subset(Data_Ubern, N.px !=0 & Width.um<86 ) )
+
+# Percentage removed 
+nrow(subset(Data_Ubern, N.px !=0 & Width.um<86 ) ) / nrow(subset(Data_Ubern, N.px !=0 ) ) *100
+
 
 # Mutate the N.px to 0 if the Length.um.cor<86 um
-MiP_wur_cor = MiP_wur_cor %>%
-  mutate(N.px =    if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, N.px),
-         Width.um.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Width.um.cor),
-         Area.um2.cor = if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Area.um2.cor),
-         Mass.ng =      if_else(Area.um2.cor !=0 & Length.um.cor<86, 0,  Mass.ng),
-         Length.um.cor =if_else(Area.um2.cor !=0 & Length.um.cor<86, 0, Length.um.cor) )
+Data_Ubern_cor = Data_Ubern %>%
+  mutate(N.px =         if_else( Width.um <86, 0, N.px),
+         Area.um2.cor = if_else( Width.um <86, 0, Area.um2.cor),
+         Mass.ng =      if_else( Width.um <86, 0, Mass.ng),
+         Length.um =if_else( Width.um <86, 0, Length.um),
+         Width.um = if_else( Width.um <86, 0, Width.um ))
+
+nrow(subset(Data_Ubern_cor, N.px !=0 ))
+
+# Filter out big particles  
+# Based on the smallest dimension (Width.um>2000)
+nrow(subset(Data_Ubern_cor, Width.um>2000 ) )
+
+Filtered_out_Data_Ubern=rbind(Filtered_out_Data_Ubern, subset(Data_Ubern_cor, Width.um>2000 ) )
 
 
+# Mutate the N.px to 0 if the Length.um.cor<86 um
+Data_Ubern_cor = Data_Ubern_cor %>%
+  mutate(N.px =    if_else( Width.um>2000, 0, N.px),
+         Area.um2.cor = if_else( Width.um>2000, 0, Area.um2.cor),
+         Mass.ng =      if_else( Width.um>2000, 0, Mass.ng),
+         Length.um =if_else( Width.um>2000, 0, Length.um),
+         Width.um = if_else( Width.um>2000, 0, Width.um ))
+
+nrow(subset(Data_Ubern_cor, N.px !=0 ))
+nrow(subset(Data_Ubern, N.px !=0 ))
 
 # * Merge (Data_comb) ####
-Data_comb=rbind(subset(Data_WUR, select = colnames(Data_WUR)[colnames(Data_WUR)%in% colnames(Data_Ubern)]),
-                subset(Data_Ubern, select = colnames(Data_Ubern)[colnames(Data_Ubern)%in% colnames(Data_WUR)]  ) )
+Data_comb=rbind(subset(Data_WUR, select = colnames(Data_WUR)[colnames(Data_WUR)%in% colnames(Data_Ubern_cor)]),
+                subset(Data_Ubern_cor, select = colnames(Data_Ubern_cor)[colnames(Data_Ubern_cor)%in% colnames(Data_WUR)]  ) )
 
 # Number of particles: 
 nrow(Data_comb[Data_comb$Area.um2.cor>0,])
@@ -221,14 +253,16 @@ Data_comb$Extraction_Name= paste(Data_comb$Batch_Name, "_",
                                  Data_comb$Soil_sample,"_",
                                  Data_comb$Sample_type, sep="")
 
-# * Size range
+# * Size range ####
 min(subset (Data_comb, N.px >=1, select="Area.um2.cor"))
 min(subset (Data_comb, N.px >=1, select="Length.um"))
 
-SMALL=subset (Data_comb, N.px >=1)[with(subset (Data_comb, N.px >=1),order(Length.um)),] [1:15,]
-BIG=  subset (Data_comb, N.px >=1)[with(subset (Data_comb, N.px >=1),order(-Length.um)),] [1:15,]
-write.csv(df_Blanks, paste(wd.out,"SMALL_comb_Particles.csv",sep = "/"))
-write.csv(df_Blanks, paste(wd.out,"BIG_comb_Particles.csv",sep = "/"))
+SMALL=subset (Data_comb, N.px >=1)[with(subset (Data_comb, N.px >=1),order(Width.um)),] [1:20,]
+BIG= Data_comb[with(Data_comb,order(-Width.um)),] [1:20,]
+BIG= Data_comb[with(Data_comb,order(-Width.um)),] [1:20,]
+
+write.csv(SMALL, paste(wd.out,"SMALL_comb_Particles.csv",sep = "/"))
+write.csv(BIG, paste(wd.out,"BIG_comb_Particles.csv",sep = "/"))
 
 # * Create size categories ####
 
@@ -242,9 +276,7 @@ Cat.um=seq(cat.min, cat.max, by=cat.bin)
 # Cat.um.txt=c("80-300", "300-520", "520-740",
 #              "740-960", "960-1180", "1180-1400")
  Cat.um.txt=c("90-300", "300-510", "510-720",
-              "720-930", "930-1140", "1140-1350")
-
-
+              "720-930", "930-1140", "1140-2000")
 
 Data_comb$Size_cat.um="Too small"
 # Build categories by successive replacement "upward"
@@ -253,15 +285,15 @@ for (c in 1:length(Cat.um)){
 }
 
 # Label the "Too small"
-Data_comb[Data_comb$N.px>=1 & Data_comb$Length.um<86 & Data_comb$Width.um<86,]
+Data_comb[Data_comb$N.px>=1 & Data_comb$Width.um<86,]
 
 # Extend the size categories to include until 86um in "90-300"
-Data_comb$Size_cat.um[Data_comb$Size_cat.um=="Too small" & (Data_comb$Length.um>86 | Data_comb$Width.um>86) ]="90-300"
-Data_comb$Size_cat.um[Data_comb$N.px>=1 & Data_comb$Length.um<86 & Data_comb$Width.um<86]="Too small"
+Data_comb$Size_cat.um[Data_comb$Size_cat.um=="Too small" &  Data_comb$Width.um>86 ]="90-300"
+Data_comb$Size_cat.um[Data_comb$N.px>=1 & Data_comb$Width.um<86]="Too small"
 
 # Label the "Too big"
-Data_comb[Data_comb$N.px>=1 & Data_comb$Length.um>2000 & Data_comb$Width.um>2000,]
-Data_comb$Size_cat.um[Data_comb$Area.um2.cor>cat.max^2]="Too big"
+Data_comb[Data_comb$Width.um>2000,]
+Data_comb$Size_cat.um[Data_comb$Width.um>2000]="Too big"
 
 Data_comb[Data_comb$N.px>=1 & Data_comb$Size_cat.um %in% c("Too small", "Too big") ,]
 
@@ -273,9 +305,6 @@ Data_comb$Size_cat2.um="300-2000"
 Data_comb$Size_cat2.um[Data_comb$Size_cat.um == "90-300"]="90-300"
 
 
-
-
-
 # 3. Mass estimations ####
 
 # /!\ Work in progress /!\
@@ -283,19 +312,18 @@ Data_comb$Size_cat2.um[Data_comb$Size_cat.um == "90-300"]="90-300"
 
 
 
-
-
 # 4. Analyse blanks ####
 # Blank data frame (WUR) 
 df_Blanks=subset(Data_comb, Soil_sample=="bcm"  ) # & Polymer.red12 != "Other.Plastic"
+length(unique(df_Blanks$File_Name))
 
 nrow( subset(Data_comb, Soil_sample=="bcm"))
 nrow( subset(Data_WUR, Soil_sample=="bcm"))
-nrow( subset(Data_Ubern, Soil_sample=="bcm"))
+nrow( subset(Data_Ubern_cor, Soil_sample=="bcm"))
 
 nrow( unique( subset(Data_comb, Soil_sample=="bcm", select = "File_Name")))
 nrow( unique( subset(Data_WUR, Soil_sample=="bcm", select = "File_Name")))
-nrow( unique( subset(Data_Ubern, Soil_sample=="bcm", select = "File_Name")))
+nrow( unique( subset(Data_Ubern_cor, Soil_sample=="bcm", select = "File_Name")))
 
 nrow( subset(Data_comb, Preparation_Type=="Blank_chemical"))
 nrow( unique( subset(Data_comb, Preparation_Type=="Blank_chemical", select = "File_Name")))
@@ -304,22 +332,32 @@ nrow( unique( subset(Data_comb, Preparation_Type=="Blank_chemical", select = "Fi
 
 # number of blanks
 length(unique(df_Blanks$File_Name))
+length(unique(df_Blanks$Filter_Name))
+
 length(unique(df_Blanks$File_Name[df_Blanks$Lab=="WUR"]))
 length(unique(df_Blanks$File_Name[df_Blanks$Lab=="Ubern"]))
 
 # number of blanks with no particules 
-length(unique(df_Blanks$File_Name[df_Blanks$Polymer.grp=="No.plastic"] ))
-length(unique(df_Blanks$File_Name[df_Blanks$Lab=="WUR"]))
-length(unique(df_Blanks$File_Name[df_Blanks$Lab=="Ubern"]))
+length(unique(df_Blanks$File_Name[df_Blanks$N.px==0] ))
+length(unique(df_Blanks$File_Name[df_Blanks$Lab=="WUR" & df_Blanks$N.px==0]))
+length(unique(df_Blanks$File_Name[df_Blanks$Lab=="Ubern"& df_Blanks$N.px==0]))
 
-# /!\ "Other.Plastic" = No.plastic? 
-# df_Blanks[df_Blanks$Polymer.red12=="Other.Plastic", ]
-# df_Blanks[df_Blanks$Polymer.red12=="Other.Plastic", c("Polymer.grp","Polymer.red3","Polymer.red12")] <- "No.plastic"
-# df_Blanks$N.px[df_Blanks$Polymer.red12== "No.plastic"]=0
+# list of polymers 
+unique(df_Blanks$Polymer.grp)
+
+Summary_Blanks_polymers = df_Blanks %>% 
+  group_by( Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
+             Num.px=sum(N.px),           # Number of pixels
+             Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
+             #Tot.Mass.ng=sum( Mass.ng),
+             Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
+             SD.Area=sd(Area.um2.cor))
+
 
 # Summary / Blanks / Polymer
 
-# *a. Sum up per IR File ####
+# *a. Sum up per IR File, Polymer.grp ####
 Summary_Blanks1_File = df_Blanks %>% 
   group_by(File_Name, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
@@ -327,7 +365,9 @@ Summary_Blanks1_File = df_Blanks %>%
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
              #Tot.Mass.ng=sum( Mass.ng),
              Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
-             SD.Area=sd(Area.um2.cor))
+             SD.Area=sd(Area.um2.cor),
+             )%>%
+  ungroup()
 
 # *b. Mean per Filter (if in one batch, one filter, multiple IR files (IR_rep or Operator_rep)) ####
 Summary_Blanks2_Filter =  Summary_Blanks1_File %>% 
@@ -337,48 +377,42 @@ Summary_Blanks2_Filter =  Summary_Blanks1_File %>%
              Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
              #Tot.Mass.ng=sum( Mass.ng),
              Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
-             SD.Area=mean( SD.Area) )
+             SD.Area=mean( SD.Area),
+             N.operator=length(unique(Operator)), 
+             Operators= paste0(unique(Operator), collapse = " ; "))%>%
+  ungroup()
 
-# *c. Mean per Batch (if in one batch, multiple  filter, (Extract_rep))  ####   
-Summary_Blanks3_Batch =   Summary_Blanks2_Filter %>%    
+# *c. Mean per Filter sum polymers (if in one batch, multiple  filter, (Extract_rep))  #### 
+Summary_Blanks3_Filter_sumPol =  Summary_Blanks2_Filter %>% 
+  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
+             Num.px= sum(Num.px),           # Number of pixels
+             Tot.Area.mm2= sum( Tot.Area.mm2), # Total plastic area 
+             #Tot.Mass.ng=sum( Mass.ng),
+             Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
+             N.operator=max(N.operator), 
+             Operators= paste0(unique(Operators), collapse = " ; "))%>%
+  ungroup()
+
+ #write.csv(Summary_Blanks3_Filter_sumPol , paste(wd.out,"Summary_Blanks3_Filter_sumPol_2025.08.csv",sep = "/"))
+
+# *d. Mean per Batch (if in one batch, multiple  filter, (Extract_rep))  ####   
+Summary_Blanks4_Batch =   Summary_Blanks2_Filter %>%    
   group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
              Num.px=mean(Num.px),           # Number of pixels
              Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
              #Tot.Mass.ng=sum( Mass.ng),
              Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
-             SD.Area=mean( SD.Area) )
+             SD.Area=mean( SD.Area) )%>%
+  ungroup()
 
 # write.csv(Summary_Blanks3_Batch, paste(wd.out,"Summary_Blanks_Batch_2024.11.13.csv",sep = "/"))
 
 
-# *d. Sum all particles, from all polymers per Batch (if in one batch, multiple  filter, (Extract_rep)) ####
-# /!\ "Other.Plastic" excluded /!\
-
-
-Summary_Blanks4_Batch_SumPol12 =   Summary_Blanks3_Batch %>%
-  # "Other.Plastic" to 0
-  mutate(N.particles = if_else(Polymer.red12 == "Other.Plastic", 0, N.particles),
-         Tot.Area.mm2= if_else(Polymer.red12 == "Other.Plastic", 0,  Tot.Area.mm2),
-         #Mass.ng = if_else(Polymer.red12 == "Other.Plastic", 0,  Tot.Area.mm2),
-         Median.Area.sqrt.um= if_else(Polymer.red12 == "Other.Plastic", 0,  Median.Area.sqrt.um),
-         SD.Area= if_else(Polymer.red12 == "Other.Plastic", 0,  SD.Area) ) %>%
-  # Group
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
-  summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
-             Num.px=sum(Num.px),           # Number of pixels
-             Tot.Area.mm2=sum( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
-             Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
-             SD.Area=mean( SD.Area) )
-# write.csv( Summary_Blanks4_Batch_SumPol12, paste(wd.out,"Summary_Blanks_Batch_2024.11.13.csv",sep = "/"))
-
-
 # *e. Sum all particles, from all polymers per Batch (if in one batch, multiple  filter, (Extract_rep)) ####
-# /!\ "Other.Plastic" excluded /!\
 
-
-Summary_Blanks5_Batch_SumPol12 =   Summary_Blanks3_Batch %>%
+Summary_Blanks5_Batch_SumPol12 =   Summary_Blanks4_Batch %>%
   # Group
   group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
@@ -386,7 +420,8 @@ Summary_Blanks5_Batch_SumPol12 =   Summary_Blanks3_Batch %>%
              Tot.Area.mm2=sum( Tot.Area.mm2), # Total plastic area 
              #Tot.Mass.ng=sum( Mass.ng),
              Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
-             SD.Area=mean( SD.Area) )
+             SD.Area=mean( SD.Area) )%>%
+  ungroup()
 # write.csv( Summary_Blanks4_Batch_SumPol12, paste(wd.out,"Summary_Blanks_Batch_2024.11.13.csv",sep = "/"))
 
 
@@ -402,32 +437,57 @@ Out=subset(Data_comb, Q_index !=0 & Q_index <0.35 & Polymer.red12 =="Other.Plast
 
 
 
-# 5. Blank correction ####
+# 5. Blank correction - OPTION Particle ####
 
 # * Remove samples with more than one particle in batches with blank of more than 5 particles ####
 # if the batch has more than 5 particles we consider something went wrong in this batch so other samples might be contaminated. 
 # However if a samples has <=1 particle it is likely not affected by the contamination
 
-##### ************Work in progress**************** ####
-
-Summary_Blanks4_Batch_SumPol12$Batch_Name[ Summary_Blanks4_Batch_SumPol12$N.particles>5]
+Batch_bcm_over5=Summary_Blanks5_Batch_SumPol12$Batch_Name[Summary_Blanks5_Batch_SumPol12$N.particles>5]
 
 # Create the reduced data frame Data_comb_red
-Data_comb_red=subset(Data_comb, Batch_Name %!in%  Summary_Blanks4_Batch_SumPol12$Batch_Name[ Summary_Blanks4_Batch_SumPol12$N.particles>5]  )
+nrow (subset(Data_comb, Batch_Name %in% Batch_bcm_over5  )) # 515 particles detected in batch "m29" and "m9" that are potentially contamination 
+nrow (subset(Data_comb, Batch_Name %in% Batch_bcm_over5 & N.px==0   )) # 9 samples are in Batch_bcm_over5 BUT wit h0 particles detected so we keep them. 
+
+# Remove particles 
+Data_comb_red=subset(Data_comb, Batch_Name %!in% Batch_bcm_over5 |  N.px==0 ) 
+
+# Number of particles, Files, Soils 
+nrow (subset(Data_comb_red, N.px!=0 ))
+length (unique(Data_comb_red$File_Name))
+length (unique(Data_comb_red$Soil_sample))
 
 
-# Number of particles: 
-nrow(Data_comb_red[Data_comb_red$Area.um2.cor>0,])
+# * Characterize the remaining bcm contamination #### 
 
-# * Characterize the remaining contamination #### 
-df_Blanks_red=subset(Data_comb_red, Soil_sample=="bcm" )
+# Create dataframe 
+df_bcm=subset(Data_comb_red, Soil_sample=="bcm" )
+nrow(subset(df_bcm, N.px !=0))
+unique(df_bcm$Polymer.grp)
+#list of unique files 
+unique(df_bcm$File_Name)
 
+# number of blanks
+length(unique(df_bcm$File_Name))
+length(unique(df_bcm$Filter_Name))
+length(unique(df_bcm$Batch_Name))
 
-# Summary / Blanks / Polymer
+length(unique(df_bcm$File_Name[df_bcm$Lab=="WUR"]))
+length(unique(df_bcm$File_Name[df_bcm$Lab=="Ubern"]))
 
-# 1. Sum up per IR File 
-Summary_Blanks1_File_red =  df_Blanks_red%>% 
-  group_by(File_Name, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+# number of blanks with no particules 
+length(unique(df_bcm$File_Name[df_bcm$N.px==0] ))
+length(unique(df_bcm$File_Name[df_bcm$Lab=="WUR" & df_bcm$N.px==0]))
+length(unique(df_bcm$File_Name[df_bcm$Lab=="Ubern"& df_bcm$N.px==0]))
+
+#Number of UP: 
+  nrow(subset(df_bcm, N.px!=0 ))
+
+# list of polymers 
+unique(df_bcm$Polymer.grp)
+
+Summary_Blanks_polymers = df_bcm %>% 
+  group_by( Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
@@ -435,94 +495,12 @@ Summary_Blanks1_File_red =  df_Blanks_red%>%
              Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
              SD.Area=sd(Area.um2.cor))
 
-# 2. Mean per Filter (if in one batch, one filter, multiple IR files (IR_rep or Operator_rep))
-Summary_Blanks2_Filter_red =  Summary_Blanks1_File_red %>% 
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.Name,Sample_type,Operator for info
-  summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
-             Num.px=mean(Num.px),           # Number of pixels
-             Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
-             Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
-             SD.Area=mean( SD.Area) )
 
-# 3. Mean per Batch (if in one batch, multiple  filter, (Extract_rep))    
-Summary_Blanks3_Batch_red =   Summary_Blanks2_Filter_red %>%    
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%              # Group per file, Filter.Name,Sample_type,Operator for info
-  summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
-             Num.px=mean(Num.px),           # Number of pixels
-             Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
-             Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
-             SD.Area=mean( SD.Area) )
-
-# 4. Sum all particles, all polymers, per Batch (if in one batch, multiple  filter, (Extract_rep))  
-# /!\ "Other.Plastic" excluded /!\
-
-Summary_Blanks4_Batch_SumPol12_red=   Summary_Blanks3_Batch_red %>%
-  group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample ) %>%              # Group per file, Filter.Name,Sample_type,Operator for info
-  summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
-             Num.px=sum(Num.px),           # Number of pixels
-             Tot.Area.mm2=sum( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
-             Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
-             SD.Area=mean( SD.Area) )
-
-#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
-
-
-# # * Plots blanks ####
-# 
-# # All batches, Polymer12
-# ggplot( Summary_Blanks3_Batch, aes(Lab, N.particles)) +
-#   geom_jitter(height=0,width=0.25, aes(color=Polymer.red12 ))+
-#   ggtitle("Particles summ per Polymer.red12 per batch")+
-#   scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-#                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
-#                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
-#                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-#                                 "CA"= "#FFD39B") , 
-#                      # Relabel  "Other.Plastic"                 
-#                      labels = c( "Other.Plastic"= "Other Plastics" ) ) +
-#   theme_minimal()
-# 
-# # All batches, Polymer12
-# Summary_Blanks3_Batch_red$Lab_Batch=paste(Summary_Blanks3_Batch_red$Lab, Summary_Blanks3_Batch_red$Batch_Name)
-# ggplot(  Summary_Blanks3_Batch_red, aes( Lab_Batch, N.particles)) +
-#   geom_jitter(height=0,width=0.25, aes(color=Polymer.red12, shape=Lab ))+
-#   ggtitle("Particles summ per Polymer.red12 per batch")+
-#   scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-#                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
-#                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
-#                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-#                                 "CA"= "#FFD39B") , 
-#                      # Relabel  "Other.Plastic"                 
-#                      labels = c( "Other.Plastic"= "Other Plastics" ) ) +
-#   theme_minimal()+
-#   theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
-#         axis.title.x = element_blank())
-# 
-# 
-# # per Lab
-# ggplot( Summary_Blanks4_Batch_SumPol12, aes( Lab, N.particles) ) +
-#   geom_jitter(height=0,width=0.25)+
-#   ggtitle("All Polymer.red12 summed per batch")+
-#   theme_minimal()
-# 
-# # Number and median area of plastic particle per blank:
-
-# * Plots before correction  ####
-
-# Create dataframe 
-df_bcm=df_Blanks_red
-
-#list of unique files 
-unique(df_bcm$File_Name)
-
-# Summary per Filter :  
+# Summary per File, Polymer all :  
 
 S1c_bcm = df_bcm %>% 
   group_by( File_Name, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,    
-              CSS,Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator,  Polymer.red12,  Polymer.red3 ) %>%
+              CSS,Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
@@ -533,20 +511,23 @@ S1c_bcm = df_bcm %>%
   ungroup() %>%
   complete(nesting(File_Name, Lab,Batch_Name, Preparation_Type, Sample_type, Soil_sample,    
                    CSS,Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator ),
-           nesting(Polymer.red12,  Polymer.red3 ), 
+           nesting(Polymer.grp, Polymer.red12,  Polymer.red3 ), 
            fill=list(N.particles=0,
                      Num.px=0,
                      Tot.Area.mm2=0,
                      Median.Area.sqrt.um=0,
                      SD.Area=0)) %>%
-  # Remove the "No.plastic", not needed anymore
-  subset(Polymer.red12!="No.plastic") #
+  # Remove the "No.plastic", not needed anymore becasue all other polymers are reported. 
+  subset(Polymer.grp!="No.plastic") #
 
+nrow(S1c_bcm)/6
+length(unique(S1c_bcm$File_Name))
+sum(S1c_bcm$N.particles)
 
-
+# Summary per Filter, Polymer all :  
 S2c_bcm= S1c_bcm  %>% 
   group_by( Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,     
-                CSS,Farm, Field, Extraction_Name, Filter_div, Filter_Name, Polymer.red12,  Polymer.red3 ) %>%
+                CSS,Farm, Field, Extraction_Name, Filter_div, Filter_Name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
   summarise( N.files = n(),
              Operators= paste0(Operator, collapse = " ; "),
              Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
@@ -554,22 +535,36 @@ S2c_bcm= S1c_bcm  %>%
              Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
              Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
              sd.particles.operator=sd(N.particles),
-             sd.Area.operator=sd(Tot.Area.mm2)   ) 
-  
-  
+             sd.Area.operator=sd(Tot.Area.mm2)   )%>%
+  ungroup() 
+ 
+nrow(S2c_bcm)/6
+length(unique(S2c_bcm$Filter_Name))
+sum(S2c_bcm$Mean.particles)
+
+
+
+# Summary per Batch, Polymer all :   
 
 S3c_bcm= S2c_bcm%>% 
-  group_by( Lab,Batch_Name, Preparation_Type, Sample_type, Soil_sample,      
-                 CSS,Farm, Field, Extraction_Name,Polymer.red12,  Polymer.red3 ) %>%
+  group_by( Batch_Name, Lab,Preparation_Type, Sample_type, Soil_sample,      
+                 CSS,Farm, Field, Extraction_Name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
   summarise( N.div = n(),
              Mean.particles= sum(Mean.particles), #
              Mean.px=sum(Mean.px),              # 
              Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-             Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) 
+             Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+  ungroup()
+
+nrow(S3c_bcm)/6
+length(unique(S3c_bcm$Batch_Name))
+sum(S3c_bcm$Mean.particles)
+
+# Summary per Lab, Polymer all :  
 
 S7c_bcm= S3c_bcm %>%
   group_by(Preparation_Type, Lab,
-           Polymer.red12,  Polymer.red3 ) %>%
+           Polymer.grp,, Polymer.red12,  Polymer.red3 ) %>%
   summarise(N.files = n(),
             Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
             Min.particles.MM= min( Mean.particles),
@@ -579,13 +574,52 @@ S7c_bcm= S3c_bcm %>%
             Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
             Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
             Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
-            Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
+            Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) %>%
+  ungroup()
+
+nrow(S7c_bcm)/6
+length(unique(S7c_bcm$Lab))
+sum(S7c_bcm$Mean.particles.MM)
+
+# Summary per Polymer, per lab Mean filter :  
+
+S_pPol_pLab_mFilter= S3c_bcm %>%
+  group_by(Preparation_Type, Lab,
+           Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
+  summarise(N.filters = n(),
+            Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
+            Min.particles.MM= min( Mean.particles),
+            Max.particles.MM= max( Mean.particles),
+            Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
+            Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+            Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+            Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
+            Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
+            Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) %>%
+  group_by(Lab) %>%
+  mutate(
+    MiP_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100) %>%
+  ungroup()
+
+# Summary per Polymer, per lab Mean filter :  
+
+S_pPol_mFilter= S3c_bcm %>%
+  group_by(Preparation_Type,
+           Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
+  summarise(N.filters = n(),
+            Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
+            Min.particles.MM= min( Mean.particles),
+            Max.particles.MM= max( Mean.particles),
+            Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
+            Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+            Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+            Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
+            Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
+            Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) %>%
+  ungroup()
 
 
-
-
-
-# *** PLOT Polymer composition ####
+# *** PLOT Polymer composition per blank filter####
 
 # Order plot per polymer   
 S7c_bcm$Polymer.red12 = factor(S7c_bcm$Polymer.red12,
@@ -595,6 +629,7 @@ S7c_bcm$Polymer.red12 = factor(S7c_bcm$Polymer.red12,
 S7c_bcm = S7c_bcm %>%
   group_by(Lab) %>%
   mutate(
+    MiP_ntxt=paste0("(", round(Mean.particles.MM, 2), ")") ,
     MiP_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
     MiP_perc_text=paste0(round(MiP_perc, 0), "%") ) # Creat percentage as text  
 
@@ -604,11 +639,11 @@ S7c_bcm = S7c_bcm %>%
 
 S7c_bcm=subset(S7c_bcm, Mean.particles.MM!=0)
 
-ggplot(S7c_bcm, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.red12 ))+
+ggplot(S7c_bcm, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.grp ))+
   facet_grid(~Lab, scales =  "free", )+
   geom_bar(stat="summary", width=1, color="white") +
   #coord_polar("y", start=0) +
-  scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+  scale_fill_manual(values = c("PE"="#377EB8",  "EVAc"="#E41A1C", "PU"="#F781BF",
                                "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
                                "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
                                "PMMA"="#a1d99b",   "PC"="#FFF8DC",
@@ -618,7 +653,8 @@ ggplot(S7c_bcm, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.red12 ))
   theme_minimal() + 
   ggtitle("Chemical blanks, Polymer composition")+
   # geom_text(aes(label=Polymer.red12) , vjust = -0.5, hjust = 0 , nudge_x = -.5) +
-  geom_text(aes(label =  S7c_bcm$MiP_perc_text), vjust = 1, nudge_y = 0.05)+
+  geom_text(aes(label =  S7c_bcm$MiP_perc_text), vjust = 1, nudge_y = 0.045)+
+  geom_text(aes(label =  S7c_bcm$MiP_ntxt), vjust = 1, nudge_y = -0.005)+
   scale_y_continuous(breaks = seq(0, 1, 0.2) )+  # Have a break for each gap # y_max*200/8
                    #  labels = label_at(1000), #,                                        # label every second break
                    #  limits = c(-y_max*200/40, y_max*202))+ 
@@ -629,64 +665,69 @@ ggplot(S7c_bcm, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.red12 ))
   theme(axis.text.x = element_blank(),
         axis.title.x = element_blank())
 
+dev.size(units = "cm") # 15 x 9 cm 
+##  dev.size(units = "cm") gives the size of ggplot actual zoom
 
 
+# *** Both lab: ####
+# Number of Plastic particle per blank filter:
+sum(S2c_bcm$Mean.particles ) / length(unique(S2c_bcm$Filter_Name))
 
+# Average number of PP particle per blank filter:
+sum(subset(S2c_bcm ,Polymer.grp %in% c("PP") , select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name))
 
-# Both lab: 
-# Number of Plastic particle per blank:
-mean(Summary_Blanks4_Batch_SumPol12_red$N.particles) 
+# Median area of PP particle per blank File (no aggreagation per filter considered)
+PP_Areamedian=median(df_bcm$Area.um2.cor[grep("PP",df_bcm$Polymer.grp)])
 
-# Number and median area of PP particle per blank:
-sum(subset(Summary_Blanks3_Batch_red,Polymer.grp %in% c("PP") , select="N.particles") ) / length(unique(df_Blanks_red$File_Name))
+# Average number of PE particle per blank filter:
+sum(subset(S2c_bcm ,Polymer.grp %in% c("PE") , select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name))
 
-PP_Areamedian=median(df_Blanks_red$Area.um2.cor[grep("PP",df_Blanks_red$Polymer.grp)])
-
-
-# Number and median area of PE particle per blank:
-sum(subset(Summary_Blanks3_Batch_red,Polymer.grp %in% c("PE") , select="N.particles") ) / length(unique(df_Blanks_red$File_Name))
-PE_Areamedian=median(df_Blanks_red$Area.um2.cor[grep("PE",df_Blanks_red$Polymer.red12)])     
-median(subset(df_Blanks_red, Polymer.red12 %in% c("PE") , select="Area.um2.cor")[[1]])
-
-
-# Number rest of plastic particle per blank:
-sum(subset(Summary_Blanks3_Batch_red,Polymer.red12  %!in% c( "PE", "PP", "No.plastic") , select="N.particles") ) / length(unique(df_Blanks_red$File_Name))
-
-
-# WUR:  
-# Number of Plastic particle per blank:
-mean(Summary_Blanks4_Batch_SumPol12_red$N.particles[Summary_Blanks4_Batch_SumPol12_red$Lab=="WUR"]) 
-
-
-# Number and median area of PP particle per blank:
-sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %in% c("PP") & Lab=="WUR", select="N.particles") ) / nrow(subset(Summary_Blanks4_Batch_SumPol12_red, Lab=="WUR"))
-PP_WUR_Areamedian=median(subset(df_Blanks_red, Polymer.red12 %in% c("PP") & Lab=="WUR", select="Area.um2.cor")[[1]])
-
-# Number and median area of PE particle per blank:
-sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %in% c("PE") & Lab=="WUR", select="N.particles") ) / nrow(subset(Summary_Blanks4_Batch_SumPol12_red, Lab=="WUR"))
-PE_WUR_Areamedian=median(subset(df_Blanks_red, Polymer.red12 %in% c("PE") & Lab=="WUR", select="Area.um2.cor")[[1]])
-
+# Median area of PE particle per blank File (no aggreagation per filter considered)
+PE_Areamedian=median(df_bcm$Area.um2.cor[grep("PE",df_bcm$Polymer.grp)])
 
 # Number rest of plastic particle per blank:
-sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %!in% c( "PE", "PP", "No.plastic")& Lab=="WUR", select="N.particles" ) )/ nrow(subset(Summary_Blanks4_Batch_SumPol12_red, Lab=="WUR"))
+sum(subset(S2c_bcm, Polymer.red12  %!in% c( "PE", "PP", "No.plastic") , select="Mean.particles") ) / length(unique(df_bcm$File_Name))
 
 
-# UBern:  
-# Number of Plastic particle per blank:
-mean(Summary_Blanks4_Batch_SumPol12_red$N.particles[Summary_Blanks4_Batch_SumPol12_red$Lab=="Ubern"]) 
+# *** WUR: ####  
 
+# Number of Plastic particle per blank filter:
+sum(S2c_bcm$Mean.particles[S2c_bcm$Lab=="WUR"] ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="WUR"] ))
 
-# Number and median area of PP particle per blank:
-sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %in% c("PP") & Lab=="Ubern", select="N.particles") ) / nrow(subset(Summary_Blanks4_Batch_SumPol12_red, Lab=="Ubern"))
-PP_Ubern_Areamedian=median(subset(df_Blanks_red, Polymer.red12 %in% c("PP") & Lab=="Ubern", select="Area.um2.cor")[[1]])
+# Average number of PP particle per blank filter:
+sum(subset(S2c_bcm ,Polymer.grp %in% c("PP") & Lab=="WUR" , select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="WUR"]))
 
-# Number and median area of PE particle per blank:
-sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %in% c("PE") & Lab=="Ubern", select="N.particles") ) / nrow(subset(Summary_Blanks4_Batch_SumPol12_red, Lab=="Ubern"))
-PE_Ubern_Areamedian=median(subset(df_Blanks_red, Polymer.red12 %in% c("PE") & Lab=="Ubern", select="Area.um2.cor")[[1]])
+# Median area of PP particle per blank File (no aggreagation per filter considered)
+PP_Areamedian=median(df_bcm$Area.um2.cor[df_bcm$Polymer.grp =="PP" & df_bcm$Lab=="WUR"])
 
+# Average number of PE particle per blank filter:
+sum(subset(S2c_bcm ,Polymer.grp %in% c("PE") & Lab=="WUR" , select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="WUR"]))
+
+# Median area of PE particle per blank File (no aggreagation per filter considered)
+PE_Areamedian=median(df_bcm$Area.um2.cor[df_bcm$Polymer.grp =="PE" & df_bcm$Lab=="WUR"])
 
 # Number rest of plastic particle per blank:
-sum(subset(Summary_Blanks3_Batch_red, Polymer.red12 %!in% c("PE", "PP", "No.plastic")& Lab=="Ubern", select="N.particles" ) )/ nrow(subset(Summary_Blanks4_Batch_SumPol12_red, Lab=="Ubern"))
+sum(subset(S2c_bcm, Polymer.red12  %!in% c( "PE", "PP", "No.plastic")  & Lab=="WUR", select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="WUR"]))
+
+
+# *** UBern: #### 
+# Number of Plastic particle per blank filter:
+sum(S2c_bcm$Mean.particles[S2c_bcm$Lab=="Ubern"] ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="Ubern"] ))
+
+# Average number of PP particle per blank filter:
+sum(subset(S2c_bcm ,Polymer.grp %in% c("PP") & Lab=="Ubern" , select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="Ubern"]))
+
+# Median area of PP particle per blank File (no aggreagation per filter considered)
+PP_Areamedian=median(df_bcm$Area.um2.cor[df_bcm$Polymer.grp =="PP" & df_bcm$Lab=="Ubern"])
+
+# Average number of PE particle per blank filter:
+sum(subset(S2c_bcm ,Polymer.grp %in% c("PE") & Lab=="Ubern" , select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="Ubern"]))
+
+# Median area of PE particle per blank File (no aggreagation per filter considered)
+PE_Areamedian=median(df_bcm$Area.um2.cor[df_bcm$Polymer.grp =="PE" & df_bcm$Lab=="Ubern"])
+
+# Number rest of plastic particle per blank:
+sum(subset(S2c_bcm, Polymer.red12  %!in% c( "PE", "PP", "No.plastic")  & Lab=="Ubern", select="Mean.particles") ) / length(unique(S2c_bcm$Filter_Name[S2c_bcm$Lab=="Ubern"]))
 
 #MC- you print all these number to the terminal, but don't save them anywhere?
 
@@ -702,118 +743,143 @@ Data_comb_red_blank= Data_comb_red
 # 2. If no PP, remove one PE particle with the closest area from the median:
 # 3. If no PE, no PP don't do any thing
 
+#??????????????????????
 
-# Start For loop per sample: 
-for (s in unique(Data_comb_red_blank$File_Name)){
-  # Find all the particles in sample s: 
-  # test with s="M16040701_S2_results.csv"
-  Sample=Data_comb_red_blank[Data_comb_red_blank$File_Name==s,]
-  
-  # For Ubern: 
-  if (unique(Sample$Lab)=="Ubern"){
-    # 1. If there is a PE particle, remove a PE,          
-    if ("PE" %in% Sample$Polymer.grp){
-      # Find the PE particle with the closest area from the median.
-      # Create a df of all PE particles
-      PE=Sample[Sample$Polymer.grp=="PE",]
-      # Calculate the absolute difference with PE_Ubern_Areamedian for each PE particle 
-      PE$Median_diff=0
-      for (p in 1:nrow(PE)){
-        PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_Ubern_Areamedian)
-      }
-      # ID of the FIRST[1] particle with the min Median_diff:
-      ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
-      # remove this particle  
-      Data_comb_red_blank = Data_comb_red_blank %>%
-        mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
-               Length.um =if_else(ID== ID_PE, 0, Length.um),
-               Width.um = if_else(ID== ID_PE, 0, Width.um),
-               Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
-               Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
-               Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
-      
-      # 2. If there is no PE particle but PP, remove a PP,    
-    } else if  ("PP" %in% Sample$Polymer.grp){ 
-      #Find the PE particle with the closest area from the median:
-      PP=Sample[Sample$Polymer.grp=="PP",]
-      # Calculate the absolute difference with PP_Areamedian for each PE particle 
-      PP$Median_diff=0
-      for (p in 1:nrow(PP)){
-        PP$Median_diff[p]=abs(PP$Area.um2.cor[p]- PP_Ubern_Areamedian)
-      }
-      # ID of the FIRST[1] particle with the min Median_diff:
-      ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
-      # remove this particle  
-      Data_comb_red_blank=Data_comb_red_blank %>%
-        mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
-               Length.um =if_else(ID== ID_PP, 0, Length.um),
-               Width.um = if_else(ID== ID_PP, 0, Width.um),
-               Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
-               Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
-               Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
-
-    }
-    # 3. If no PE, no PP don't do any thing
-  } # end if UBern
-  
-  
-  # For WUR:  
-  if (unique(Sample$Lab)=="WUR"){
-    # 1. If there is a PP particle, remove a PP,      
-    if ("PP" %in% Sample$Polymer.grp){
-      #Find the PP particle with the closest area from the median:
-      PP=Sample[Sample$Polymer.grp=="PP",]
-      # Calculate the absolute difference with PP_Areamedian for each PP particle 
-      PP$Median_diff=0
-      for (p in 1:nrow(PP)){
-        PP$Median_diff[p]=abs(PP$Area.um2.cor[p]-PP_WUR_Areamedian)
-      }
-      # ID of the FIRST[1] particle with the min Median_diff:
-      ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
-      # remove this particle  
-      Data_comb_red_blank=Data_comb_red_blank %>%
-        mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
-               Length.um =if_else(ID== ID_PP, 0, Length.um),
-               Width.um = if_else(ID== ID_PP, 0, Width.um),
-               Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
-               Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
-               Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
-      
-      # 2. If there is no PP particle but PE, remove a PE,        
-    } else if  ("PE" %in% Sample$Polymer.grp){ # If there is no PP particle, but a PE 
-      #Find the PE particle with the closest area from the median:
-      PE=Sample[Sample$Polymer.grp=="PE",]
-      # Calculate the absolute difference with PE_Areamedian for each PE particle 
-      PE$Median_diff=0
-      for (p in 1:nrow(PE)){
-        PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_WUR_Areamedian)
-      }
-      # ID of the FIRST[1] particle with the min Median_diff:
-      ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
-      # remove this particle  
-      Data_comb_red_blank=Data_comb_red_blank %>%
-        mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
-               Length.um =if_else(ID== ID_PE, 0, Length.um),
-               Width.um = if_else(ID== ID_PE, 0, Width.um),
-               Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
-               Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
-               Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
-    }
-    # 3. If no PE, no PP don't do any thing    
-  } # end if WUR
-} # end loop Samples
-
-# Number of particles:
-nrow(Data_comb[Data_comb$N.px>0,])
-nrow(Data_comb_red[Data_comb_red$N.px>0,])
-nrow(Data_comb_red_blank[Data_comb_red_blank$N.px>0,])
-
-
-# Number of files: 
-length(unique(Data_comb$File_Name))
-length(unique(Data_comb_red$File_Name))
-length(unique(Data_comb_red_blank$File_Name))
-
+# 
+# # Start For loop per sample: 
+# for (s in unique(Data_comb_red_blank$File_Name)){
+#   # Find all the particles in sample s: 
+#   # test with s="M16040701_S2_results.csv"
+#   Sample_i=Data_comb_red_blank[Data_comb_red_blank$File_Name==s,]
+#   
+#   # Assign the expected bcm distribution per Lab
+#   bcm_filter_i= subset(S_pPol_pLab_mFilter, Lab==unique(Sample_i$Lab))
+#   
+#   # Recalculate occurrence percentage based on the list of available polymers in Sample_i
+#   bcm_filter_i$MiP_perc_i=bcm_filter_i$Mean.particles.MM/ 
+#       sum(bcm_filter_i$Mean.particles.MM[ bcm_filter_i$Polymer.grp %in% unique(Sample_i$Polymer.grp)])
+#   
+#   bcm_filter_i$MiP_percumul_i=cumsum(bcm_filter_i$MiP_perc_i)
+#   
+#  
+# } # end loop Samples
+# 
+# 
+# 
+# #???????????????????
+# 
+# # Start For loop per sample: 
+# for (s in unique(Data_comb_red_blank$File_Name)){
+#   # Find all the particles in sample s: 
+#   # test with s="M16040701_S2_results.csv"
+#   Sample=Data_comb_red_blank[Data_comb_red_blank$File_Name==s,]
+#   
+#   # For Ubern: 
+#   if (unique(Sample$Lab)=="Ubern"){
+#     # 1. If there is a PE particle, remove a PE,          
+#     if ("PE" %in% Sample$Polymer.grp){
+#       # Find the PE particle with the closest area from the median.
+#       # Create a df of all PE particles
+#       PE=Sample[Sample$Polymer.grp=="PE",]
+#       # Calculate the absolute difference with PE_Ubern_Areamedian for each PE particle 
+#       PE$Median_diff=0
+#       for (p in 1:nrow(PE)){
+#         PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_Ubern_Areamedian)
+#       }
+#       # ID of the FIRST[1] particle with the min Median_diff:
+#       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
+#       # remove this particle  
+#       Data_comb_red_blank = Data_comb_red_blank %>%
+#         mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
+#                Length.um =if_else(ID== ID_PE, 0, Length.um),
+#                Width.um = if_else(ID== ID_PE, 0, Width.um),
+#                Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
+#                Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
+#                Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
+#       
+#       # 2. If there is no PE particle but PP, remove a PP,    
+#     } else if  ("PP" %in% Sample$Polymer.grp){ 
+#       #Find the PE particle with the closest area from the median:
+#       PP=Sample[Sample$Polymer.grp=="PP",]
+#       # Calculate the absolute difference with PP_Areamedian for each PE particle 
+#       PP$Median_diff=0
+#       for (p in 1:nrow(PP)){
+#         PP$Median_diff[p]=abs(PP$Area.um2.cor[p]- PP_Ubern_Areamedian)
+#       }
+#       # ID of the FIRST[1] particle with the min Median_diff:
+#       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
+#       # remove this particle  
+#       Data_comb_red_blank=Data_comb_red_blank %>%
+#         mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
+#                Length.um =if_else(ID== ID_PP, 0, Length.um),
+#                Width.um = if_else(ID== ID_PP, 0, Width.um),
+#                Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
+#                Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
+#                Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
+# 
+#     }
+#     # 3. If no PE, no PP don't do any thing
+#   } # end if UBern
+#   
+#   
+#   # For WUR:  
+#   if (unique(Sample$Lab)=="WUR"){
+#     # 1. If there is a PP particle, remove a PP,      
+#     if ("PP" %in% Sample$Polymer.grp){
+#       #Find the PP particle with the closest area from the median:
+#       PP=Sample[Sample$Polymer.grp=="PP",]
+#       # Calculate the absolute difference with PP_Areamedian for each PP particle 
+#       PP$Median_diff=0
+#       for (p in 1:nrow(PP)){
+#         PP$Median_diff[p]=abs(PP$Area.um2.cor[p]-PP_WUR_Areamedian)
+#       }
+#       # ID of the FIRST[1] particle with the min Median_diff:
+#       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
+#       # remove this particle  
+#       Data_comb_red_blank=Data_comb_red_blank %>%
+#         mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
+#                Length.um =if_else(ID== ID_PP, 0, Length.um),
+#                Width.um = if_else(ID== ID_PP, 0, Width.um),
+#                Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
+#                Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
+#                Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
+#       
+#       # 2. If there is no PP particle but PE, remove a PE,        
+#     } else if  ("PE" %in% Sample$Polymer.grp){ # If there is no PP particle, but a PE 
+#       #Find the PE particle with the closest area from the median:
+#       PE=Sample[Sample$Polymer.grp=="PE",]
+#       # Calculate the absolute difference with PE_Areamedian for each PE particle 
+#       PE$Median_diff=0
+#       for (p in 1:nrow(PE)){
+#         PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_WUR_Areamedian)
+#       }
+#       # ID of the FIRST[1] particle with the min Median_diff:
+#       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
+#       # remove this particle  
+#       Data_comb_red_blank=Data_comb_red_blank %>%
+#         mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
+#                Length.um =if_else(ID== ID_PE, 0, Length.um),
+#                Width.um = if_else(ID== ID_PE, 0, Width.um),
+#                Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
+#                Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
+#                Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
+#     }
+#     # 3. If no PE, no PP don't do any thing    
+#   } # end if WUR
+# } # end loop Samples
+# 
+# 
+# # Number of particles:
+# nrow(Data_comb[Data_comb$N.px>0,])
+# nrow(Data_comb_red[Data_comb_red$N.px>0,])
+# nrow(Data_comb_red_blank[Data_comb_red_blank$N.px>0,])
+# 
+# 
+# # Number of files: 
+# length(unique(Data_comb$File_Name))
+# length(unique(Data_comb_red$File_Name))
+# length(unique(Data_comb_red_blank$File_Name))
+# 
 
 
 # 6. Add the field METADATA ####
@@ -831,7 +897,7 @@ Data_comb_red_blank_meta=merge(Data_comb_red_blank, Fields_METADATA, by=c("CSS",
 # Data_comb_red_blank_meta$Preparation_Type=Data_comb_red_blank_meta$Preparation_Type.x
 # Data_comb_red_blank_meta=subset(Data_comb_red_blank_meta, select = -c(Preparation_Type.x, Preparation_Type.y))
 # head(Data_comb_red_blank_meta)
-# 7. Create Table per field
+# 7. Create Table per field ###
 
 
 
@@ -843,12 +909,14 @@ length(unique(Data_comb$File_Name[Data_comb$Polymer.grp=="No.plastic"]))
 length(unique(Data_comb$File_Name))
 
 
- write.csv(Data_comb_red_blank_meta, paste(wd.out,"Corrected_MiP_Particles.csv",sep = "/"))
- write.csv(Data_comb_meta, paste(wd.out,"MiP_Particles.csv",sep = "/"))
+ # write.csv(Data_comb_red_blank_meta, paste(wd.out,"Corrected_MiP_Particles.csv",sep = "/"))
+ write.csv(Data_comb_red, paste(wd.out,"Corrected_MiP_Particles.csv",sep = "/"))
+ 
+ #write.csv(Data_comb_meta, paste(wd.out,"MiP_Particles.csv",sep = "/"))
 
- write.csv(df_Blanks, paste(wd.out,"Blanks_Particles.csv",sep = "/"))
+ write.csv(df_bcm, paste(wd.out,"Blanks_Particles.csv",sep = "/"))
 
-
+ write.csv(S_pPol_pLab_mFilter, paste(wd.out,"Summary_Blanks_pPolymer_pLab_meanFilter.csv",sep = "/"))
 
 
 
