@@ -1691,17 +1691,17 @@ Field_METADATA_vector=NA
     
     Summary7b_CSS= Summary5b_Field %>% 
       group_by_at( c(Group7_CSS , GroupP12, GroupS) )  %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
-                Mean.particles.CSS= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-                Median.particles.CSS= median( Mean.particles),
-                Min.particles.CSS= min( Mean.particles),
-                Max.particles.CSS= max( Mean.particles),
-                Mean.px.CSS=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-                Mean.Tot.Area.mm2.CSS=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                Median.Tot.Area.mm2.CSS=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                Min.Tot.Area.mm2.CSS=min(Mean.Tot.Area.mm2),
-                Max.Tot.Area.mm2.CSS=max(Mean.Tot.Area.mm2),
-                Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng) )%>%
+        summarise(N.files = n(),
+                Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
+                Median.particles.CSS= median( Mean.particles.Fd),
+                Min.particles.CSS= min( Mean.particles.Fd),
+                Max.particles.CSS= max( Mean.particles.Fd),
+                Mean.px.CSS=mean( Mean.px.Fd),              # Mean Number of pixels per sample and polymer, over the files/operators
+                Mean.Tot.Area.mm2.CSS=mean(Mean.Tot.Area.mm2.Fd), #  Mean area per sample and polymer, over the files/operators
+                Median.Tot.Area.mm2.CSS=median(Mean.Tot.Area.mm2.Fd), #  Mean area per sample and polymer, over the files/operators
+                Min.Tot.Area.mm2.CSS=min(Mean.Tot.Area.mm2.Fd),
+                Max.Tot.Area.mm2.CSS=max(Mean.Tot.Area.mm2.Fd),
+                Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
     
     
