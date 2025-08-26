@@ -207,6 +207,7 @@ Field_METADATA_vector=NA
                  SD.Area=sd(Area.um2.cor))  %>%  #
     # Complete the Summary1_File: 
     # for each file I want all the polymers represented
+    # So a new line is created for the missing combinations with a 0 value  
       ungroup() %>%
       complete(nesting(!!!syms(Group1_Files) ),
               nesting(!!!syms(GroupP) ), 
@@ -266,6 +267,29 @@ Field_METADATA_vector=NA
       subset(Polymer.red12!="No.plastic") #
     
     
+    
+    # Checks Size_cat2.um
+    
+    Summary1b2_File2 =  Summary1b_File  %>% 
+      group_by_at( c(Group1_Files, GroupP12, "Size_cat2.um") ) %>%
+      summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
+                 Num.px=sum(Num.px),           # Number of pixels
+                 Tot.Area.mm2=sum(Tot.Area.mm2), # Total plastic area 
+                 Tot.Mass.ng=sum(Tot.Mass.ng) ) %>%  #
+      # for each file I want all the polymers represented
+      ungroup()
+      
+    #Check 
+    Summary1b2_File$N.particles2=Summary1b2_File2$N.particles
+    
+    Summary1b2_File22 <-  Summary1b2_File %>%
+      left_join(Summary1b2_File2  %>% select( File_Name   , Polymer.red12, Size_cat2.um,  N.particles),
+                by = c("File_Name", "Polymer.red12", "Size_cat2.um"))
+    
+    subset(Summary1b2_File2, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= N.particles)
+    subset(Summary1b2_File, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= N.particles)
+    sum(subset(Summary1b_File, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= N.particles))
+    subset(Summary1b_File, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE")
     
 
     # *1.c Sum up per processed (PMF) File, Polymer.red12 ####
@@ -447,7 +471,7 @@ Field_METADATA_vector=NA
     MultipleIR_File=unique(MultipleIR_File)
     
     # Plot concerned filters: 
-    ggplot(subset( Summary1g_File,  Summary1g_File$File_Name %in% MultipleIR_File ),  aes(x=File_Name, y=N.particles, color=Polymer.red12, shape = Operator)) + 
+    ggplot(subset( Summary1g_File,  Summary1g_File$File_Name %in% MultipleIR_File ),  aes(x=File_Name, y=N.particles, color=Polymer.grp, shape = Operator)) + 
     facet_grid(~Extraction_Name, scales =  "free", )+
       geom_point()  +
       scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
@@ -788,11 +812,18 @@ Field_METADATA_vector=NA
                  Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
       ungroup()
     
+    Summary3b2_Filter2 = Summary3b_Filter %>% 
+      group_by_at( c(Group3_Filters, GroupP12, "Size_cat2.um") ) %>%
+      summarise( N.div = n(),
+                 Mean.particles= sum(Mean.particles), #
+                 Mean.px=sum(Mean.px),              # 
+                 Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
+                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+      ungroup()
     
-   
     
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
-    Summary3b2_Filter_cor2=  Summary3b_Filter_cor2 %>% 
+    Summary3b2_Filter_cor2 = Summary3b_Filter_cor2 %>% 
       group_by_at( c(Group3_Filters, GroupP12, "Size_cat2.um") ) %>%
       summarise( N.div = n(),
                  Mean.particles= sum(Mean.particles), #
@@ -847,35 +878,56 @@ Field_METADATA_vector=NA
       
     } # Summary10b_Lab_bcm
     
-    # # Check total particles 
-    # sum(Summary3a_Filter$Mean.particles)
-    # sum(Summary3b_Filter$Mean.particles)
-    # 
-    # sum(Summary3a_Filter_cor$Mean.particles) 
-    # sum(Summary3b_Filter_cor$Mean.particles) 
-    # sum(Summary3b_Filter_cor2$Mean.particles) 
-    # sum(Summary3b2_Filter_cor$Mean.particles) 
-    # sum(Summary3b2_Filter_cor2$Mean.particles) 
-    # 
-    # length(unique(Summary3a_Filter_cor$Extraction_Name))  
-    # length(unique(Summary3b_Filter_cor$Extraction_Name))
-    # length(unique(Summary3b_Filter_cor2$Extraction_Name))
-    # 
-    # ( sum(Summary3b_Filter$Mean.particles) -
-    #     sum(Summary3b_Filter_cor$Mean.particles) ) /
-    #   length(unique(Summary3b_Filter_cor$Extraction_Name))
-    # 
-    # ( sum(Summary3b_Filter$Mean.particles) -
-    #     sum(Summary3b_Filter_cor2$Mean.particles) ) /
-    #   length(unique(Summary3b_Filter_cor2$Extraction_Name))
-    # 
-    # # Check average particles per filter
-    # mean(Summary3a_Filter_cor$Mean.particles)
-    # mean(Summary3b_Filter_cor$Mean.particles)
-    # 
+    Summary3b2_Filter2_cor = Summary3b_Filter_cor %>% 
+      group_by_at( c(Group3_Filters, GroupP12, "Size_cat2.um") ) %>%
+      summarise( N.div = n(),
+                 Mean.particles= sum(Mean.particles), #
+                 Mean.px=sum(Mean.px),              # 
+                 Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
+                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+      ungroup()
     
     
+    # Check total particles
+    sum(Summary3a_Filter$Mean.particles)
+    sum(Summary3b_Filter$Mean.particles)
+
+    sum(Summary3a_Filter_cor$Mean.particles)
     
+    sum(Summary3b_Filter_cor$Mean.particles)
+    sum(Summary3b_Filter_cor2$Mean.particles)
+    sum(Summary3b2_Filter_cor$Mean.particles)
+    sum(Summary3b2_Filter_cor2$Mean.particles)
+
+    
+    length(unique(Summary3a_Filter_cor$Extraction_Name))
+    length(unique(Summary3b_Filter_cor$Extraction_Name))
+    length(unique(Summary3b_Filter_cor2$Extraction_Name))
+
+    ( sum(Summary3b_Filter$Mean.particles) -
+        sum(Summary3b_Filter_cor$Mean.particles) ) /
+      length(unique(Summary3b_Filter_cor$Extraction_Name))
+
+    ( sum(Summary3b_Filter$Mean.particles) -
+        sum(Summary3b_Filter_cor2$Mean.particles) ) /
+      length(unique(Summary3b_Filter_cor2$Extraction_Name))
+
+    # Check average particles per filter
+    mean(Summary3a_Filter_cor$Mean.particles)
+    mean(Summary3b_Filter_cor$Mean.particles)
+
+    # Checks Size_cat2.um
+    sum( subset(Summary3b_Filter, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    sum( subset(Summary3b2_Filter, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    sum( subset(Summary3b2_Filter2, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    
+    sum( subset(Summary3b_Filter_cor, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    sum( subset(Summary3b2_Filter_cor, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    sum( subset(Summary3b2_Filter2_cor, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    
+    sum( subset(Summary4b_Soil, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    sum( subset(Summary4b2_Soil, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
+    sum( subset(Summary4b2_Soil2, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles) )
     
     # * 3c Sum per filter.div, Polymer.red12 ####
     Summary3c_Filter = Summary2c_IRfiles %>% 
@@ -1246,8 +1298,8 @@ Field_METADATA_vector=NA
     } # Summary10b_Lab_bcm
     
       #Check two calculation methods: 
-    E= Summary3g_Filter_cor [abs(Summary3g_Filter_cor2$Mean.particles - Summary3g_Filter_cor$Mean.particles)>0.000000001,]
-    E2=Summary3g_Filter_cor2[abs(Summary3g_Filter_cor2$Mean.particles - Summary3g_Filter_cor$Mean.particles)>0.000000001,]
+   # E= Summary3g_Filter_cor [abs(Summary3g_Filter_cor2$Mean.particles - Summary3g_Filter_cor$Mean.particles)>0.000000001,]
+   # E2=Summary3g_Filter_cor2[abs(Summary3g_Filter_cor2$Mean.particles - Summary3g_Filter_cor$Mean.particles)>0.000000001,]
      # For some reason the Summary3g_Filter_cor2 has more 0 lines than Summary3g_Filter_cor?
     E=subset(Summary3g_Filter_cor, Mean.particles !=0)
     E2=subset(Summary3g_Filter_cor2, Mean.particles !=0)
@@ -1287,11 +1339,12 @@ Field_METADATA_vector=NA
     
 # 4. Summaries, Soil_samples ####    
     Group4_Soil
+   
     
     # * 4a Mean per Soil_samples, all factors ####
     Summary4a_Soil= subset( Summary3a_Filter_cor, Preparation_Type == "Field_samples" )  %>% #Preparation_Type %in% c("Field_samples", "Standard_Soil")
       group_by_at( c( Group4_Soil, GroupP, GroupS) ) %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.particles= mean( Mean.particles),
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
@@ -1301,11 +1354,48 @@ Field_METADATA_vector=NA
       ungroup()
 
     
+    
+    
+    # How many Soil Samples are extracted multiple times? 
+    unique(df_MiP$IR_rep)
+    # list of soils with multiple extractions
+    MultipleSoil_Extract=unique(Summary4a_Soil$Soil_sample[ Summary4a_Soil$N.extract>1])
+    
+    MultipleExtract_Name=  "m15_8.8.1_S1_n" 
+    
+    # For each of this soil 
+    for (ex in 1: length(MultipleSoil_Extract)){
+      #print(length(unique(df_MiP$File_Name[df_MiP$Extraction_Name == MultipleIR_Extract[ex]])))
+      if (length(unique(df_MiP$Extraction_Name[df_MiP$Soil_sample == MultipleSoil_Extract[ex]])) > 1) { # If there is more than one 
+        # print(MultipleIR_Extract[ex])
+        print(unique(df_MiP$Extraction_Name[df_MiP$Soil_sample == MultipleSoil_Extract[ex]])) 
+        MultipleExtract_Name= c( MultipleExtract_Name,unique(df_MiP$Extraction_Name[df_MiP$Soil_sample == MultipleSoil_Extract[ex]]) )
+      }
+      
+    }
+    MultipleExtract_Name=unique( MultipleExtract_Name)
+    
+    # Plot concerned filters: 
+    ggplot(subset( Summary3c_Filter, Extraction_Name %in%  MultipleExtract_Name  ),  aes(x=Extraction_Name, y=Mean.particles, color=Polymer.red12)) + 
+      facet_wrap(~Soil_sample + Preparation_Type, scales =  "free" , nrow = 5)+
+      geom_point()  +
+      scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                    "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                    "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                    "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                    "CA"= "#FFD39B") , 
+                         # Relabel  "Other.Plastic"                 
+                         labels = c( "Other.Plastic"="Other Plastic" ) )+
+      theme_minimal()+
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5),
+            panel.border = element_rect(color = "black", fill = NA, size = 1) )
+    
+    
     # * 4b Mean per Soil_samples, Polymer.red12 * per Size_cat.um ####
     
     Summary4b_Soil= subset( Summary3b_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
       group_by_at( c( Group4_Soil, GroupP12, GroupS) ) %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
@@ -1315,9 +1405,9 @@ Field_METADATA_vector=NA
 
     # * 4b2 Mean per Soil_samples, Polymer.red12 * per Size_cat2.um ####
     
-    Summary4b2_Soil= subset( Summary3b_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
+    Summary4b2_Soil= subset( Summary3b2_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
       group_by_at( c( Group4_Soil, GroupP12, "Size_cat2.um") ) %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
@@ -1325,12 +1415,23 @@ Field_METADATA_vector=NA
       ) %>%
       ungroup()
     
+    Summary4b2_Soil2= subset(Summary4b_Soil, Preparation_Type == "Field_samples" ) %>% 
+      group_by_at( c( Group4_Soil, GroupP12, "Size_cat2.um") ) %>% # For each PMF_File_Name, get the summary
+      summarise( N.extract = n(),
+                 Mean.particles= sum( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
+                 Mean.px=sum( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
+                 Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng=sum( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+      ) %>%
+      ungroup()
+    
+    
     
     # * 4c Mean per Soil_samples, Polymer.red12 ####
     
     Summary4c_Soil= subset( Summary3c_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
       group_by_at( c( Group4_Soil, GroupP12) ) %>%# For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
@@ -1344,7 +1445,7 @@ Field_METADATA_vector=NA
     Summary4d_Soil= subset( Summary3d_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
       group_by_at( c( Group4_Soil) ) %>% # For each PMF_File_Name, get the summary
                  
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
@@ -1358,7 +1459,7 @@ Field_METADATA_vector=NA
     Summary4e_Soil= subset( Summary3e_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
       group_by_at( c( Group4_Soil) ) %>% # For each PMF_File_Name, get the summary
       
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles.S= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.S= min( Mean.particles),
                  Max.particles.S= max( Mean.particles),
@@ -1376,7 +1477,7 @@ Field_METADATA_vector=NA
     Summary4f_Soil= subset( Summary3f_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
       group_by_at( c( Group4_Soil, GroupS) ) %>% # For each PMF_File_Name, get the summary
       
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles.S= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.S= min( Mean.particles),
                  Max.particles.S= max( Mean.particles),
@@ -1393,7 +1494,7 @@ Field_METADATA_vector=NA
     
     Summary4g_Soil= subset( Summary3g_Filter_cor, Preparation_Type == "Field_samples" ) %>% 
       group_by_at( c( Group4_Soil, GroupP) ) %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.extract = n(),
                  Mean.particles.S= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.S= min( Mean.particles),
                  Max.particles.S= max( Mean.particles),
@@ -1415,7 +1516,7 @@ Field_METADATA_vector=NA
     # * 5a Mean per Field, all factors ####
     Summary5a_Field= Summary4a_Soil%>% 
       group_by_at( c(Group5_Field, GroupP, GroupS) ) %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.soils = n(),
                  Mean.particles.Fd= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.Fd= min( Mean.particles),
                  Max.particles.Fd= max( Mean.particles),
@@ -1432,7 +1533,7 @@ Field_METADATA_vector=NA
     
     Summary5b_Field= Summary4b_Soil%>% 
       group_by_at( c(Group5_Field, GroupP12, GroupS) ) %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.soils = n(),
                  Mean.particles.Fd= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.Fd= min( Mean.particles),
                  Max.particles.Fd= max( Mean.particles),
@@ -1448,20 +1549,42 @@ Field_METADATA_vector=NA
     
     Summary5b2_Field= Summary4b2_Soil%>% 
       group_by_at( c(Group5_Field, GroupP12, "Size_cat2.um" ) ) %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
-                 Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-                 Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-                 Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+      summarise( N.soils = n(),
+                 Mean.particles.Fd= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
+                 Min.particles.Fd= min( Mean.particles),
+                 Max.particles.Fd= max( Mean.particles),
+                 Mean.px.Fd=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
+                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
+                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
+                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
       ) %>%
       ungroup()
     
+    
+    Summary5b2_Field2= Summary5b_Field%>% 
+      group_by_at( c(Group5_Field, GroupP12, "Size_cat2.um" ) ) %>% # For each PMF_File_Name, get the summary
+      summarise( N.soils = n(),
+                 Mean.particles.Fd= sum( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
+                 Mean.px.Fd=mean( Mean.px.Fd),              # Mean Number of pixels per sample and polymer, over the files/operators
+                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.Fd), #  Mean area per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.Fd) #  Mean mass per sample and polymer, over the files/operators
+      ) %>%
+      ungroup()
+    
+    # Checks Size_cat2.um
+    sum( subset(Summary5b2_Field2, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles.Fd) )
+    sum( subset(Summary5b2_Field, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles.Fd) )
+    sum( subset(Summary5b_Field, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles.Fd) )
+    
+    subset(Summary5g_Field, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles.Fd)
+    subset(Summary5c_Field, CSS==6 & Farm==6 & Field==1 & Polymer.red12=="PE", select= Mean.particles.Fd)
     
     # * 5c Mean per Field_samples, Polymer.red12 ####
     
     Summary5c_Field= Summary4c_Soil%>% 
       group_by_at( c(Group5_Field, GroupP12) ) %>%# For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.soils = n(),
                  Mean.particles.Fd= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.Fd= min( Mean.particles),
                  Max.particles.Fd= max( Mean.particles),
@@ -1479,7 +1602,7 @@ Field_METADATA_vector=NA
     Summary5d_Field= Summary4d_Soil %>% 
       group_by_at( c(Group5_Field) ) %>%# For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.Fd= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.Fd= min( Mean.particles),
                 Max.particles.Fd= max( Mean.particles),
@@ -1496,7 +1619,7 @@ Field_METADATA_vector=NA
     Summary5e_Field= Summary4e_Soil %>% 
       group_by_at( c(Group5_Field) ) %>%# For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.Fd= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.Fd= min( Mean.particles.S),
                 Max.particles.Fd= max( Mean.particles.S),
@@ -1514,12 +1637,12 @@ Field_METADATA_vector=NA
     
 
  
-    # * 5f sum up all polymers,  including "Other.Plastic"  ####
+    # * 5f sum up all polymers,  including "Other.Plastic", Per size.cat ####
     
     Summary5f_Field= Summary4f_Soil %>% 
       group_by_at( c(Group5_Field, GroupS) ) %>%# For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.Fd= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.Fd= min( Mean.particles.S),
                 Max.particles.Fd= max( Mean.particles.S),
@@ -1535,8 +1658,45 @@ Field_METADATA_vector=NA
     
     Summary5e_Field$CSS_Farm_Field= paste(Summary5e_Field$CSS,Summary5e_Field$Farm, Summary5e_Field$Field, sep=".")
     
-  
     
+    # * 5g  Mean per Farm,  Per polymer.grp  ####
+    Summary5g_Field= Summary4g_Soil %>%
+      group_by_at( c(Group5_Field, GroupP) ) %>% # For each PMF_File_Name, get the summary
+
+      
+      summarise(N.soils = n(),
+                Mean.particles.Fd= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
+                Min.particles.Fd= min( Mean.particles.S),
+                Max.particles.Fd= max( Mean.particles.S),
+                Mean.px.Fd=mean( Mean.px.S),              # Mean Number of pixels per sample and polymer, over the files/operators
+                Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
+                Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
+                Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
+                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
+                Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
+                Formula=Min_Max_diff-Min.particles.Fd/2
+      ) %>%
+      ungroup()
+
+    
+  #Check
+    sum(subset(Summary5f_Field, CSS==6 & Farm==6 & Field==1, select=Mean.particles.Fd))
+    sum(subset(Summary5e_Field, CSS==6& Farm==6 & Field==1, select=Mean.particles.Fd))
+    sum(subset(Summary5c_Field, CSS==6& Farm==6 & Field==1, select=Mean.particles.Fd))
+    sum(subset(Summary5b_Field, CSS==6& Farm==6 & Field==1, select=Mean.particles.Fd))
+    sum(subset(Summary5a_Field, CSS==6& Farm==6 & Field==1, select=Mean.particles.Fd))
+    
+    (subset(Summary5b2_Field_wide, CSS==6 & Farm==6 & Field==1, select=uPtot))
+    
+    sum(subset(Summary5f_Field, CSS==6 & Farm==6 & Field==1 , select=Mean.particles.Fd))
+    sum(subset(Summary5e_Field, CSS==6& Farm==6 & Field==1, select=Mean.particles.Fd))
+    sum(subset(Summary5c_Field, CSS==6& Farm==6 & Field==1& Polymer.red12=="PE", select=Mean.particles.Fd))
+    sum(subset(Summary5b_Field, CSS==6& Farm==6 & Field==1& Polymer.red12=="PE", select=Mean.particles.Fd))
+    sum(subset(Summary5a_Field, CSS==6& Farm==6 & Field==1& Polymer.red12=="PE", select=Mean.particles.Fd))
+    
+    (subset(Summary5b2_Field_wide, CSS==6 & Farm==6 & Field==1, select=c(   "Mean.particles_PE_300-2000", "Mean.particles_PE_90-300" )))
+    (subset(Summary5b_Field, CSS==6& Farm==6 & Field==1 &Polymer.red12=="PE"))
+    (subset(Summary5b2_Field, CSS==6& Farm==6 & Field==1 &Polymer.red12=="PE"))
     
     # 6. Summary per Farm     ####
     # Mean (Field)  per farm
@@ -1545,7 +1705,7 @@ Field_METADATA_vector=NA
     # * 6a Mean per Farm, all factors ####
     Summary6a_Farm= Summary5a_Field%>% 
       group_by_at( c(Group6_Farm, GroupP, GroupS) )  %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.fields = n(),
                  Mean.particles.Fm= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.Fm= min( Mean.particles.Fd),
                  Max.particles.Fm= max( Mean.particles.Fd),
@@ -1562,7 +1722,7 @@ Field_METADATA_vector=NA
     
     Summary6b_Farm= Summary5b_Field%>% 
       group_by_at( c(Group6_Farm, GroupP12, GroupS) )  %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.fields = n(),
                  Mean.particles.Fm= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.Fm= min( Mean.particles.Fd),
                  Max.particles.Fm= max( Mean.particles.Fd),
@@ -1579,7 +1739,7 @@ Field_METADATA_vector=NA
     
     Summary6c_Farm= Summary5c_Field%>% 
       group_by_at( c(Group6_Farm, GroupP12) )  %>% # For each PMF_File_Name, get the summary
-      summarise( N.files = n(),
+      summarise( N.fields = n(),
                  Mean.particles.Fm= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                  Min.particles.Fm= min( Mean.particles.Fd),
                  Max.particles.Fm= max( Mean.particles.Fd),
@@ -1597,7 +1757,7 @@ Field_METADATA_vector=NA
     Summary6d_Farm= Summary5d_Field %>% 
       group_by_at( c(Group6_Farm) ) %>% # For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.Fm= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.Fm= min( Mean.particles.Fd),
                 Max.particles.Fm= max( Mean.particles.Fd),
@@ -1614,7 +1774,7 @@ Field_METADATA_vector=NA
     Summary6e_Farm= Summary5e_Field %>% 
       group_by_at( c(Group6_Farm) ) %>% # For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.Fm= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.Fm= min( Mean.particles.Fd),
                 Max.particles.Fm= max( Mean.particles.Fd),
@@ -1632,7 +1792,7 @@ Field_METADATA_vector=NA
     # Summary6g_Farm= Summary5g %>% 
     #   group_by_at( c(Group6_Farm, GroupP) ) %>% # For each PMF_File_Name, get the summary
     #   
-    #   summarise(N.files = n(),
+    #   summarise(N.fields = n(),
     #             Mean.particles.CSS= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
     #             Median.particles.CSS= median( Mean.particles.S),
     #             Min.particles.CSS= min( Mean.particles.S),
@@ -1650,7 +1810,7 @@ Field_METADATA_vector=NA
     # Summary6g_Farm_outlier = subset(Summary4g_Soil, CSS!=11 | Farm !=10 ) %>% 
     #   group_by_at( c(Group6_Farm, GroupP) ) %>% # For each PMF_File_Name, get the summary
     #   
-    #   summarise(N.files = n(),
+    #   summarise(N.fields = n(),
     #             Mean.particles.CSS= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
     #             Median.particles.CSS= median( Mean.particles.S),
     #             Min.particles.CSS= min( Mean.particles.S),
@@ -1691,7 +1851,7 @@ Field_METADATA_vector=NA
     
     Summary7b_CSS= Summary5b_Field %>% 
       group_by_at( c(Group7_CSS , GroupP12, GroupS) )  %>% # For each PMF_File_Name, get the summary
-        summarise(N.files = n(),
+        summarise(N.fields = n(),
                 Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Median.particles.CSS= median( Mean.particles.Fd),
                 Min.particles.CSS= min( Mean.particles.Fd),
@@ -1709,7 +1869,7 @@ Field_METADATA_vector=NA
     
     Summary7c_CSS= Summary5c_Field %>% 
       group_by_at( c(Group7_CSS , GroupP12) )  %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Median.particles.CSS= median( Mean.particles.Fd),
                 Min.particles.CSS= min( Mean.particles.Fd),
@@ -1726,7 +1886,7 @@ Field_METADATA_vector=NA
 
     Summary7c_CSS_outlier = subset(Summary5c_Field, CSS!=11 | Farm !=10 ) %>% 
       group_by_at( c(Group7_CSS , GroupP12) ) %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Median.particles.CSS= median( Mean.particles.Fd),
                 Min.particles.CSS= min( Mean.particles.Fd),
@@ -1747,7 +1907,7 @@ Field_METADATA_vector=NA
       group_by(Preparation_Type,  
                CSS) %>% # For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Median.particles.CSS= median( Mean.particles.Fd),
                 Min.particles.CSS= min( Mean.particles.Fd),
@@ -1765,7 +1925,7 @@ Field_METADATA_vector=NA
     Summary7e_CSS= Summary5e_Field%>% 
       group_by(Preparation_Type,  
                CSS) %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Median.particles.CSS= median( Mean.particles.Fd),
                 Min.particles.CSS= min( Mean.particles.Fd),
@@ -1782,7 +1942,7 @@ Field_METADATA_vector=NA
       group_by(Preparation_Type,  
                CSS ) %>% # For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Median.particles.CSS= median( Mean.particles.Fd),
                 Min.particles.CSS= min( Mean.particles.Fd),
@@ -1801,7 +1961,7 @@ Field_METADATA_vector=NA
     
     Summary7f_CSS= Summary5f_Field   %>% 
       group_by_at( c(Group7_CSS , GroupS) )  %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.CSS= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Median.particles.CSS= median( Mean.particles.Fd),
                 Min.particles.CSS= min( Mean.particles.Fd),
@@ -1862,7 +2022,7 @@ Field_METADATA_vector=NA
     Summary8a_MINAGRIS= Summary5a_Field %>%
       group_by(Preparation_Type,
                Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um ) %>%
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.MM= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.Fd),
                 Max.particles.MM= max( Mean.particles.Fd),
@@ -1883,7 +2043,7 @@ Field_METADATA_vector=NA
     Summary8b_MINAGRIS= Summary5b_Field%>% 
       group_by(Preparation_Type, 
                Polymer.red12,  Polymer.red3, Size_cat.um  )  %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.MM= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.Fd),
                 Max.particles.MM= max( Mean.particles.Fd),
@@ -1904,7 +2064,7 @@ Field_METADATA_vector=NA
     Summary8c_MINAGRIS= Summary5c_Field%>% 
       group_by(Preparation_Type,  
                Polymer.red12,  Polymer.red3)  %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.MM= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.Fd),
                 Max.particles.MM= max( Mean.particles.Fd),
@@ -1924,7 +2084,7 @@ Field_METADATA_vector=NA
     
     Summary8d_MINAGRIS= Summary5d_Field %>% 
       group_by(Preparation_Type ) %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.MM= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.Fd),
                 Max.particles.MM= max( Mean.particles.Fd),
@@ -1944,7 +2104,7 @@ Field_METADATA_vector=NA
     Summary8e_MINAGRIS= Summary5e_Field %>% 
       group_by(Preparation_Type ) %>% # For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.MM= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.Fd),
                 Max.particles.MM= max( Mean.particles.Fd),
@@ -1963,7 +2123,7 @@ Field_METADATA_vector=NA
     Summary8f_MINAGRIS= Summary5f_Field %>%
       group_by(Preparation_Type,
              Size_cat.um ) %>%
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.MM= mean( Mean.particles.Fd), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.Fd),
                 Max.particles.MM= max( Mean.particles.Fd),
@@ -1983,7 +2143,7 @@ Field_METADATA_vector=NA
     Summary8g_MINAGRIS= Summary4g_Soil %>% 
       group_by_at( c(GroupP) )%>% # For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.fields = n(),
                 Mean.particles.MM= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.S),
                 Max.particles.MM= max( Mean.particles.S),
@@ -2214,7 +2374,7 @@ Field_METADATA_vector=NA
     Summary10a_Lab= Summary4a_Soil %>%
       group_by(Preparation_Type, Lab,
                Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um ) %>%
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles),
                 Max.particles.MM= max( Mean.particles),
@@ -2232,7 +2392,7 @@ Field_METADATA_vector=NA
     Summary10b_Lab= Summary4b_Soil%>% 
       group_by(Preparation_Type, Lab,
                Polymer.red12,  Polymer.red3, Size_cat.um  )  %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles),
                 Max.particles.MM= max( Mean.particles),
@@ -2250,7 +2410,7 @@ Field_METADATA_vector=NA
     Summary10c_Lab= Summary4c_Soil%>% 
       group_by(Preparation_Type,  Lab,
                Polymer.red12,  Polymer.red3)  %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles),
                 Max.particles.MM= max( Mean.particles),
@@ -2267,7 +2427,7 @@ Field_METADATA_vector=NA
     
     Summary10d_Lab= Summary4d_Soil %>% 
       group_by(Lab,Preparation_Type ) %>% # For each PMF_File_Name, get the summary
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles),
                 Max.particles.MM= max( Mean.particles),
@@ -2284,7 +2444,7 @@ Field_METADATA_vector=NA
     Summary10e_Lab= Summary4e_Soil %>% 
       group_by(Lab,Preparation_Type ) %>% # For each PMF_File_Name, get the summary
       
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.MM= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.S),
                 Max.particles.MM= max( Mean.particles.S),
@@ -2300,7 +2460,7 @@ Field_METADATA_vector=NA
     Summary10f_Lab= Summary4f_Soil %>%
       group_by(Preparation_Type,Lab,
                Size_cat.um ) %>%
-      summarise(N.files = n(),
+      summarise(N.soils = n(),
                 Mean.particles.MM= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
                 Min.particles.MM= min( Mean.particles.S),
                 Max.particles.MM= max( Mean.particles.S),
@@ -2323,34 +2483,53 @@ Field_METADATA_vector=NA
     # - Number & Area (2)
     # -> +44 columns 
     
-    Summary5b2_Field_wide=  Summary5b2_Field%>% 
+    Summary5b2_Field_wide=  Summary5b2_Field2%>% 
       
       ungroup()%>%
-      select(-c(Polymer.red3, N.files, Mean.px,  Mean.Tot.Mass.ng)) %>% 
+      select(-c(Polymer.red3, N.files, Mean.px.Fd,  Mean.Tot.Mass.ng.Fd)) %>% 
        pivot_wider(
         names_from = c(Polymer.red12, Size_cat2.um),
-        values_from = c(Mean.particles, Mean.Tot.Area.mm2)
+        values_from = c(Mean.particles.Fd, Mean.Tot.Area.mm2.Fd)
         
       )
     
-    write.csv( Summary5b2_Field_wide, paste(wd.out,"/Summary5b2_Field_wide", Date, sep = ""))
+   # Add total uP
+    Summary5b2_Field_wide$uPtot=rowSums( Summary5b2_Field_wide[, uP])
     
+    
+    # Check
+    colnames(Summary5b2_Field_wide)
+    uP=c("Mean.particles.Fd_PA_300-2000"  , "Mean.particles.Fd_PA_90-300", "Mean.particles.Fd_PC_300-2000"   ,"Mean.particles.Fd_PC_90-300" ,  "Mean.particles.Fd_PE_300-2000" , "Mean.particles.Fd_PE_90-300" ,"Mean.particles.Fd_PET_300-2000", "Mean.particles.Fd_PET_90-300" , "Mean.particles.Fd_PLA_300-2000"     ,"Mean.particles.Fd_PLA_90-300" , "Mean.particles.Fd_PMMA_300-2000" , "Mean.particles.Fd_PMMA_90-300"      ,"Mean.particles.Fd_PP_300-2000", "Mean.particles.Fd_PP_90-300" ,"Mean.particles.Fd_PS_300-2000"     , "Mean.particles.Fd_PS_90-300","Mean.particles.Fd_PU_300-2000" ,"Mean.particles.Fd_PU_90-300", "Mean.particles.Fd_PVC_300-2000", "Mean.particles.Fd_PVC_90-300",  "Mean.particles.Fd_Other.Plastic_300-2000","Mean.particles.Fd_Other.Plastic_90-300")
+    
+    unique ( Summary5b2_Field_wide$`Mean.particles.Fd_PE_90-300`==subset(Summary5b_Field, Polymer.red12=="PE" & Size_cat2.um=="90-300", select="Mean.particles.Fd") )
+    
+ 
+    
+    sum(E)
+    sum(Summary5b_Field$Mean.particles.Fd)
+    unique ( E==Summary5b_Field$Mean.particles.Fd)
+    E-Summary5b_Field$Mean.particles.Fd
+    
+      write.csv( Summary5b2_Field_wide, paste(wd.out,"/Summary5b2_Field_wide.csv", Date, sep = "") )
+    
+      Summary5b2_Field_wide$uPtot=E
+      
     # Checks Plots
     
     ggplot( Summary5b2_Field_wide)+
-      geom_point(aes(x=Sample.ID, y=`Mean.particles_PVC_90-300`*200))+
+      geom_point(aes(x=Sample.ID, y=`Mean.particles.Fd_PVC_90-300`*200))+
       theme_minimal()+
       theme(
         axis.text.x = element_text(angle = 90) )
     
     ggplot( Summary5b2_Field_wide)+
-      geom_point(aes(x=Sample.ID, y=`Mean.particles_PE_300-2000` *200))+
+      geom_point(aes(x=Sample.ID, y=`Mean.particles.Fd_PE_300-2000` *200))+
       theme_minimal()+
       theme(
         axis.text.x = element_text(angle = 90) )
     
     ggplot( Summary5b2_Field_wide)+
-      geom_point(aes(x=Sample.ID, y=`Mean.particles_PE_90-300`*200))+
+      geom_point(aes(x=Sample.ID, y=`Mean.particles.Fd_PE_90-300`*200))+
       theme_minimal()+
       theme(
         axis.text.x = element_text(angle = 90) )
