@@ -130,7 +130,7 @@ Data_Ubern$PMF_rep="pmf"
 Data_Ubern$Width.um = pmin(Data_Ubern$height, Data_Ubern$width)         
 Data_Ubern$Length.um= pmax(Data_Ubern$height, Data_Ubern$width) 
 Data_Ubern$Mass.ng=0
-Data_Ubern$Aspect_ratio=Data_Ubern$Length.um/Data_Ubern$Width.um
+Data_Ubern$Aspect_ratio=Data_Ubern$Width.um/Data_Ubern$Length.um
 
 # Polymers
 Polymer.red12= c("PP", "PE",  "PS", "PET", "PVC", "PU", "PMMA", "PLA", "PC", "PA", "No.plastic") # 12 plastics , +Others  #"CA","silicone",
@@ -315,7 +315,39 @@ Data_comb$Size_cat2.um[Data_comb$Size_cat.um == "90-300"]="90-300"
 
 # /!\ Work in progress /!\
 # Create a separate function ?
+# https://pubs.acs.org/doi/full/10.1021/acs.est.4c01031 
 
+
+ # *** 3.1 Polymer Density table [g/cm3] ####
+Polymer_density=read.csv("Polymer_density.csv")
+
+Data_comb$Pol_Density=1
+for (pol in Polymer_density$Polymer ){
+  Data_comb$Pol_Density[Data_comb$Polymer.grp==pol]=Polymer_density$Density_med_g.cm3[Polymer_density$Polymer==pol]
+}
+
+is.na(Data_comb$pol_density)
+
+# *** 3.2 Volume / Simon (2018) ####
+# https://pubs-acs-org.ezproxy.library.wur.nl/doi/10.1021/acs.est.4c01031
+# https://pubs.acs.org/doi/10.1021/acs.est.3c03620?goto=supporting-info
+# https://www.sciencedirect.com/science/article/pii/S0043135418303877?getft_integrator=acs&pes=vor&utm_source=acs
+# The most used model is that of Simon et al. (2018). (22)
+#Three assumptions are at the core of the model. 
+# First, the particles are assumed to have an ellipsoidal shape, with the major and minor axes on the XY plane calculated from the ellipse that best fits the particle projection on the XY plane (equivalent ellipse from the 2D area obtained by image analysis).
+# Second, the particles are assumed to lie at their lowest energy state (therefore the Z-direction axis is the smallest dimension).
+# Third, the asymmetry of the ellipsoid in the ZY plane is assumed proportional to that in the XY plane hence the axis in the Z direction (i.e., particle height “H”) is assumed to be in the same ratio to the 2D minor axis (“W” for width), as the 2D minor axis is to the 2D major axis (“L” for length) (i.e., H/W = W/L). The model was developed for mass balance in a wastewater treatment plant, for particles ranging from 10–500 μm. No validation was run.
+
+Data_comb$Aspect_ratio2=min( Data_comb$Aspect_ratio , Data_comb$Width.um /Data_comb$Length.um)
+Data_comb$Aspect_ratio2[is.na(Data_comb$Aspect_ratio2)]=0.667
+Data_comb$height.um=Data_comb$Width.um * Data_comb$Aspect_ratio2  
+
+
+Data_comb$volumeS18.um3=4* pi * Data_comb$height.um * Data_comb$Width.um * Data_comb$Length.um /(3*2*2*2)
+
+
+# *** 3.3 Mass (select) ####
+Data_comb$Mass.ng=Data_comb$volumeS18.um3 *Data_comb$Pol_Density/1000
 
 
 # 4. Analyse blanks ####
@@ -637,7 +669,11 @@ S7c_bcm = S7c_bcm %>%
   mutate(
     MiP_ntxt=paste0("(", round(Mean.particles.MM, 2), ")") ,
     MiP_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
-    MiP_perc_text=paste0(round(MiP_perc, 0), "%") ) # Creat percentage as text  
+    MiP_perc_text=paste0(round(MiP_perc, 0), "%"), # Creat percentage as text  
+    MiP_Area_txt=paste0("(", round(Mean.Tot.Area.mm2.MM, 3), ")") ,
+    MiP_Area_perc = Mean.Tot.Area.mm2.MM / sum(Mean.Tot.Area.mm2.MM) * 100,
+    MiP_Area_perc_text=paste0(round(MiP_Area_perc, 0), "%") ) # Creat percentage as text  
+    
 
 
 # Do not show percentages < 3.5% 
@@ -645,6 +681,7 @@ S7c_bcm = S7c_bcm %>%
 
 S7c_bcm=subset(S7c_bcm, Mean.particles.MM!=0)
 
+# Number 
 ggplot(S7c_bcm, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.grp ))+
   facet_grid(~Lab, scales =  "free", )+
   geom_bar(stat="summary", width=1, color="white") +
@@ -673,6 +710,37 @@ ggplot(S7c_bcm, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.grp ))+
 
 dev.size(units = "cm") # 15 x 9 cm 
 ##  dev.size(units = "cm") gives the size of ggplot actual zoom
+
+# Area 
+ggplot(S7c_bcm, aes(x=Polymer.red12, y=Mean.Tot.Area.mm2.MM, fill= Polymer.grp ))+
+  facet_grid(~Lab, scales =  "free", )+
+  geom_bar(stat="summary", width=1, color="white") +
+  #coord_polar("y", start=0) +
+  scale_fill_manual(values = c("PE"="#377EB8",  "EVAc"="#E41A1C", "PU"="#F781BF",
+                               "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                               "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                               "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                               "CA"= "#FFD39B") , 
+                    # Relabel  "Other.Plastic"                 
+                    labels = c( "Other.Plastic"= "Other Plastics" ) ) +
+  theme_minimal() + 
+  ggtitle("Chemical blanks, Polymer composition")+
+  # geom_text(aes(label=Polymer.red12) , vjust = -0.5, hjust = 0 , nudge_x = -.5) +
+  geom_text(aes(label =  S7c_bcm$MiP_Area_perc_text), vjust = 1, nudge_y = 0.0045)+
+  geom_text(aes(label =  S7c_bcm$MiP_Area_txt),       vjust = 1, nudge_y = -0.0005)+
+  scale_y_continuous(breaks = seq(0, 1, 0.1) )+  # Have a break for each gap # y_max*200/8
+  #  labels = label_at(1000), #,                                        # label every second break
+  #  limits = c(-y_max*200/40, y_max*202))+ 
+  #ggtitle(paste("Field Samples ; CSS ", css))+
+  # guides( color  = "none")+
+  labs(y = expression("Average surface of plastic per sample [mm" ^ 2*"]"),
+        fill = "Polymers identified") +
+  theme(axis.text.x = element_blank(),
+        axis.title.x = element_blank())
+
+dev.size(units = "cm") # 15 x 9 cm 
+##  dev.size(units = "cm") gives the size of ggplot actual zoom
+
 
 
 # *** Both lab: ####

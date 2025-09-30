@@ -539,6 +539,10 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   #list of unique files 
   unique(df_st$File_Names)
   
+  length(unique(df_st$File_Names))
+  length(unique(df_st$File_Names[df_st$Lab=="WUR"]))
+  length(S3e_st$Mean.particles[S3e_st$Mean.particles<1])
+  
   # Summary per Filter :  
   S3a_st=subset(Summary3a_Filter, Soil_sample=="st")
   S3e_st=subset(Summary3e_Filter, Soil_sample=="st")
@@ -647,6 +651,27 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
     theme_minimal()+
     theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
           axis.title.x = element_blank())
+  
+  
+  
+
+  # * PLOT All filters, Sum of all polymers  ####
+  ggplot( S3e_st, aes(x=Lab, y=Mean.particles ))+
+    scale_size_manual(values = c("WUR"=2.5,  "Ubern"=3))+
+    
+    ggtitle("Soil standard, sum all Polymers ")+
+    geom_boxplot(outlier.shape = NA)+
+    geom_jitter(aes(color=Lab, shape=Lab, size=Lab ),height=0,width=0.25)+
+    scale_color_manual(values = c("WUR"="dark green",  "Ubern"="red"))+
+    theme_minimal()+
+    stat_summary(fun.y=mean, geom="point", shape=3, size=9, color="blue", fill="blue") +
+    scale_y_continuous(breaks = seq(0, max(S3e_st$Mean.particles), by = 2),
+                       minor_breaks = seq(0, max(S3e_st$Mean.particles), 1)) +
+    labs( y = "Average number of MiP per sample")+
+    theme(axis.text.x = element_text(angle = 90, vjust = 0, hjust=0),
+          axis.title.x = element_blank())
+  
+  
   
   
   # * PLOT Size distribution  ####
@@ -930,7 +955,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
 
 # 5. Spiked soils ####
   
-  Polymer_Spiked_list=
+  #Polymer_Spiked_list=
   
   # Create dataframe 
   df_Spiked=subset(Data_comb_red_blank, Preparation_Type=="Spiked")
@@ -943,11 +968,15 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   # Summary per PMF File: 
   S1h_s=subset(Summary1h_File, Preparation_Type=="Spiked")
   S1i_s=subset(Summary1i_File, Preparation_Type=="Spiked")
+  S3e_s=subset(Summary3e_Filter, Preparation_Type=="Spiked")
+  
   
   unique(S1h_s$File_Names[S1h_s$Lab=="WUR"])
+  unique(S1h_s$File_Names[S1h_s$Lab=="Ubern"])
   length(unique(S1h_s$File_Names[S1h_s$Lab=="WUR"]))
-  length(unique(S1i_s$File_Names[S1i_s$Lab=="WUR"]))
+  length(unique(S1i_s$File_Names[S1i_s$Lab=="Ubern"]))
   
+  nrow(S3e_s)
   
   
   # Summary per Filter :
@@ -1127,7 +1156,10 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   
   
   
+  # * Size distribution 
   
+  # Polyethilen 
+ 
   
   
   
@@ -1140,7 +1172,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   Spike_in_WUR$File_Names=Spike_in_WUR$Label
   Spike_in_WUR= Read_MINAGRIS_label(Spike_in_WUR)
   Spike_in_WUR$Lab="WUR"
-  Spike_in_WUR$Batch_Name=tolower(Spike_in_WUR$Batch_Name)
+  Spike_in_WUR$Batch_Name=tolower(Spike_in_WUR$Batch_name)
   Spike_in_WUR$Area.um2.cor= Spike_in_WUR$Area
   Spike_in_WUR$N.px=0
   Spike_in_WUR$N.px[Spike_in_WUR$Area.um2.cor>0]=1
@@ -1667,6 +1699,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
     
     
     # 6. Export #### 
+    Date=".csv"
     write.csv( Recovery_WUR_1i, paste(wd.out,"/Recovery_WUR_1i", Date, sep = ""))
     write.csv( Recovery_WUR_1i_mean_soil, paste(wd.out,"/Recovery_WUR_1i_mean_soil", Date, sep = ""))
     write.csv(Recovery_WUR_1i_mean, paste(wd.out,"/Recovery_WUR_1i_mean", Date, sep = ""))
@@ -1871,10 +1904,62 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
     
     
     
+    #########################
+    
+    # Compare labs ####
+    (Summary5e_Field$Max.particles.F - Summary5e_Field$Min.particles.F)
+    (Summary5e_Field$Max.particles.F - Summary5e_Field$Min.particles.F)/Summary5e_Field$Max.particles.F
+    
+    # Number 
+    A=((Summary5e_Field$Max.particles.F - Summary5e_Field$Min.particles.F)/Summary5e_Field$Max.particles.F) *100
     
     
+    B=((Summary4e_Soil$Mean.particles.S[Summary4e_Soil$Lab=="Ubern"])-(Summary4e_Soil$Mean.particles.S[Summary4e_Soil$Lab=="WUR"])) /(Summary4e_Soil$Mean.particles.S[Summary4e_Soil$Lab=="WUR"]) *100
+    
+    B[is.nan(B)]=0
+    B[is.infinite(B)]=0
+    B[order(B)]
+    
+    mean(B)
     
     
+    A[is.nan(A)]=0
+    A[order(A)]
+    
+    mean(A)
+    mean (Summary5e_Field$Max.particles.F - Summary5e_Field$Min.particles.F)
+    
+    #Area
+    
+    A=((Summary5e_Field$Max.Tot.Area.mm2.F- Summary5e_Field$Min.Tot.Area.mm2.F)/Summary5e_Field$Max.Tot.Area.mm2.F) *100
+    
+    
+    B=(Summary4e_Soil$Mean.Tot.Area.mm2.S[Summary4e_Soil$Lab=="Ubern"]-Summary4e_Soil$Mean.Tot.Area.mm2.S[Summary4e_Soil$Lab=="WUR"] )  /Summary4e_Soil$Mean.Tot.Area.mm2.S[Summary4e_Soil$Lab=="WUR"] 
+    
+    B[is.nan(B)]=0
+    B[is.infinite(B)]=0
+    B[order(B)]
+    
+    mean(B)
+    
+    nrow(Summary5e_Field[Summary5e_Field$Mean.particles.F==0,])
+    nrow(Summary5e_Field[Summary5e_Field$Mean.particles.F==0,])/nrow(Summary5e_Field)
+    nrow(Summary5e_Field[Summary5e_Field$Mean.particles.F==0,])/nrow(Summary5e_Field)
+    
+    A[is.nan(A)]=0
+    A[order(A)]
+    
+    mean(A)
+    mean (Summary5e_Field$Max.particles.F - Summary5e_Field$Min.particles.F)
+    
+  sum (Summary5e_Field$Max.particles.F - Summary5e_Field$Min.particles.F) /   nrow(Summary5e_Field)
+  (sum (Summary5e_Field$Max.particles.F - Summary5e_Field$Min.particles.F)-451-430) /   nrow(Summary5e_Field)
+
+   mean(Summary5e_Field$Mean.particles.F)
+   
+   
+  
+    #9 particles 
     
     
     

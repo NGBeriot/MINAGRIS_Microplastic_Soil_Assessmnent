@@ -215,6 +215,7 @@ Field_METADATA_vector=NA
              fill=list(N.particles=0,
                        Num.px=0,
                        Tot.Area.mm2=0,
+                       Tot.Mass.ng=0,
                        Median.Area.sqrt.um=0,
                        SD.Area=0))%>%
       # Remove the "No.plastic", not needed anymore
@@ -238,6 +239,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
+                         Tot.Mass.ng=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -261,6 +263,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
+                         Tot.Mass.ng=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -284,6 +287,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
+                         Tot.Mass.ng=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -336,6 +340,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
+                         Tot.Mass.ng=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0))
 
@@ -358,6 +363,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
+                         Tot.Mass.ng=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0))    %>%    # Remove the "No.plastic", not needed anymore
     subset(Polymer.red3!="No.plastic") #
@@ -383,6 +389,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
+                         Tot.Mass.ng=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0))
     
@@ -404,6 +411,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
+                         Tot.Mass.ng=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -1125,6 +1133,8 @@ Field_METADATA_vector=NA
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
+                Min.Tot.Mass.ng.Fd=min( Mean.Tot.Mass.ng.S),
+                Max.Tot.Mass.ng.Fd=max( Mean.Tot.Mass.ng.S),
                 Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
                 Formula=Min_Max_diff-Min.particles.Fd/2
       ) %>%
@@ -1649,7 +1659,9 @@ Field_METADATA_vector=NA
                 Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2.S),
                 sd.Tot.Area.mm2.MM=sd(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.S) ) %>%
+                Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.S),
+                Min.Tot.Mass.ng.MM=min( Mean.Tot.Mass.ng.S),
+                Max.Tot.Mass.ng.MM=max( Mean.Tot.Mass.ng.S) ) %>%
       ungroup()
     
 
@@ -1947,8 +1959,10 @@ Field_METADATA_vector=NA
                 Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.S) ) %>%
-      ungroup() 
+                Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.S),
+                Min.Tot.Mass.ng.MM=min( Mean.Tot.Mass.ng.S),
+                Max.Tot.Mass.ng.MM=max( Mean.Tot.Mass.ng.S) ) %>%
+      ungroup()
     
     #  * 10f Mean all Lab, all factors #### 
     Summary10f_Lab= Summary4f_Soil %>%
@@ -1963,7 +1977,9 @@ Field_METADATA_vector=NA
                 Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.S) ) %>%
+                Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.S),
+                Min.Tot.Mass.ng.MM=min( Mean.Tot.Mass.ng.S),
+                Max.Tot.Mass.ng.MM=max( Mean.Tot.Mass.ng.S)) %>%
       ungroup() 
     
     
@@ -2218,6 +2234,7 @@ Field_METADATA_vector=NA
               fill=list(N.particles=0,
                         Num.px=0,
                         Tot.Area.mm2=0,
+                        Tot.Mass.ng=0,
                         Median.Area.sqrt.um=0,
                         SD.Area=0)) %>%
      # Remove the "No.plastic", not needed anymore
@@ -2260,6 +2277,7 @@ Field_METADATA_vector=NA
               fill=list(N.particles=0,
                         Num.px=0,
                         Tot.Area.mm2=0,
+                        Tot.Mass.ng=0,
                         Median.Area.sqrt.um=0,
                         SD.Area=0)) %>%
      # Remove the "No.plastic", not needed anymore

@@ -1823,11 +1823,11 @@ PLOT=ggplot(Summary8c_MINAGRIS, aes(x=Polymer.red12, y=Mean.particles.MM*200, fi
                     # Relabel  "Other.Plastic"                 
                     labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
   theme_minimal() + 
-  geom_text(aes(label=Polymer.red12) ,                     vjust = -0.5, hjust = 0.5, nudge_x = 0,  nudge_y = 0.2) +
-  geom_text(aes(label = paste0(round(MiP_perc, 1), "%")),  vjust = 1,    hjust = 0.5, nudge_x =0 ,  nudge_y = -0.2)+
+  geom_text(aes(label=Polymer.red12) ,                     vjust =0.5, hjust = 0.5, nudge_x = 0,  nudge_y = 20) +
+  geom_text(aes(label = paste0(round(MiP_perc, 1), "%")),  vjust =0.5, hjust = 0.5, nudge_x =0 ,  nudge_y = -20)+
   #ggtitle(paste("Field Samples ; CSS ", css))+
   # guides( color  = "none")+
-  labs(# y = "Average number of plastic particles per kg of soil",
+  labs( y = "Average number of plastic particles per kg of soil",
     fill = "Polymers identified") +
 theme(axis.text.x = element_blank(),
       axis.title.x = element_blank())
