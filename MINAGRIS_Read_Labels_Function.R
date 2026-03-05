@@ -1,27 +1,48 @@
 # Read_MINAGRIS_label() is a function to read the codes commonly used in MINAGRIS label: 
-# It creates new columns from the following codes: 
+# It creates new columns from the existing labels. 
+# it recognizes; "Batch"_"Soil_sample"_"Sample_type"_"Filter_div"_"IR_rep"_"PMF_OP.csv" 
+# "Batch", "Soil_sample", "Sample_type", "PMF_OP.csv" do not have default values.
+# "Filter_div" and "IR_rep" have default {f1,ir1}
 
 
 
 Read_MINAGRIS_label<-function(Data, Colname_label){
 # Description ####
   # Function Inputs: 
-  # Data =  DataFrame or vector containing the labels to read
-  # colname_label [OPTIONAL]= Column or vector name containing the labels to read, default will look for [Ignore.case]  "File.Name", "Filter.Name", "Sample.Name", or choose the first column with characters. Disp thec column name
-  # select.output= additional descriptive columns required to be created
+    # Data =  DataFrame or vector containing the labels to read
+    # colname_label [OPTIONAL]= Column or vector name containing the labels to read, default will look for [Ignore.case]  "File.Name", "Filter.Name", "Sample.Name", or choose the first column with characters. Disp thec column name
+    # select.output= additional descriptive columns required to be created
+    # Example labels
+      # IR files:
+        # "m20_1111_n_f1_ir2"
+        # "m27_11101_n_f3"  
+        # "m7a_422_n_ir2"
+        # "m20_1111_n"  
+        # Data= c("m20_1111_n_f1_ir2","m27_11101_n_f3","m7a_422_n_ir2","m20_1111_n"  )
   
+      # PMF file: 
+        # "m20_1111_n_f1_ir2_PMF_SR.csv"
+        # "m20_1111_n_PMF_SR.csv" 
+        # "m16_711_s2_PMF_JM.csv"
+        # Data= c("m20_1111_n_f1_ir2_PMF_SR.csv","m20_1111_n_PMF_SR.csv","m16_711_s2_PMF_JM.csv")
+    
   # Function Outputs: 
-  # New data frame with additional descriptive columns
-  # success message: "[Names of the columns] have been created" or Warning "No MINAGRIS code detected" 
+    # New data frame with additional descriptive columns
+    # success message: "[Names of the columns] have been created" or Warning "No MINAGRIS code detected" 
   
 # Initialisation ####  
   # If Colname_label not supplied
   
-  if(missing(Colname_label)) {
-  Colname_label=c(colnames(Data),colnames(Data))[ grep("File.Name|File_Name|Slice|Label" ,colnames(Data), ignore.case = T)][1] # Select the first column name that looks like a colname_label
+  if(is.data.frame(Data)){ # If Data is a data.frame, find the Colname_label:
+    if(missing(Colname_label)) {
+    Colname_label=c(colnames(Data),colnames(Data))[ grep("File.Name|File_Name|Slice|Label" ,colnames(Data), ignore.case = T)][1] # Select the first column name that looks like a colname_label
+    }
+    Data$Colname_label=Data[,Colname_label]
+  } else if (is.vector(Data)){# If Data is a vector, make it a data frame:
+    Data=data.frame(Colname_label=Data)
+  } else {
+    stop("Data is not a data frame or a vector")
   }
-  Data$Colname_label=Data[,Colname_label]
-  
 
 
 
@@ -134,30 +155,42 @@ sort(unique( Data$CSS) )
 
     
   # * IR_rep {ir1, ir2, ir3} ####
-    Data$IR_rep="ir1"
+    Data$IR_rep="ir1" # Default value
     Data$IR_rep[grep("ir2", Data$Colname_label, ignore.case = T)]="ir2"
     Data$IR_rep[grep("ir3", Data$Colname_label, ignore.case = T)]="ir3"
     
-    Data$Operator=NA
-    Data$Operator[grep("SR", Data$Colname_label, ignore.case = T)]="SR"
-    Data$Operator[grep("JM", Data$Colname_label, ignore.case = T)]="JM"
-    Data$Operator[grep("EC", Data$Colname_label, ignore.case = T)]="EC"
     
+  # * Operator {"SR", "JM", "EC"} #### 
+    # Only if there is at least one mention of "_PMF" or _"HCHEM",
+    # indicating the labels are visual checks from "_PMF" or _"HCHEM"
+    
+    if (any(grepl("_PMF|_HCHEM", Data$Colname_label, ignore.case = TRUE))){
+      Data$Operator=NA
+      Data$Operator[grep("SR", Data$Colname_label, ignore.case = T)]="SR"
+      Data$Operator[grep("JM", Data$Colname_label, ignore.case = T)]="JM"
+      Data$Operator[grep("EC", Data$Colname_label, ignore.case = T)]="EC"
+    }
    
   # * Filter rep ####
   # When a soil sample (5g) is divided over several filters: 
-    Data$Filter_div="0"
-    Data$Filter_div[grep("_f1", Data$Colname_label, ignore.case = T)]="f1"
-    Data$Filter_div[grep("_f2", Data$Colname_label, ignore.case = T)]="f2"
-    Data$Filter_div[grep("_f3", Data$Colname_label, ignore.case = T)]="f3"
-    Data$Filter_div[grep("_f4", Data$Colname_label, ignore.case = T)]="f4"
-    Data$Filter_div[grep("_f5", Data$Colname_label, ignore.case = T)]="f5"
-    Data$Filter_div[grep("_f6", Data$Colname_label, ignore.case = T)]="f6"
-    Data$Filter_div[grep("_f7", Data$Colname_label, ignore.case = T)]="f7"
-    Data$Filter_div[grep("_f8", Data$Colname_label, ignore.case = T)]="f8"
-    Data$Filter_div[grep("_f9", Data$Colname_label, ignore.case = T)]="f9"
-    Data$Filter_div[grep("_f10", Data$Colname_label, ignore.case = T)]="f10"
-    Data$Filter_div[grep("_f11", Data$Colname_label, ignore.case = T)]="f11"
+      Data$Filter_div <- ifelse(
+        grepl("_f[0-9]+", Data$Colname_label, ignore.case = TRUE),
+        tolower(sub(".*_(f[0-9]+).*", "\\1", Data$Colname_label)),
+        "0" # Default value   
+      )
+    # Data$Filter_div="0" # Default value   
+    # Data$Filter_div[grep("_f1", Data$Colname_label, ignore.case = T)]="f1"
+    # Data$Filter_div[grep("_f2", Data$Colname_label, ignore.case = T)]="f2"
+    # Data$Filter_div[grep("_f3", Data$Colname_label, ignore.case = T)]="f3"
+    # Data$Filter_div[grep("_f4", Data$Colname_label, ignore.case = T)]="f4"
+    # Data$Filter_div[grep("_f5", Data$Colname_label, ignore.case = T)]="f5"
+    # Data$Filter_div[grep("_f6", Data$Colname_label, ignore.case = T)]="f6"
+    # Data$Filter_div[grep("_f7", Data$Colname_label, ignore.case = T)]="f7"
+    # Data$Filter_div[grep("_f8", Data$Colname_label, ignore.case = T)]="f8"
+    # Data$Filter_div[grep("_f9", Data$Colname_label, ignore.case = T)]="f9"
+    # Data$Filter_div[grep("_f10", Data$Colname_label, ignore.case = T)]="f10"
+    # Data$Filter_div[grep("_f11", Data$Colname_label, ignore.case = T)]="f11"
+
     
     # * Extract info from the file name: ####
     # Filter_name, in between the working directory and "PMF" 
@@ -175,18 +208,19 @@ sort(unique( Data$CSS) )
     Data$Filter_name <- gsub("_ir3", "", ignore.case = T, Data$Filter_name)
     
     
-    # # * IR_file ####
-    # 
-    # # IR_file_name, in between the working directory and "PMF" 
-    # 
-    # Data$IR_File_name <- gsub(".*/", "", Data$Colname_label)   # Remove the working directory name
-    # Data$IR_File_name <- gsub(".*/", "",  Data$IR_File_name)   # Remove the working directory name bis
-    # Data$IR_File_name <- gsub(".csv", "", Data$IR_File_name) # Remove 'the working directory name'.csv'
-    # 
-    # Data$IR_File_name <- gsub("_PMF_compleate_.*", "", ignore.case = T, Data$IR_File_name)
-    # Data$IR_File_name <- gsub("_PMF_.*", "", ignore.case = T, Data$IR_File_name)
-    # Data$IR_File_name <- gsub("_compleate_.*", "", ignore.case = T, Data$IR_File_name)
-    # Data$IR_File_name <- gsub("_manual_.*", "", ignore.case = T, Data$IR_File_name)
+    # * IR_name ####
+
+    # IR_name, Name of the raw data IR folder, 
+    # Batch_"Soil_sample"_"Sample_type"_""IR_rep, in between the working directory and "PMF"
+
+    Data$IR_name <- gsub(".*/", "", Data$Colname_label)   # Remove the working directory name
+    Data$IR_name <- gsub(".*/", "",  Data$IR_name)   # Remove the working directory name bis
+    Data$IR_name <- gsub(".csv", "", Data$IR_name) # Remove 'the working directory name'.csv'
+
+    Data$IR_name <- gsub("_PMF_compleate_.*", "", ignore.case = T, Data$IR_name)
+    Data$IR_name <- gsub("_PMF_.*", "", ignore.case = T, Data$IR_name)
+    Data$IR_name <- gsub("_compleate_.*", "", ignore.case = T, Data$IR_name)
+    Data$IR_name <- gsub("_manual_.*", "", ignore.case = T, Data$IR_name)
     
     
     # * Add Reference soils ####

@@ -87,9 +87,9 @@ Summary_PMF_QC = subset(METADATA_PMF, Soil_sample %in% c("bcm","pfsr","st") |  S
             Batch= (paste0(unique(Batch_Name), collapse = " ; ") ),
             Operators= (paste0(unique(Operator), collapse = " ; ") ))
 
-write.csv( Summary_PMF_Batch, paste(wd.out,"PMF_SummaryBatch_2025.08.13.csv",sep = "/"))
-write.csv( Summary_PMF_QC, paste(wd.out,"PMF_SummaryQC_2025.08.13.csv",sep = "/"))
-write.csv( Summary_PMF_CSS, paste(wd.out,"PMF_SummaryCSS_2025.08.13.csv",sep = "/"))
+# write.csv( Summary_PMF_Batch, paste(wd.out,"PMF_SummaryBatch_2025.08.13.csv",sep = "/"))
+# write.csv( Summary_PMF_QC, paste(wd.out,"PMF_SummaryQC_2025.08.13.csv",sep = "/"))
+# write.csv( Summary_PMF_CSS, paste(wd.out,"PMF_SummaryCSS_2025.08.13.csv",sep = "/"))
 
 
 
@@ -163,20 +163,9 @@ for( i in seq_along(PMF_File_Name)) {
   
   # /!\ Now in Read_MINAGRIS_label
   # # * Extract info from the file name: ####
-  # # Filter_name, in between the working directory and "PMF" 
    file_i$PMF_File_name <- file_i_dir # PMF File name
    file_i$PMF_File_name <- gsub(".*/", "",  file_i_dir)   # Remove the working directory name
-  # 
-  # file_i$Filter_Name <- gsub(".*/", "",  file_i_dir)   # Remove the working directory name
-  # file_i$Filter_Name <- gsub(".*/", "",  file_i$Filter_Name)   # Remove the working directory name bis
-  # file_i$Filter_Name <- gsub(".csv", "", file_i$Filter_Name) # Remove 'the working directory name'.csv'
-  # 
-  # file_i$Filter_Name <- gsub("_PMF_compleate_.*", "", ignore.case = T, file_i$Filter_Name)
-  # file_i$Filter_Name <- gsub("_PMF_.*", "", ignore.case = T, file_i$Filter_Name)
-  # file_i$Filter_Name <- gsub("_compleate_.*", "", ignore.case = T, file_i$Filter_Name)
-  # file_i$Filter_Name <- gsub("_manual_.*", "", ignore.case = T, file_i$Filter_Name)
-  # file_i$Filter_Name <- gsub("_ir2", "", ignore.case = T, file_i$Filter_Name)
-  # file_i$Filter_Name <- gsub("_ir3", "", ignore.case = T, file_i$Filter_Name)
+
   
   
   # Make sure that numerical parameters are numerical values:
@@ -197,7 +186,7 @@ for( i in seq_along(PMF_File_Name)) {
 
 METADATA_PMF$PMF_File_name[METADATA_PMF$col.sep==METADATA_PMF$dec.sep] # /!\ if col.sep==dec.sep
 # the result should be : character(0) - the colum separator and decimal sign should be different in every file
-METADATA_PMF$IR_File_name=  gsub("_PMF.*", "", METADATA_PMF$PMF_File_name)
+METADATA_PMF$IR_name=  gsub("_PMF.*", "", METADATA_PMF$PMF_File_name)
 
 # 3. Merge uP data frame and add labels #### 
 # Bind the Loading_list into a data frame of all microplastics identified at WUR:
@@ -208,17 +197,15 @@ MiP_wur <- Read_MINAGRIS_label(MiP_wur)
 unique(MiP_wur$CSS)
 
 # Some re labeling: 
-METADATA_PMF$IR_File_name[METADATA_PMF$PMF_File_name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
-METADATA_PMF$IR_File_name[METADATA_PMF$PMF_File_name=="m2_122_n_RS1_PMF_EC.csv"]="m2_RS1_n"
+METADATA_PMF$IR_name[METADATA_PMF$PMF_File_name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
+METADATA_PMF$IR_name[METADATA_PMF$PMF_File_name=="m2_122_n_RS1_PMF_EC.csv"]="m2_RS1_n"
 
 MiP_wur$Filter_name[MiP_wur$Filter_name=="m4_281_rs_n"]="m4_RS2_n"
 MiP_wur$Filter_name[MiP_wur$Filter_name=="m2_122_n_RS1"]="m2_RS1_n"
 
-MiP_wur$IR_File_name=  gsub("_PMF.*", "", MiP_wur$PMF_File_name)
-
-MiP_wur$IR_File_name[MiP_wur$PMF_File_name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
-MiP_wur$IR_File_name[MiP_wur$PMF_File_name=="m2_122_n_RS1_PMF_EC.csv"]="m2_RS1_n"
-MiP_wur$IR_File_name[MiP_wur$IR_File_name=="m29_bcm_n__ir2"]="m29_bcm_n_ir2"
+MiP_wur$IR_name[MiP_wur$PMF_File_name=="m4_281_rs_n_PMF_JM.csv"]="m4_RS2_n"
+MiP_wur$IR_name[MiP_wur$PMF_File_name=="m2_122_n_RS1_PMF_EC.csv"]="m2_RS1_n"
+MiP_wur$IR_name[MiP_wur$IR_name=="m29_bcm_n__ir2"]="m29_bcm_n_ir2"
 
 # * Add WUR lab ####
 MiP_wur$Lab="WUR"
@@ -272,9 +259,9 @@ length(unique(MiP_wur$Soil_sample) )
 
 unique(unique(MiP_wur$PMF_File_name) %in% METADATA_PMF$PMF_File_name) # Check all MiP_wur$PMF_File_name are in METADATA_PMF$PMF_File_name
 
-unique(METADATA_PMF$IR_File_name %in% Tile_per_sample$File_Name)
+unique(METADATA_PMF$IR_name %in% Tile_per_sample$File_Name)
 
-METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Name]
+METADATA_PMF$PMF_File_name[METADATA_PMF$IR_name %!in% Tile_per_sample$File_Name]
 
 # Re-name samples that contain an error: 
 
@@ -285,13 +272,13 @@ Tile_per_sample$File_Name[Tile_per_sample$File_Name=="m5_311_n_ir2"]="m5_311_n_i
 Tile_per_sample$File_Name[Tile_per_sample$File_Name=="m5_css3_rs_n"]="m5_RS3_n"
 
 
-METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Name]
+METADATA_PMF$PMF_File_name[METADATA_PMF$IR_name %!in% Tile_per_sample$File_Name]
 
 # * If not, create the table again.####
 
-if (length(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Name])!=0){
-  METADATA_PMF$IR_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Name]
-  warning(paste(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_sample$File_Name], "missing. \n Recreate/ update Tiles_per_sample.csv."))
+if (length(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_name %!in% Tile_per_sample$File_Name])!=0){
+  METADATA_PMF$IR_name[METADATA_PMF$IR_name %!in% Tile_per_sample$File_Name]
+  warning(paste(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_name %!in% Tile_per_sample$File_Name], "missing. \n Recreate/ update Tiles_per_sample.csv."))
 }
 #   # Load the FTIR_tiles_per_IRsample_Function.R: 
 #   source("FTIR_tiles_per_IRsample_Function.R") 
@@ -307,20 +294,20 @@ if (length(METADATA_PMF$PMF_File_name[METADATA_PMF$IR_File_name %!in% Tile_per_s
 # * If yes, load tile numbers ####
 
 
-#METADATA_PMF2=merge(METADATA_PMF, Tile_per_sample, by.x = "IR_File_name",  by.y = "File_Name", all.x = TRUE)
+#METADATA_PMF2=merge(METADATA_PMF, Tile_per_sample, by.x = "IR_name",  by.y = "File_Name", all.x = TRUE)
 
 # PMF samples without Tile number: 
 # Should be character(0)
-unique(MiP_wur$IR_File_name[(MiP_wur$IR_File_name %!in% Tile_per_sample$File_Name)])
+unique(MiP_wur$IR_name[(MiP_wur$IR_name %!in% Tile_per_sample$File_Name)])
 
 # IR files, with tile number, without PMF file
-unique(Tile_per_sample$File_Name[(Tile_per_sample$File_Name %!in% MiP_wur$IR_File_name )])
+unique(Tile_per_sample$File_Name[(Tile_per_sample$File_Name %!in% MiP_wur$IR_name )])
 
 # Add Tile_per_sample in MiP_wur
-MiP_wur_cor=merge(Tile_per_sample, MiP_wur, by.x="File_Name", by.y ="IR_File_name", all.y = TRUE)
+MiP_wur_cor=merge( MiP_wur, Tile_per_sample, by.x="IR_name", by.y ="File_Name", all.x = TRUE)
 
 # Remove the double column
-MiP_wur_cor=subset(MiP_wur_cor, select=-File_Name)
+# MiP_wur_cor$=subset(MiP_wur_cor, select=-File_Name)
 
 #Check NAs
 MiP_wur_cor[is.na( MiP_wur_cor$Tile_Numbers),]

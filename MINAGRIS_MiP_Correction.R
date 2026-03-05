@@ -3,7 +3,7 @@
 # Expected Data Structure: 
 
 # Column name       #Description         	                                                        #Data format
-# File_Name       	Name of the Processed, manually checked IR file	                              TEXT.csv
+# File_name       	Name of the Processed, manually checked IR file	                              TEXT.csv
 # Lab	              Analysis lab	                                                                {"WUR", "Ubern"}
 # Batch 	          Analysis batch	                                                              #Number
 # Preparation_Type	The kind of preparation for the samples: 	                                    {"Blank_chemical", "Spiked", "Reference_Soil", "Standard_Soil", "Field_samples"}
@@ -49,7 +49,8 @@ wd.out= "Outputs/2025_08"
 # * From WUR ####
 #MC - again I would remove dates from file names (and the dots in the date :)
 #MC - alternative is to make a 'initialization file' where you update all your file names everytime, than the code stays flexible.
-Data_WUR=read.csv(paste("WUR_MiP_Particles.csv", sep=""))
+Data_WUR=read.csv(paste("","WUR_MiP_Particles.csv", sep=""))
+
 # Number of particles: 
 nrow(Data_WUR[Data_WUR$N.px>0,])
 # Number of files: 
@@ -72,7 +73,7 @@ colnames(Data_Ubern)
 # 2. Merge MiP tables ####
 
 # Expected Column names
-uP_Colnames=c("File_Name", "Lab", "Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_name", "IR_rep", "PMF_rep", "Operator",
+uP_Colnames=c("File_name", "Lab", "Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_name", "IR_name", "IR_rep", "PMF_rep", "Operator",
               "ID", "Q_index",	"Polymer.grp", "Polymer.red12", "Polymer.red3", "Area.um2.cor", "Length.um" , "Width.um", "Aspect_ratio", "Mass.ng", "Size_cat.um")
 
 # * Completing from WUR data #### 
@@ -87,7 +88,7 @@ Data_WUR$Q_index=Data_WUR$Relevance #OR Similarity
 Data_WUR$Width.um =Data_WUR$Width.um.cor         
 Data_WUR$Length.um=Data_WUR$Length.um.cor
 
-Data_WUR$File_Name= Data_WUR$PMF_File_name
+Data_WUR$File_name= Data_WUR$PMF_File_name
 unique(Data_WUR$Filter_Name[Data_WUR$Soil_sample=="rs"])
 unique(Data_WUR$Filter_name[Data_WUR$Soil_sample=="rs"])
 
@@ -99,7 +100,8 @@ unique(Data_WUR$Soil_sample)
 # * Completing Ubern data ####
 uP_Colnames[uP_Colnames %!in% colnames(Data_Ubern)]
 
-Data_Ubern$File_Name=Data_Ubern$source_file
+Data_Ubern$File_name=Data_Ubern$source_file
+Data_Ubern$IR_name= gsub (pattern = "_results.csv",replacement = "",Data_Ubern$source_file)
 Data_Ubern$Area.um2.cor=Data_Ubern$area
 
 #Filter names 
@@ -202,7 +204,7 @@ Data_comb=rbind(subset(Data_WUR, select = colnames(Data_WUR)[colnames(Data_WUR)%
 # Number of particles: 
 nrow(Data_comb[Data_comb$Area.um2.cor>0,])
 # Number of files: 
-length(unique(Data_comb$File_Name))
+length(unique(Data_comb$File_name))
 
 # Add Preparation Type description
 Data_comb$Preparation_Type="Not"
@@ -242,7 +244,7 @@ Data_comb$Filter_Name=paste(Data_comb$Batch_Name, "_", Data_comb$Soil_sample, "_
 
 
 # Add a unique ID per particle 
-Data_comb$ID=seq_along(Data_comb$File_Name)
+Data_comb$ID=seq_along(Data_comb$File_name)
 
 # Add Extraction_Name: 
   # Name of the extracted soil (note: one extracted soil can be divided in several filters when needs be, e.g CSS11.10.1 )
@@ -338,8 +340,14 @@ is.na(Data_comb$pol_density)
 # Second, the particles are assumed to lie at their lowest energy state (therefore the Z-direction axis is the smallest dimension).
 # Third, the asymmetry of the ellipsoid in the ZY plane is assumed proportional to that in the XY plane hence the axis in the Z direction (i.e., particle height “H”) is assumed to be in the same ratio to the 2D minor axis (“W” for width), as the 2D minor axis is to the 2D major axis (“L” for length) (i.e., H/W = W/L). The model was developed for mass balance in a wastewater treatment plant, for particles ranging from 10–500 μm. No validation was run.
 
+
 Data_comb$Aspect_ratio2=min( Data_comb$Aspect_ratio , Data_comb$Width.um /Data_comb$Length.um)
-Data_comb$Aspect_ratio2[is.na(Data_comb$Aspect_ratio2)]=0.667
+mean(Data_comb$Aspect_ratio2,na.rm=TRUE, nan.rm=TRUE)
+
+Data_comb$Aspect_ratio2[is.na(Data_comb$Aspect_ratio2)]=0.37
+
+Data_WUR$Aspect_ratio
+
 Data_comb$height.um=Data_comb$Width.um * Data_comb$Aspect_ratio2  
 
 
@@ -353,32 +361,32 @@ Data_comb$Mass.ng=Data_comb$volumeS18.um3 *Data_comb$Pol_Density/1000
 # 4. Analyse blanks ####
 # Blank data frame (WUR) 
 df_Blanks=subset(Data_comb, Soil_sample=="bcm"  ) # & Polymer.red12 != "Other.Plastic"
-length(unique(df_Blanks$File_Name))
+length(unique(df_Blanks$File_name))
 
 nrow( subset(Data_comb, Soil_sample=="bcm"))
 nrow( subset(Data_WUR, Soil_sample=="bcm"))
 nrow( subset(Data_Ubern_cor, Soil_sample=="bcm"))
 
-nrow( unique( subset(Data_comb, Soil_sample=="bcm", select = "File_Name")))
-nrow( unique( subset(Data_WUR, Soil_sample=="bcm", select = "File_Name")))
-nrow( unique( subset(Data_Ubern_cor, Soil_sample=="bcm", select = "File_Name")))
+nrow( unique( subset(Data_comb, Soil_sample=="bcm", select = "File_name")))
+nrow( unique( subset(Data_WUR, Soil_sample=="bcm", select = "File_name")))
+nrow( unique( subset(Data_Ubern_cor, Soil_sample=="bcm", select = "File_name")))
 
 nrow( subset(Data_comb, Preparation_Type=="Blank_chemical"))
-nrow( unique( subset(Data_comb, Preparation_Type=="Blank_chemical", select = "File_Name")))
+nrow( unique( subset(Data_comb, Preparation_Type=="Blank_chemical", select = "File_name")))
 
 
 
 # number of blanks
-length(unique(df_Blanks$File_Name))
+length(unique(df_Blanks$File_name))
 length(unique(df_Blanks$Filter_Name))
 
-length(unique(df_Blanks$File_Name[df_Blanks$Lab=="WUR"]))
-length(unique(df_Blanks$File_Name[df_Blanks$Lab=="Ubern"]))
+length(unique(df_Blanks$File_name[df_Blanks$Lab=="WUR"]))
+length(unique(df_Blanks$File_name[df_Blanks$Lab=="Ubern"]))
 
 # number of blanks with no particules 
-length(unique(df_Blanks$File_Name[df_Blanks$N.px==0] ))
-length(unique(df_Blanks$File_Name[df_Blanks$Lab=="WUR" & df_Blanks$N.px==0]))
-length(unique(df_Blanks$File_Name[df_Blanks$Lab=="Ubern"& df_Blanks$N.px==0]))
+length(unique(df_Blanks$File_name[df_Blanks$N.px==0] ))
+length(unique(df_Blanks$File_name[df_Blanks$Lab=="WUR" & df_Blanks$N.px==0]))
+length(unique(df_Blanks$File_name[df_Blanks$Lab=="Ubern"& df_Blanks$N.px==0]))
 
 # list of polymers 
 unique(df_Blanks$Polymer.grp)
@@ -397,7 +405,7 @@ Summary_Blanks_polymers = df_Blanks %>%
 
 # *a. Sum up per IR File, Polymer.grp ####
 Summary_Blanks1_File = df_Blanks %>% 
-  group_by(File_Name, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
+  group_by(File_name, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample, Filter_Name, IR_rep, PMF_rep, Operator,  Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
@@ -492,7 +500,7 @@ Data_comb_red=subset(Data_comb, Batch_Name %!in% Batch_bcm_over5 |  N.px==0 )
 
 # Number of particles, Files, Soils 
 nrow (subset(Data_comb_red, N.px!=0 ))
-length (unique(Data_comb_red$File_Name))
+length (unique(Data_comb_red$File_name))
 length (unique(Data_comb_red$Soil_sample))
 
 
@@ -503,20 +511,20 @@ df_bcm=subset(Data_comb_red, Soil_sample=="bcm" )
 nrow(subset(df_bcm, N.px !=0))
 unique(df_bcm$Polymer.grp)
 #list of unique files 
-unique(df_bcm$File_Name)
+unique(df_bcm$File_name)
 
 # number of blanks
-length(unique(df_bcm$File_Name))
+length(unique(df_bcm$File_name))
 length(unique(df_bcm$Filter_Name))
 length(unique(df_bcm$Batch_Name))
 
-length(unique(df_bcm$File_Name[df_bcm$Lab=="WUR"]))
-length(unique(df_bcm$File_Name[df_bcm$Lab=="Ubern"]))
+length(unique(df_bcm$File_name[df_bcm$Lab=="WUR"]))
+length(unique(df_bcm$File_name[df_bcm$Lab=="Ubern"]))
 
 # number of blanks with no particules 
-length(unique(df_bcm$File_Name[df_bcm$N.px==0] ))
-length(unique(df_bcm$File_Name[df_bcm$Lab=="WUR" & df_bcm$N.px==0]))
-length(unique(df_bcm$File_Name[df_bcm$Lab=="Ubern"& df_bcm$N.px==0]))
+length(unique(df_bcm$File_name[df_bcm$N.px==0] ))
+length(unique(df_bcm$File_name[df_bcm$Lab=="WUR" & df_bcm$N.px==0]))
+length(unique(df_bcm$File_name[df_bcm$Lab=="Ubern"& df_bcm$N.px==0]))
 
 #Number of UP: 
   nrow(subset(df_bcm, N.px!=0 ))
@@ -537,7 +545,7 @@ Summary_Blanks_polymers = df_bcm %>%
 # Summary per File, Polymer all :  
 
 S1c_bcm = df_bcm %>% 
-  group_by( File_Name, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,    
+  group_by( File_name, Lab, Batch_Name, Preparation_Type, Sample_type, Soil_sample,    
               CSS,Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
@@ -547,7 +555,7 @@ S1c_bcm = df_bcm %>%
              SD.Area=sd(Area.um2.cor)) %>%  #
   # for each file I want all the polymers represented
   ungroup() %>%
-  complete(nesting(File_Name, Lab,Batch_Name, Preparation_Type, Sample_type, Soil_sample,    
+  complete(nesting(File_name, Lab,Batch_Name, Preparation_Type, Sample_type, Soil_sample,    
                    CSS,Farm, Field, Extraction_Name, Filter_div, Filter_Name, IR_rep, PMF_rep, Operator ),
            nesting(Polymer.grp, Polymer.red12,  Polymer.red3 ), 
            fill=list(N.particles=0,
@@ -559,7 +567,7 @@ S1c_bcm = df_bcm %>%
   subset(Polymer.grp!="No.plastic") #
 
 nrow(S1c_bcm)/6
-length(unique(S1c_bcm$File_Name))
+length(unique(S1c_bcm$File_name))
 sum(S1c_bcm$N.particles)
 
 # Summary per Filter, Polymer all :  
@@ -760,7 +768,7 @@ sum(subset(S2c_bcm ,Polymer.grp %in% c("PE") , select="Mean.particles") ) / leng
 PE_Areamedian=median(df_bcm$Area.um2.cor[grep("PE",df_bcm$Polymer.grp)])
 
 # Number rest of plastic particle per blank:
-sum(subset(S2c_bcm, Polymer.red12  %!in% c( "PE", "PP", "No.plastic") , select="Mean.particles") ) / length(unique(df_bcm$File_Name))
+sum(subset(S2c_bcm, Polymer.red12  %!in% c( "PE", "PP", "No.plastic") , select="Mean.particles") ) / length(unique(df_bcm$File_name))
 
 
 # *** WUR: ####  
@@ -821,10 +829,10 @@ Data_comb_red_blank= Data_comb_red
 
 # 
 # # Start For loop per sample: 
-# for (s in unique(Data_comb_red_blank$File_Name)){
+# for (s in unique(Data_comb_red_blank$File_name)){
 #   # Find all the particles in sample s: 
 #   # test with s="M16040701_S2_results.csv"
-#   Sample_i=Data_comb_red_blank[Data_comb_red_blank$File_Name==s,]
+#   Sample_i=Data_comb_red_blank[Data_comb_red_blank$File_name==s,]
 #   
 #   # Assign the expected bcm distribution per Lab
 #   bcm_filter_i= subset(S_pPol_pLab_mFilter, Lab==unique(Sample_i$Lab))
@@ -843,10 +851,10 @@ Data_comb_red_blank= Data_comb_red
 # #???????????????????
 # 
 # # Start For loop per sample: 
-# for (s in unique(Data_comb_red_blank$File_Name)){
+# for (s in unique(Data_comb_red_blank$File_name)){
 #   # Find all the particles in sample s: 
 #   # test with s="M16040701_S2_results.csv"
-#   Sample=Data_comb_red_blank[Data_comb_red_blank$File_Name==s,]
+#   Sample=Data_comb_red_blank[Data_comb_red_blank$File_name==s,]
 #   
 #   # For Ubern: 
 #   if (unique(Sample$Lab)=="Ubern"){
@@ -950,23 +958,23 @@ Data_comb_red_blank= Data_comb_red
 # 
 # 
 # # Number of files: 
-# length(unique(Data_comb$File_Name))
-# length(unique(Data_comb_red$File_Name))
-# length(unique(Data_comb_red_blank$File_Name))
+# length(unique(Data_comb$File_name))
+# length(unique(Data_comb_red$File_name))
+# length(unique(Data_comb_red_blank$File_name))
 # 
 
 
 # 6. Add the field METADATA ####
 
-Fields_METADATA=read.csv("Fields_METADATA.csv")
-
-head(Fields_METADATA)
-
-Field_METADATA_vector=colnames(Fields_METADATA)
-Field_METADATA_vector=Field_METADATA_vector[Field_METADATA_vector %!in% c("X", "CSS","Farm","Field")]
-
-Data_comb_meta=merge(Data_comb, Fields_METADATA, by=c("CSS","Farm","Field"), all.x = TRUE)
-Data_comb_red_blank_meta=merge(Data_comb_red_blank, Fields_METADATA, by=c("CSS","Farm","Field"), all.x = TRUE)
+# Fields_METADATA=read.csv("Fields_METADATA.csv")
+# 
+# head(Fields_METADATA)
+# 
+# Field_METADATA_vector=colnames(Fields_METADATA)
+# Field_METADATA_vector=Field_METADATA_vector[Field_METADATA_vector %!in% c("X", "CSS","Farm","Field")]
+# 
+# Data_comb_meta=merge(Data_comb, Fields_METADATA, by=c("CSS","Farm","Field"), all.x = TRUE)
+# Data_comb_red_blank_meta=merge(Data_comb_red_blank, Fields_METADATA, by=c("CSS","Farm","Field"), all.x = TRUE)
 
 # Data_comb_red_blank_meta$Preparation_Type=Data_comb_red_blank_meta$Preparation_Type.x
 # Data_comb_red_blank_meta=subset(Data_comb_red_blank_meta, select = -c(Preparation_Type.x, Preparation_Type.y))
@@ -976,11 +984,11 @@ Data_comb_red_blank_meta=merge(Data_comb_red_blank, Fields_METADATA, by=c("CSS",
 
 
 # 8. Export table ####  
-length(unique(Data_comb_red_blank$File_Name))
+length(unique(Data_comb_red_blank$File_name))
 uP_Colnames[uP_Colnames %!in% colnames(Data_comb_red_blank)]
-length(unique(Data_comb_red_blank$File_Name[Data_comb_red_blank$Polymer.grp=="No.plastic"]))
-length(unique(Data_comb$File_Name[Data_comb$Polymer.grp=="No.plastic"]))
-length(unique(Data_comb$File_Name))
+length(unique(Data_comb_red_blank$File_name[Data_comb_red_blank$Polymer.grp=="No.plastic"]))
+length(unique(Data_comb$File_name[Data_comb$Polymer.grp=="No.plastic"]))
+length(unique(Data_comb$File_name))
 
 
  # write.csv(Data_comb_red_blank_meta, paste(wd.out,"Corrected_MiP_Particles.csv",sep = "/"))
