@@ -1711,15 +1711,29 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
     
     # 9. Operator checks #### 
     
+    # /!\ Work in progress 
+    # Get all the extracted samples that appear more than one in the PMF files list (Summary1e_File): 
+    # (In principle we would like )
+    list_extraction_replicat_operators=table(Summary1e_File$Extraction_Name)[order(table(Summary1e_File$Extraction_Name))] # number of occurrence of each filter
+    list_extraction_replicat_operators=  list_extraction_replicat_operators[  list_extraction_replicat_operators>1]  # select filters appearing more than once
+    list_extraction_replicat_operators= as.data.frame( list_extraction_replicat_operators) # make it into a dataframe 
+    sum(list_extraction_replicat_operators$Freq)
+    Summary1e_File_extraction_replicat_operators= subset(Summary1e_File, Extraction_Name %in% list_extraction_replicat_operators$Var1)
     
-    # Get all the Filters that appear more than one in the PMF files list (Summary1e_File): 
+    # write.csv(list_replicat_operators, paste(wd.out,"/ list_extraction_replicat_operators", Date, sep = ""))
     
-    list_replicat_operators=table(Summary1e_File$Extraction_Name)[order(table(Summary1e_File$Extraction_Name))]
-    list_replicat_operators= list_replicat_operators[ list_replicat_operators>1]  
-    list_replicat_operators= as.data.frame(list_replicat_operators)
     
-    write.csv(list_replicat_operators, paste(wd.out,"/Recovery_WUR_1i_mean", Date, sep = ""))
+    # Get all the IR aquired samples that appear more than one in the PMF files list (Summary1e_File): 
+    list_IR_replicat_operators=table(Summary1e_File$IR_name)[order(table(Summary1e_File$IR_name))] # number of occurrence of each filter
+    list_IR_replicat_operators=  list_IR_replicat_operators[  list_IR_replicat_operators>1]  # select filters appearing more than once
+    list_IR_replicat_operators= as.data.frame( list_IR_replicat_operators) # make it into a dataframe 
+    sum(list_IR_replicat_operators$Freq)
+    Summary1e_File_IR_replicat_operators= subset(Summary1e_File, IR_name %in% list_IR_replicat_operators$Var1)
+    
+    # write.csv(list_replicat_operators, paste(wd.out,"/ list_extraction_replicat_operators", Date, sep = ""))
 
+    #
+   
     
     # Bin 
     A= Summary1e_File$Extraction_Name[duplicated(Summary1e_File$Extraction_Name)]
