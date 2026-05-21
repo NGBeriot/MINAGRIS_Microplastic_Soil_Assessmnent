@@ -13,6 +13,7 @@ graphics.off() # cleaning plots
 '%!in%' <- function(x,y)!('%in%'(x,y))
 
 # Set WD in the project: 
+#Folder with all R scripts
 setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
 wd.out= "Outputs" 
 
@@ -24,7 +25,7 @@ source("MINAGRIS_Read_Labels_Function.R")
 
   # * Access IR data folder names ####
     # List of folders produced after uFTIR aquisition
-    # Directory IR files
+    # Directory IR files (locally : W:Drive)
     wd.in.IR="//wurnet.nl/dfs-root/ESG/DOW_SLM/Data_archive/Minagris/MINAGRIS_Soil_Assessment/1_FTIR_rawdata/uFTIR_files"
     setwd(wd.in.IR)
     
@@ -69,6 +70,7 @@ source("MINAGRIS_Read_Labels_Function.R")
                Soil_sample_names= paste0(unique(Soil_sample), collapse = " ; "),
                 .groups = "drop") 
     
+    #write.table(Summary_IR_Batch, "clipboard", sep = "\t", row.names = FALSE)
     
   # * Number of unique soil samples per CSS ####
   
@@ -85,7 +87,7 @@ source("MINAGRIS_Read_Labels_Function.R")
                   n_fields= length(unique(Soil_sample)),
                  Sample= paste0(unique(Soil_sample), collapse = " ; ") ) 
                  
-  
+    #write.table( Summary_IR_CSS, "clipboard", sep = "\t", row.names = FALSE)
   
   # * Number of QCs ####
         # - Blank chemicals, bsm
@@ -99,14 +101,14 @@ source("MINAGRIS_Read_Labels_Function.R")
         summarise(N_IR_Files=n(),
                   Batch= unique(paste0(Batch_Name, collapse = " ; ") ))
       
-      
+    # write.table(  Summary_IR_QC, "clipboard", sep = "\t", row.names = FALSE)
       
 # 2. Export tables ####
   #Set WD in the project: 
    setwd("C:/Users/berio001/Documents/MINAGRIS_C/MINAGRIS_Microplastic_Soil_Assessmnent")
     
-   write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2025.08.13.csv",sep = "/"))
-   write.csv( Summary_IR_Batch, paste(wd.out,"IR_SummaryBatch_2025.08.13.csv",sep = "/"))
-   write.csv( Summary_IR_QC, paste(wd.out,"IR_SummaryQC_2025.08.13.csv",sep = "/"))
-   write.csv( Summary_IR_CSS, paste(wd.out,"IR_SummaryCSS_2025.08.13.csv",sep = "/"))
+   write.csv(METADATA_IR, paste(wd.out,"IR_METADATA_2026.05.12.csv",sep = "/"))
+   write.csv( Summary_IR_Batch, paste(wd.out,"IR_SummaryBatch_2026.05.12.csv",sep = "/"))
+   write.csv( Summary_IR_QC, paste(wd.out,"IR_SummaryQC_2026.05.12.csv",sep = "/"))
+   write.csv( Summary_IR_CSS, paste(wd.out,"IR_SummaryCSS_2026.05.12.csv",sep = "/"))
 
