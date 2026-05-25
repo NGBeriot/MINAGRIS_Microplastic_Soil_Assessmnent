@@ -24,7 +24,7 @@ source("MINAGRIS_Read_Labels_Function.R")
 # Set WD in the project only needed when RStudio projects are not used.
 
 # Outputs folder
-wd.out= "Outputs/2025_03"
+wd.out= "Outputs/2025_08"
 
 # 0. Load Data ####
 
@@ -35,6 +35,10 @@ Cat.um.txt=c("90-300", "300-510", "510-720",
 
 #MC - see comment in previous script about dates in output file names.
 Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""))
+
+unique( Data_comb_red_blank$Preparation_Type) 
+unique( Data_comb_red_blank$Sample_type) 
+unique( Data_comb_red_blank$Soil_sample)
 
 # Summary per PMF File: 
   Summary1e_File=read.csv("Outputs/Summary1e_File_20241217.csv") # 3e, Overall mean: NULL
@@ -53,7 +57,8 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   df_bcm=subset(Data_comb_red_blank, Soil_sample=="bcm")
   
   #list of unique files 
-  unique(df_bcm$File_Names)
+  unique(df_bcm$File_name)
+  length(unique(df_bcm$File_name))
   
   # Summary per Filter :  
 
@@ -63,7 +68,8 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   
   S3f_bcm=subset(Summary3f_Filter, Soil_sample=="bcm")
   
-  S7a_bcm= S3a_bcm %>%
+  #Summary All MINAGRIS  
+  S8a_bcm= S3a_bcm %>%
     group_by(Preparation_Type,
              Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um  ) %>%
     summarise(N.files = n(),
@@ -77,8 +83,24 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
               Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
               Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
   
+  S8f_bcm =S3f_bcm %>%
+    group_by(Preparation_Type, 
+             Size_cat.um  ) %>%
+    summarise(N.files = n(),
+              Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
+              Min.particles.MM= min( Mean.particles),
+              Max.particles.MM= max( Mean.particles),
+              Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
+              Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+              Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+              Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
+              Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
+              Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
   
-  S7a_bcm2= S3a_bcm %>%
+  
+  
+  #Summary per lab  
+  S10a_bcm= S3a_bcm %>%
     group_by(Preparation_Type, Lab,
              Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um  ) %>%
     summarise(N.files = n(),
@@ -92,7 +114,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
               Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
               Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
   
-  S7c_bcm= S3c_bcm %>%
+  S10c_bcm= S3c_bcm %>%
     group_by(Preparation_Type, Lab,
             Polymer.red12,  Polymer.red3 ) %>%
     summarise(N.files = n(),
@@ -106,21 +128,9 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
               Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
               Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
   
-  S7f_bcm =S3f_bcm %>%
-    group_by(Preparation_Type, 
-              Size_cat.um  ) %>%
-    summarise(N.files = n(),
-              Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-              Min.particles.MM= min( Mean.particles),
-              Max.particles.MM= max( Mean.particles),
-              Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-              Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-              Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-              Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
-              Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
-              Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
+ 
     
-  S7f_bcm2 =S3f_bcm %>%
+  S10f_bcm =S3f_bcm %>%
     group_by(Preparation_Type, Lab,
              Size_cat.um  ) %>%
     summarise(N.files = n(),
@@ -167,24 +177,24 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
    # Per Polymer12
   # One value per Size_cat.um
   
-  S7a_bcm$Size_cat.um= factor(S7a_bcm$Size_cat.um,
+  S10a_bcm$Size_cat.um= factor(S10a_bcm$Size_cat.um,
                                          levels =  Cat.um.txt )
   # Add percentages in the plot
-  S7f_bcm = S7f_bcm %>%
+  S10f_bcm = S10f_bcm %>%
     #group_by(Lab) %>%
     mutate(
       MiP_cat_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
       MiP_cat_perc_text=paste0(round(MiP_cat_perc, 0), "%") ) # Creat percentage as text  
   
-  S7f_bcm=subset(S7f_bcm, Size_cat.um %in%  Cat.um.txt)
+  S10f_bcm=subset(S10f_bcm, Size_cat.um %in%  Cat.um.txt)
   
   
-  S7a_bcm=subset(S7a_bcm, Size_cat.um %in%  Cat.um.txt)
-  S7a_bcm$Size_cat.um= factor(S7a_bcm$Size_cat.um,
+  S8a_bcm=subset(S8a_bcm, Size_cat.um %in%  Cat.um.txt)
+  S8a_bcm$Size_cat.um= factor(S8a_bcm$Size_cat.um,
                               levels =  Cat.um.txt )
   
  ggplot( ) +
-    geom_bar(data=S7a_bcm, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+    geom_bar(data=S8a_bcm, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
     scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                  "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
                                  "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
@@ -192,7 +202,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
                                  "CA"= "#FFD39B") , 
                       # Relabel  "Other.Plastic"                 
                       labels = c( "Other.Plastic"="Other Plastics") ) +
-   geom_text(data= S7f_bcm, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y = 5)+
+   geom_text(data= S8a_bcm, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y = 5)+
     ggtitle("Chemical blanks, Micoplastic size distribution")+
     theme_minimal()+
     labs(y = "Average number of plastic particles per kg of soil",
@@ -203,13 +213,13 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   
   # per lab
  
- S7a_bcm2$Size_cat.um= factor(S7a_bcm2$Size_cat.um,
+ S10a_bcm$Size_cat.um= factor(S10a_bcm$Size_cat.um,
                              levels =  Cat.um.txt )
  # Add percentages in the plot
- S7a_bcm2=subset(S7a_bcm2, Size_cat.um %in%  Cat.um.txt)
- S7f_bcm2=subset(S7f_bcm2, Size_cat.um %in%  Cat.um.txt)
+ S10a_bcm=subset(S10a_bcm, Size_cat.um %in%  Cat.um.txt)
+ S10f_bcm=subset(S10f_bcm, Size_cat.um %in%  Cat.um.txt)
  
- S7f_bcm2 = S7f_bcm2 %>%
+ S10f_bcm = S10f_bcm %>%
    group_by(Lab) %>%
    mutate(
      MiP_cat_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
@@ -219,12 +229,12 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
  
  
  
- S7a_bcm2$Size_cat.um= factor(S7a_bcm2$Size_cat.um,
+ S10a_bcm$Size_cat.um= factor(S10a_bcm$Size_cat.um,
                              levels =  Cat.um.txt )
  
  ggplot( ) +
    facet_wrap(~Lab)+
-   geom_bar(data=S7a_bcm2, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+   geom_bar(data=S10a_bcm, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
    scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
@@ -232,7 +242,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
                                 "CA"= "#FFD39B") , 
                      # Relabel  "Other.Plastic"                 
                      labels = c( "Other.Plastic"="Other Plastics") ) +
-   geom_text(data= S7f_bcm2, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y = 5)+
+   geom_text(data= S10f_bcm, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y = 5)+
    ggtitle("Chemical blanks, Micoplastic size distribution")+
    theme_minimal()+
    labs(y = "Average number of plastic particles per kg of soil",
@@ -288,21 +298,21 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
 
 # 2. Soil Blanks ####
 
-  
   # Create dataframe 
-  df_SoilBlanks=subset(Data_comb_red_blank, Soil_sample=="rs")
+  df_SoilBlanks=subset(Data_comb_red_blank, Preparation_Type == "Reference_Soil")
   
   #list of unique files 
-  unique(df_SoilBlanks$File_Names)
+  unique(df_SoilBlanks$File_name)
   
   # Summary per Filter :  
-  S3a_SoilBlanks=subset(Summary3a_Filter, Soil_sample=="rs")
-  S3e_SoilBlanks=subset(Summary3e_Filter, Soil_sample=="rs")
-  S3c_SoilBlanks=subset(Summary3c_Filter, Soil_sample=="rs")
+  S3a_SoilBlanks=subset(Summary3a_Filter, Preparation_Type == "Reference_Soil")
+  S3e_SoilBlanks=subset(Summary3e_Filter, Preparation_Type == "Reference_Soil")
+  S3c_SoilBlanks=subset(Summary3c_Filter, Preparation_Type == "Reference_Soil")
   
-  S3f_SoilBlanks=subset(Summary3f_Filter, Soil_sample=="rs")
+  S3f_SoilBlanks=subset(Summary3f_Filter, Preparation_Type == "Reference_Soil")
   
-  S7a_SoilBlanks= S3a_SoilBlanks %>%
+  # MINAGRIS summary
+  S8a_SoilBlanks= S3a_SoilBlanks %>%
     group_by(Preparation_Type,
              Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um  ) %>%
     summarise(N.files = n(),
@@ -316,36 +326,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
               Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
               Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
   
-  
-  S7a_SoilBlanks2= S3a_SoilBlanks %>%
-    group_by(Preparation_Type, Lab,
-             Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um  ) %>%
-    summarise(N.files = n(),
-              Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-              Min.particles.MM= min( Mean.particles),
-              Max.particles.MM= max( Mean.particles),
-              Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-              Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-              Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-              Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
-              Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
-              Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
-  
-  S7c_SoilBlanks= S3c_SoilBlanks %>%
-    group_by(Preparation_Type, Lab,
-             Polymer.red12,  Polymer.red3 ) %>%
-    summarise(N.files = n(),
-              Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-              Min.particles.MM= min( Mean.particles),
-              Max.particles.MM= max( Mean.particles),
-              Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-              Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-              Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-              Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
-              Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
-              Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
-  
-  S7f_SoilBlanks =S3f_SoilBlanks %>%
+  S8f_SoilBlanks =S3f_SoilBlanks %>%
     group_by(Preparation_Type, 
              Size_cat.um  ) %>%
     summarise(N.files = n(),
@@ -359,7 +340,40 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
               Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
               Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
   
-  S7f_SoilBlanks2 =S3f_SoilBlanks %>%
+  
+  
+  # Per lab summary
+  S10a_SoilBlanks= S3a_SoilBlanks %>%
+    group_by(Preparation_Type, Lab,
+             Polymer.grp, Polymer.red12,  Polymer.red3, Size_cat.um  ) %>%
+    summarise(N.files = n(),
+              Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
+              Min.particles.MM= min( Mean.particles),
+              Max.particles.MM= max( Mean.particles),
+              Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
+              Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+              Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+              Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
+              Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
+              Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
+  
+  S10c_SoilBlanks= S3c_SoilBlanks %>%
+    group_by(Preparation_Type, Lab,
+             Polymer.red12,  Polymer.red3 ) %>%
+    summarise(N.files = n(),
+              Mean.particles.MM= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
+              Min.particles.MM= min( Mean.particles),
+              Max.particles.MM= max( Mean.particles),
+              Mean.px.MM=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
+              Mean.Tot.Area.mm2.MM=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+              Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
+              Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
+              Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
+              Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) 
+  
+
+  
+  S10f_SoilBlanks =S3f_SoilBlanks %>%
     group_by(Preparation_Type, Lab,
              Size_cat.um  ) %>%
     summarise(N.files = n(),
@@ -407,94 +421,94 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   
 
   # * PLOT Size distribution  ####
-  # Per Polymer12
-  # One value per Size_cat.um
-  
-  S7a_SoilBlanks$Size_cat.um= factor(S7a_SoilBlanks$Size_cat.um,
-                              levels =  Cat.um.txt )
-  # Add percentages in the plot
-  S7f_SoilBlanks=subset(S7f_SoilBlanks, Size_cat.um %in%  Cat.um.txt) 
-  
-  S7f_SoilBlanks = S7f_SoilBlanks %>%
-    #group_by(Lab) %>%
-    mutate(
-      MiP_cat_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
-      MiP_cat_perc_text=paste0(round(MiP_cat_perc, 0), "%") ) # Creat percentage as text  
-  
- 
-  
-  
-  S7a_SoilBlanks=subset(S7a_SoilBlanks, Size_cat.um %in%  Cat.um.txt)
-  S7a_SoilBlanks$Size_cat.um= factor(S7a_SoilBlanks$Size_cat.um,
-                              levels =  Cat.um.txt )
-  
-  ggplot( ) +
-    geom_bar(data=S7a_SoilBlanks, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
-    scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
-                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
-                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                 "CA"= "#FFD39B") , 
-                      # Relabel  "Other.Plastic"                 
-                      labels = c( "Other.Plastic"="Other Plastics") ) +
-    geom_text(data= S7f_SoilBlanks, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y = 10)+
-    ggtitle("Soil blanks, Micoplastic size distribution")+
-    theme_minimal()+
-    labs(y = "Average number of plastic particles per kg of soil",
-         x= "Size categories [µm]",
-         fill =  "Polymers identified") +
-    theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
-  
-  
-  # per lab
-  
-  S7a_SoilBlanks2$Size_cat.um= factor(S7a_SoilBlanks2$Size_cat.um,
-                               levels =  Cat.um.txt )
-  # Add percentages in the plot
-  S7a_SoilBlanks2=subset(S7a_SoilBlanks2, Size_cat.um %in%  Cat.um.txt)
-  S7f_SoilBlanks2=subset(S7f_SoilBlanks2, Size_cat.um %in%  Cat.um.txt)
-  
-  S7f_SoilBlanks2 = S7f_SoilBlanks2 %>%
-    group_by(Lab) %>%
-    mutate(
-      MiP_cat_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
-      MiP_cat_perc_text=paste0(round(MiP_cat_perc, 0), "%") ) # Creat percentage as text  
-  
-  
-  
-  
-  
-  S7a_SoilBlanks2$Size_cat.um= factor(S7a_SoilBlanks2$Size_cat.um,
-                               levels =  Cat.um.txt )
-  
-  ggplot( ) +
-    facet_wrap(~Lab)+
-    geom_bar(data=S7a_SoilBlanks2, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
-    scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                 "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
-                                 "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
-                                 "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                 "CA"= "#FFD39B") , 
-                      # Relabel  "Other.Plastic"                 
-                      labels = c( "Other.Plastic"="Other Plastics") ) +
-    geom_text(data= S7f_SoilBlanks2, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y =10)+
-    ggtitle("Soil Banks, Micoplastic size distribution")+
-    theme_minimal()+
-    labs(y = "Average number of plastic particles per kg of soil",
-         x= "Size categories [µm]",
-         fill =  "Polymers identified") +
-    theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
-  
-  
+    # Per Polymer12
+    # One value per Size_cat.um
+    
+    S8a_SoilBlanks$Size_cat.um= factor(S8a_SoilBlanks$Size_cat.um,
+                                levels =  Cat.um.txt )
+    # Add percentages in the plot
+    S8f_SoilBlanks=subset(S8f_SoilBlanks, Size_cat.um %in%  Cat.um.txt) 
+    
+    S8f_SoilBlanks = S8f_SoilBlanks %>%
+      #group_by(Lab) %>%
+      mutate(
+        MiP_cat_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
+        MiP_cat_perc_text=paste0(round(MiP_cat_perc, 0), "%") ) # Creat percentage as text  
+    
+   
+    
+    
+    S8a_SoilBlanks=subset(S8a_SoilBlanks, Size_cat.um %in%  Cat.um.txt)
+    S8a_SoilBlanks$Size_cat.um= factor(S8a_SoilBlanks$Size_cat.um,
+                                levels =  Cat.um.txt )
+    
+    ggplot( ) +
+      geom_bar(data=S8a_SoilBlanks, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+      scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                   "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                   "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                   "CA"= "#FFD39B") , 
+                        # Relabel  "Other.Plastic"                 
+                        labels = c( "Other.Plastic"="Other Plastics") ) +
+      geom_text(data= S8f_SoilBlanks, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y = 10)+
+      ggtitle("Soil blanks, Micoplastic size distribution")+
+      theme_minimal()+
+      labs(y = "Average number of plastic particles per kg of soil",
+           x= "Size categories [µm]",
+           fill =  "Polymers identified") +
+      theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
+    
+    
+    # per lab
+    
+    S10a_SoilBlanks$Size_cat.um= factor(S10a_SoilBlanks$Size_cat.um,
+                                 levels =  Cat.um.txt )
+    # Add percentages in the plot
+    S10a_SoilBlanks=subset(S10a_SoilBlanks, Size_cat.um %in%  Cat.um.txt)
+    S10f_SoilBlanks=subset(S10f_SoilBlanks, Size_cat.um %in%  Cat.um.txt)
+    
+    S10f_SoilBlanks = S10f_SoilBlanks %>%
+      group_by(Lab) %>%
+      mutate(
+        MiP_cat_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
+        MiP_cat_perc_text=paste0(round(MiP_cat_perc, 0), "%") ) # Creat percentage as text  
+    
+    
+    
+    
+    
+    S10a_SoilBlanks$Size_cat.um= factor(S10a_SoilBlanks$Size_cat.um,
+                                 levels =  Cat.um.txt )
+    
+    ggplot( ) +
+      facet_wrap(~Lab)+
+      geom_bar(data=S10a_SoilBlanks, aes(x=Size_cat.um, y=Mean.particles.MM*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+      scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                   "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                   "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                   "CA"= "#FFD39B") , 
+                        # Relabel  "Other.Plastic"                 
+                        labels = c( "Other.Plastic"="Other Plastics") ) +
+      geom_text(data= S10f_SoilBlanks, aes(x=Size_cat.um,  y=Mean.particles.MM*200, label =  MiP_cat_perc_text), vjust = 1, nudge_y =10)+
+      ggtitle("Soil Banks, Micoplastic size distribution")+
+      theme_minimal()+
+      labs(y = "Average number of plastic particles per kg of soil",
+           x= "Size categories [µm]",
+           fill =  "Polymers identified") +
+      theme(axis.text.x = element_text(angle = 45, vjust = 0.5, hjust=0.5) )
+    
+    
   
   # * PLOT Polymer composition ####
   
   # Order plot per polymer   
-  S7c_SoilBlanks$Polymer.red12 = factor(S7c_SoilBlanks$Polymer.red12,
-                                 levels = unique(S7c_SoilBlanks$Polymer.red12[order(-S7c_SoilBlanks$Mean.particles.MM)] ))
+  S10c_SoilBlanks$Polymer.red12 = factor(S10c_SoilBlanks$Polymer.red12,
+                                 levels = unique(S10c_SoilBlanks$Polymer.red12[order(-S10c_SoilBlanks$Mean.particles.MM)] ))
   
   # Add percentages in the plot
-  S7c_SoilBlanks = S7c_SoilBlanks %>%
+  S10c_SoilBlanks = S10c_SoilBlanks %>%
     group_by(Lab) %>%
     mutate(
       MiP_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100,
@@ -502,11 +516,11 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
   
   
   # Do not show percentages < 3.5% 
-  S7c_SoilBlanks$MiP_perc_text [S7c_SoilBlanks$MiP_perc < 3.5]=NA 
+  S10c_SoilBlanks$MiP_perc_text [S10c_SoilBlanks$MiP_perc < 3.5]=NA 
   
-  S7c_SoilBlanks=subset(S7c_SoilBlanks, Mean.particles.MM!=0)
+  S10c_SoilBlanks=subset(S10c_SoilBlanks, Mean.particles.MM!=0)
   
-  ggplot(S7c_SoilBlanks, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.red12 ))+
+  ggplot(S10c_SoilBlanks, aes(x=Polymer.red12, y=Mean.particles.MM, fill= Polymer.red12 ))+
     facet_wrap(~Lab)+
     geom_bar(stat="summary", width=1, color="white") +
     #coord_polar("y", start=0) +
@@ -520,7 +534,7 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
     theme_minimal() + 
     ggtitle("Soil Blanks, Polymer composition")+
     # geom_text(aes(label=Polymer.red12) , vjust = -0.5, hjust = 0 , nudge_x = -.5) +
-    geom_text(aes(label =  S7c_SoilBlanks$MiP_perc_text), vjust = 1, nudge_y = 0.05)+
+    geom_text(aes(label =  S10c_SoilBlanks$MiP_perc_text), vjust = 1, nudge_y = 0.05)+
     #ggtitle(paste("Field Samples ; CSS ", css))+
     # guides( color  = "none")+
     labs(# y = "Average number of plastic particles per kg of soil",
@@ -1735,6 +1749,8 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
     #
    
     
+    
+    
     # Bin 
     A= Summary1e_File$Extraction_Name[duplicated(Summary1e_File$Extraction_Name)]
     B= unique(Summary1e_File$Extraction_Name[duplicated(Summary1e_File$Extraction_Name)])
@@ -1808,12 +1824,22 @@ Data_comb_red_blank=read.csv(paste(wd.out, "/Corrected_MiP_Particles.csv",sep=""
     
     
     
-    # 5. Operator comparison #####
+    # 10. Operator comparison #####
     
     
     
     # List of samples analysed by 3 Operators: 
 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     
     # CSS 11 Farm 10 checks ####
