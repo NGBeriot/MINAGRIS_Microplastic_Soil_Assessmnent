@@ -42,7 +42,7 @@ graphics.off() # cleaning plots
 # Set WD in the project only needed when RStudio projects are not used.
 
 # Outputs folder
-wd.out= "Outputs/2025_08"
+wd.out= "Outputs/2026_05"
 
 # 1. Load MiP tables ####
 
@@ -353,9 +353,13 @@ Data_comb$height.um=Data_comb$Width.um * Data_comb$Aspect_ratio2
 
 Data_comb$volumeS18.um3=4* pi * Data_comb$height.um * Data_comb$Width.um * Data_comb$Length.um /(3*2*2*2)
 
+# *** 3.2.2 ####
+
+
+
 
 # *** 3.3 Mass (select) ####
-Data_comb$Mass.ng=Data_comb$volumeS18.um3 *Data_comb$Pol_Density/1000
+Data_comb$Mass1.ng=Data_comb$volumeS18.um3 *Data_comb$Pol_Density/1000
 
 
 # 4. Analyse blanks ####
@@ -815,153 +819,159 @@ sum(subset(S2c_bcm, Polymer.red12  %!in% c( "PE", "PP", "No.plastic")  & Lab=="U
 
 # * Apply correction ####
 Data_comb_red_blank= Data_comb_red
-# For Ubern: 
-# 1. If there is PE, remove 1 PE particle with the closest area from the median:
-# 2. If no PE, remove one PP particle with the closest area from the median:
-# 3. If no PE, no PP don't do any thing
 
-# For WUR: 
-# 1. If there is PP, remove 1 PP particle with the closest area from the median:
-# 2. If no PP, remove one PE particle with the closest area from the median:
-# 3. If no PE, no PP don't do any thing
+# The current correction is not satisfactory. It applies a discrete correction per sample so it is 1. largely skewed by the current simplified rules (see below) and by the polymers present in the samples. 
+# So no correction is applied per sample
 
-#??????????????????????
 
-# 
-# # Start For loop per sample: 
-# for (s in unique(Data_comb_red_blank$File_name)){
-#   # Find all the particles in sample s: 
-#   # test with s="M16040701_S2_results.csv"
-#   Sample_i=Data_comb_red_blank[Data_comb_red_blank$File_name==s,]
-#   
-#   # Assign the expected bcm distribution per Lab
-#   bcm_filter_i= subset(S_pPol_pLab_mFilter, Lab==unique(Sample_i$Lab))
-#   
-#   # Recalculate occurrence percentage based on the list of available polymers in Sample_i
-#   bcm_filter_i$MiP_perc_i=bcm_filter_i$Mean.particles.MM/ 
-#       sum(bcm_filter_i$Mean.particles.MM[ bcm_filter_i$Polymer.grp %in% unique(Sample_i$Polymer.grp)])
-#   
-#   bcm_filter_i$MiP_percumul_i=cumsum(bcm_filter_i$MiP_perc_i)
-#   
-#  
-# } # end loop Samples
-# 
-# 
-# 
-# #???????????????????
-# 
-# # Start For loop per sample: 
-# for (s in unique(Data_comb_red_blank$File_name)){
-#   # Find all the particles in sample s: 
-#   # test with s="M16040701_S2_results.csv"
-#   Sample=Data_comb_red_blank[Data_comb_red_blank$File_name==s,]
-#   
-#   # For Ubern: 
-#   if (unique(Sample$Lab)=="Ubern"){
-#     # 1. If there is a PE particle, remove a PE,          
-#     if ("PE" %in% Sample$Polymer.grp){
-#       # Find the PE particle with the closest area from the median.
-#       # Create a df of all PE particles
-#       PE=Sample[Sample$Polymer.grp=="PE",]
-#       # Calculate the absolute difference with PE_Ubern_Areamedian for each PE particle 
-#       PE$Median_diff=0
-#       for (p in 1:nrow(PE)){
-#         PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_Ubern_Areamedian)
-#       }
-#       # ID of the FIRST[1] particle with the min Median_diff:
-#       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
-#       # remove this particle  
-#       Data_comb_red_blank = Data_comb_red_blank %>%
-#         mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
-#                Length.um =if_else(ID== ID_PE, 0, Length.um),
-#                Width.um = if_else(ID== ID_PE, 0, Width.um),
-#                Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
-#                Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
-#                Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
-#       
-#       # 2. If there is no PE particle but PP, remove a PP,    
-#     } else if  ("PP" %in% Sample$Polymer.grp){ 
-#       #Find the PE particle with the closest area from the median:
-#       PP=Sample[Sample$Polymer.grp=="PP",]
-#       # Calculate the absolute difference with PP_Areamedian for each PE particle 
-#       PP$Median_diff=0
-#       for (p in 1:nrow(PP)){
-#         PP$Median_diff[p]=abs(PP$Area.um2.cor[p]- PP_Ubern_Areamedian)
-#       }
-#       # ID of the FIRST[1] particle with the min Median_diff:
-#       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
-#       # remove this particle  
-#       Data_comb_red_blank=Data_comb_red_blank %>%
-#         mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
-#                Length.um =if_else(ID== ID_PP, 0, Length.um),
-#                Width.um = if_else(ID== ID_PP, 0, Width.um),
-#                Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
-#                Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
-#                Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
-# 
-#     }
-#     # 3. If no PE, no PP don't do any thing
-#   } # end if UBern
-#   
-#   
-#   # For WUR:  
-#   if (unique(Sample$Lab)=="WUR"){
-#     # 1. If there is a PP particle, remove a PP,      
-#     if ("PP" %in% Sample$Polymer.grp){
-#       #Find the PP particle with the closest area from the median:
-#       PP=Sample[Sample$Polymer.grp=="PP",]
-#       # Calculate the absolute difference with PP_Areamedian for each PP particle 
-#       PP$Median_diff=0
-#       for (p in 1:nrow(PP)){
-#         PP$Median_diff[p]=abs(PP$Area.um2.cor[p]-PP_WUR_Areamedian)
-#       }
-#       # ID of the FIRST[1] particle with the min Median_diff:
-#       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
-#       # remove this particle  
-#       Data_comb_red_blank=Data_comb_red_blank %>%
-#         mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
-#                Length.um =if_else(ID== ID_PP, 0, Length.um),
-#                Width.um = if_else(ID== ID_PP, 0, Width.um),
-#                Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
-#                Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
-#                Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
-#       
-#       # 2. If there is no PP particle but PE, remove a PE,        
-#     } else if  ("PE" %in% Sample$Polymer.grp){ # If there is no PP particle, but a PE 
-#       #Find the PE particle with the closest area from the median:
-#       PE=Sample[Sample$Polymer.grp=="PE",]
-#       # Calculate the absolute difference with PE_Areamedian for each PE particle 
-#       PE$Median_diff=0
-#       for (p in 1:nrow(PE)){
-#         PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_WUR_Areamedian)
-#       }
-#       # ID of the FIRST[1] particle with the min Median_diff:
-#       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
-#       # remove this particle  
-#       Data_comb_red_blank=Data_comb_red_blank %>%
-#         mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
-#                Length.um =if_else(ID== ID_PE, 0, Length.um),
-#                Width.um = if_else(ID== ID_PE, 0, Width.um),
-#                Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
-#                Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
-#                Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
-#     }
-#     # 3. If no PE, no PP don't do any thing    
-#   } # end if WUR
-# } # end loop Samples
-# 
-# 
-# # Number of particles:
-# nrow(Data_comb[Data_comb$N.px>0,])
-# nrow(Data_comb_red[Data_comb_red$N.px>0,])
-# nrow(Data_comb_red_blank[Data_comb_red_blank$N.px>0,])
-# 
-# 
-# # Number of files: 
-# length(unique(Data_comb$File_name))
-# length(unique(Data_comb_red$File_name))
-# length(unique(Data_comb_red_blank$File_name))
-# 
+  
+  # For Ubern: 
+  # 1. If there is PE, remove 1 PE particle with the closest area from the median:
+  # 2. If no PE, remove one PP particle with the closest area from the median:
+  # 3. If no PE, no PP don't do any thing
+  
+  # For WUR: 
+  # 1. If there is PP, remove 1 PP particle with the closest area from the median:
+  # 2. If no PP, remove one PE particle with the closest area from the median:
+  # 3. If no PE, no PP don't do any thing
+  
+  #??????????????????????
+  
+  # 
+  # # Start For loop per sample: 
+  # for (s in unique(Data_comb_red_blank$File_name)){
+  #   # Find all the particles in sample s: 
+  #   # test with s="M16040701_S2_results.csv"
+  #   Sample_i=Data_comb_red_blank[Data_comb_red_blank$File_name==s,]
+  #   
+  #   # Assign the expected bcm distribution per Lab
+  #   bcm_filter_i= subset(S_pPol_pLab_mFilter, Lab==unique(Sample_i$Lab))
+  #   
+  #   # Recalculate occurrence percentage based on the list of available polymers in Sample_i
+  #   bcm_filter_i$MiP_perc_i=bcm_filter_i$Mean.particles.MM/ 
+  #       sum(bcm_filter_i$Mean.particles.MM[ bcm_filter_i$Polymer.grp %in% unique(Sample_i$Polymer.grp)])
+  #   
+  #   bcm_filter_i$MiP_percumul_i=cumsum(bcm_filter_i$MiP_perc_i)
+  #   
+  #  
+  # } # end loop Samples
+  # 
+  # 
+  # 
+  # #???????????????????
+  # 
+  # # Start For loop per sample: 
+  # for (s in unique(Data_comb_red_blank$File_name)){
+  #   # Find all the particles in sample s: 
+  #   # test with s="M16040701_S2_results.csv"
+  #   Sample=Data_comb_red_blank[Data_comb_red_blank$File_name==s,]
+  #   
+  #   # For Ubern: 
+  #   if (unique(Sample$Lab)=="Ubern"){
+  #     # 1. If there is a PE particle, remove a PE,          
+  #     if ("PE" %in% Sample$Polymer.grp){
+  #       # Find the PE particle with the closest area from the median.
+  #       # Create a df of all PE particles
+  #       PE=Sample[Sample$Polymer.grp=="PE",]
+  #       # Calculate the absolute difference with PE_Ubern_Areamedian for each PE particle 
+  #       PE$Median_diff=0
+  #       for (p in 1:nrow(PE)){
+  #         PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_Ubern_Areamedian)
+  #       }
+  #       # ID of the FIRST[1] particle with the min Median_diff:
+  #       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
+  #       # remove this particle  
+  #       Data_comb_red_blank = Data_comb_red_blank %>%
+  #         mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
+  #                Length.um =if_else(ID== ID_PE, 0, Length.um),
+  #                Width.um = if_else(ID== ID_PE, 0, Width.um),
+  #                Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
+  #                Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
+  #                Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
+  #       
+  #       # 2. If there is no PE particle but PP, remove a PP,    
+  #     } else if  ("PP" %in% Sample$Polymer.grp){ 
+  #       #Find the PE particle with the closest area from the median:
+  #       PP=Sample[Sample$Polymer.grp=="PP",]
+  #       # Calculate the absolute difference with PP_Areamedian for each PE particle 
+  #       PP$Median_diff=0
+  #       for (p in 1:nrow(PP)){
+  #         PP$Median_diff[p]=abs(PP$Area.um2.cor[p]- PP_Ubern_Areamedian)
+  #       }
+  #       # ID of the FIRST[1] particle with the min Median_diff:
+  #       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
+  #       # remove this particle  
+  #       Data_comb_red_blank=Data_comb_red_blank %>%
+  #         mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
+  #                Length.um =if_else(ID== ID_PP, 0, Length.um),
+  #                Width.um = if_else(ID== ID_PP, 0, Width.um),
+  #                Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
+  #                Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
+  #                Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
+  # 
+  #     }
+  #     # 3. If no PE, no PP don't do any thing
+  #   } # end if UBern
+  #   
+  #   
+  #   # For WUR:  
+  #   if (unique(Sample$Lab)=="WUR"){
+  #     # 1. If there is a PP particle, remove a PP,      
+  #     if ("PP" %in% Sample$Polymer.grp){
+  #       #Find the PP particle with the closest area from the median:
+  #       PP=Sample[Sample$Polymer.grp=="PP",]
+  #       # Calculate the absolute difference with PP_Areamedian for each PP particle 
+  #       PP$Median_diff=0
+  #       for (p in 1:nrow(PP)){
+  #         PP$Median_diff[p]=abs(PP$Area.um2.cor[p]-PP_WUR_Areamedian)
+  #       }
+  #       # ID of the FIRST[1] particle with the min Median_diff:
+  #       ID_PP=PP$ID[PP$Median_diff==min(PP$Median_diff)][1]
+  #       # remove this particle  
+  #       Data_comb_red_blank=Data_comb_red_blank %>%
+  #         mutate(N.px =     if_else(ID== ID_PP, 0, N.px),
+  #                Length.um =if_else(ID== ID_PP, 0, Length.um),
+  #                Width.um = if_else(ID== ID_PP, 0, Width.um),
+  #                Area.um2.cor = if_else(ID== ID_PP, 0,  Area.um2.cor),
+  #                Mass.ng =      if_else(ID== ID_PP, 0,  Mass.ng),
+  #                Polymer.grp=   if_else(ID== ID_PP, "No.plastic", Polymer.grp) )
+  #       
+  #       # 2. If there is no PP particle but PE, remove a PE,        
+  #     } else if  ("PE" %in% Sample$Polymer.grp){ # If there is no PP particle, but a PE 
+  #       #Find the PE particle with the closest area from the median:
+  #       PE=Sample[Sample$Polymer.grp=="PE",]
+  #       # Calculate the absolute difference with PE_Areamedian for each PE particle 
+  #       PE$Median_diff=0
+  #       for (p in 1:nrow(PE)){
+  #         PE$Median_diff[p]=abs(PE$Area.um2.cor[p]-PE_WUR_Areamedian)
+  #       }
+  #       # ID of the FIRST[1] particle with the min Median_diff:
+  #       ID_PE=PE$ID[PE$Median_diff==min(PE$Median_diff)][1]
+  #       # remove this particle  
+  #       Data_comb_red_blank=Data_comb_red_blank %>%
+  #         mutate(N.px =     if_else(ID== ID_PE, 0, N.px),
+  #                Length.um =if_else(ID== ID_PE, 0, Length.um),
+  #                Width.um = if_else(ID== ID_PE, 0, Width.um),
+  #                Area.um2.cor = if_else(ID== ID_PE, 0,  Area.um2.cor),
+  #                Mass.ng =      if_else(ID== ID_PE, 0,  Mass.ng),
+  #                Polymer.grp=   if_else(ID== ID_PE, "No.plastic", Polymer.grp) )
+  #     }
+  #     # 3. If no PE, no PP don't do any thing    
+  #   } # end if WUR
+  # } # end loop Samples
+  # 
+  # 
+  # # Number of particles:
+  # nrow(Data_comb[Data_comb$N.px>0,])
+  # nrow(Data_comb_red[Data_comb_red$N.px>0,])
+  # nrow(Data_comb_red_blank[Data_comb_red_blank$N.px>0,])
+  # 
+  # 
+  # # Number of files: 
+  # length(unique(Data_comb$File_name))
+  # length(unique(Data_comb_red$File_name))
+  # length(unique(Data_comb_red_blank$File_name))
+  # 
 
 
 # 6. Add the field METADATA ####
