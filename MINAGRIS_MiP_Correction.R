@@ -74,7 +74,7 @@ colnames(Data_Ubern)
 
 # Expected Column names
 uP_Colnames=c("File_name", "Lab", "Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", "Filter_name", "IR_name", "IR_rep", "PMF_rep", "Operator",
-              "ID", "Q_index",	"Polymer.grp", "Polymer.red12", "Polymer.red3", "Area.um2.cor", "Length.um" , "Width.um", "Aspect_ratio", "Mass.ng", "Size_cat.um")
+              "ID", "Q_index",	"Polymer.grp", "Polymer.red12", "Polymer.red3", "Area.um2.cor", "Length.um" , "Width.um", "Aspect_ratio", "Mass.ng_T", "Size_cat.um")
 
 # * Completing from WUR data #### 
 uP_Colnames[uP_Colnames %!in% colnames(Data_WUR)]
@@ -96,6 +96,9 @@ unique(Data_WUR$Filter_Name)
 unique(Data_WUR$Filter_div)
 unique(Data_WUR$Soil_sample)
 
+#Check aspect ratio 
+Data_WUR[is.na(Data_WUR$Aspect_ratio),]
+
 
 # * Completing Ubern data ####
 uP_Colnames[uP_Colnames %!in% colnames(Data_Ubern)]
@@ -103,6 +106,7 @@ uP_Colnames[uP_Colnames %!in% colnames(Data_Ubern)]
 Data_Ubern$File_name=Data_Ubern$source_file
 Data_Ubern$IR_name= gsub (pattern = "_results.csv",replacement = "",Data_Ubern$source_file)
 Data_Ubern$Area.um2.cor=Data_Ubern$area
+
 
 #Filter names 
   Data_Ubern$Filter_Name=Data_Ubern$FileName # /!\ Assuming no IR_rep and no Operator_rep
@@ -131,8 +135,10 @@ Data_Ubern$IR_rep="ir"
 Data_Ubern$PMF_rep="pmf"
 Data_Ubern$Width.um = pmin(Data_Ubern$height, Data_Ubern$width)         
 Data_Ubern$Length.um= pmax(Data_Ubern$height, Data_Ubern$width) 
-Data_Ubern$Mass.ng=0
-Data_Ubern$Aspect_ratio=Data_Ubern$Width.um/Data_Ubern$Length.um
+Data_Ubern$Mass.ng_T=0
+Data_Ubern[Data_Ubern$Area.um2.cor==0, c("Width.um", "Length.um") ]=0
+Data_Ubern$Aspect_ratio=Data_Ubern$Width.um/Data_Ubern$Length.um # /!\ Data_Ubern$Length.um==0 ; Data_Ubern[is.na(Data_Ubern$Aspect_ratio),]
+Data_Ubern$Aspect_ratio[Data_Ubern$Length.um==0]=0
 
 # Polymers
 Polymer.red12= c("PP", "PE",  "PS", "PET", "PVC", "PU", "PMMA", "PLA", "PC", "PA", "No.plastic") # 12 plastics , +Others  #"CA","silicone",
@@ -152,7 +158,7 @@ subset(Data_Ubern,Polymer.grp=="No.plastic")
 Data_Ubern = Data_Ubern %>%
   mutate(N.px =         if_else( Polymer.grp=="No.plastic", 0, N.px),
          Area.um2.cor = if_else(Polymer.grp=="No.plastic", 0, Area.um2.cor),
-         Mass.ng =      if_else( Polymer.grp=="No.plastic", 0, Mass.ng),
+         Mass.ng_T =      if_else( Polymer.grp=="No.plastic", 0, Mass.ng_T),
          Length.um =if_else( Polymer.grp=="No.plastic", 0, Length.um),
          Width.um = if_else( Polymer.grp=="No.plastic", 0, Width.um ))
 
@@ -173,9 +179,10 @@ nrow(subset(Data_Ubern, N.px !=0 & Width.um<86 ) ) / nrow(subset(Data_Ubern, N.p
 Data_Ubern_cor = Data_Ubern %>%
   mutate(N.px =         if_else( Width.um <86, 0, N.px),
          Area.um2.cor = if_else( Width.um <86, 0, Area.um2.cor),
-         Mass.ng =      if_else( Width.um <86, 0, Mass.ng),
+         Mass.ng_T =      if_else( Width.um <86, 0, Mass.ng_T),
          Length.um =if_else( Width.um <86, 0, Length.um),
-         Width.um = if_else( Width.um <86, 0, Width.um ))
+         Width.um = if_else( Width.um <86, 0, Width.um),
+          Aspect_ratio =if_else( Width.um <86, 0, Width.um))
 
 nrow(subset(Data_Ubern_cor, N.px !=0 ))
 
@@ -190,7 +197,7 @@ Filtered_out_Data_Ubern=rbind(Filtered_out_Data_Ubern, subset(Data_Ubern_cor, Wi
 Data_Ubern_cor = Data_Ubern_cor %>%
   mutate(N.px =    if_else( Width.um>2000, 0, N.px),
          Area.um2.cor = if_else( Width.um>2000, 0, Area.um2.cor),
-         Mass.ng =      if_else( Width.um>2000, 0, Mass.ng),
+         Mass.ng_T =      if_else( Width.um>2000, 0, Mass.ng_T),
          Length.um =if_else( Width.um>2000, 0, Length.um),
          Width.um = if_else( Width.um>2000, 0, Width.um ))
 
@@ -330,36 +337,95 @@ for (pol in Polymer_density$Polymer ){
 
 is.na(Data_comb$pol_density)
 
-# *** 3.2 Volume / Simon (2018) ####
-# https://pubs-acs-org.ezproxy.library.wur.nl/doi/10.1021/acs.est.4c01031
-# https://pubs.acs.org/doi/10.1021/acs.est.3c03620?goto=supporting-info
-# https://www.sciencedirect.com/science/article/pii/S0043135418303877?getft_integrator=acs&pes=vor&utm_source=acs
-# The most used model is that of Simon et al. (2018). (22)
-#Three assumptions are at the core of the model. 
-# First, the particles are assumed to have an ellipsoidal shape, with the major and minor axes on the XY plane calculated from the ellipse that best fits the particle projection on the XY plane (equivalent ellipse from the 2D area obtained by image analysis).
-# Second, the particles are assumed to lie at their lowest energy state (therefore the Z-direction axis is the smallest dimension).
-# Third, the asymmetry of the ellipsoid in the ZY plane is assumed proportional to that in the XY plane hence the axis in the Z direction (i.e., particle height “H”) is assumed to be in the same ratio to the 2D minor axis (“W” for width), as the 2D minor axis is to the 2D major axis (“L” for length) (i.e., H/W = W/L). The model was developed for mass balance in a wastewater treatment plant, for particles ranging from 10–500 μm. No validation was run.
+# *** 3.2 Volume Estimation ####
+  # / 3.2.1 Simon (2018) ####
+  # https://pubs-acs-org.ezproxy.library.wur.nl/doi/10.1021/acs.est.4c01031
+  # https://pubs.acs.org/doi/10.1021/acs.est.3c03620?goto=supporting-info
+  # https://www.sciencedirect.com/science/article/pii/S0043135418303877?getft_integrator=acs&pes=vor&utm_source=acs
+  # The most used model is that of Simon et al. (2018). (22)
+  #Three assumptions are at the core of the model. 
+  # First, the particles are assumed to have an ellipsoidal shape, with the major and minor axes on the XY plane calculated from the ellipse that best fits the particle projection on the XY plane (equivalent ellipse from the 2D area obtained by image analysis).
+  # Second, the particles are assumed to lie at their lowest energy state (therefore the Z-direction axis is the smallest dimension).
+  # Third, the asymmetry of the ellipsoid in the ZY plane is assumed proportional to that in the XY plane hence the axis in the Z direction (i.e., particle height “H”) is assumed to be in the same ratio to the 2D minor axis (“W” for width), as the 2D minor axis is to the 2D major axis (“L” for length) (i.e., H/W = W/L). The model was developed for mass balance in a wastewater treatment plant, for particles ranging from 10–500 μm. No validation was run.
+  
+  # Height estimation from Simon (2018)
+  # The height is estimated based on the Aspect_ratio
+  # Aspect_ratio should be Width/length and so Aspect_ratio should be <1 
+  # But it is wrongly calculated?! 
+  # and for 6 particles, width > length 
+  Data_comb[Data_comb$Aspect_ratio<1 & Data_comb$Aspect_ratio!=0,]
+  Data_comb[is.na(Data_comb$Aspect_ratio),]
+  1/mean(Data_comb$Aspect_ratio[Data_comb$Aspect_ratio!=0])
+  
+
+  Data_comb$Aspect_ratio_cor= ifelse(Data_comb$Width.um ==0 & Data_comb$Length.um ==0, 0,
+                                     pmin(Data_comb$Width.um / Data_comb$Length.um, Data_comb$Length.um / Data_comb$Width.um))
+  
+  
+  mean(Data_comb$Aspect_ratio_cor[Data_comb$Aspect_ratio_cor!=0])
+  max(Data_comb$Aspect_ratio_cor)
+  Data_comb[is.na(Data_comb$Aspect_ratio),]
+  
+  Data_comb$Aspect_ratio_cor[is.na(Data_comb$Aspect_ratio_cor)]=0.67
+  
+  
+  Data_comb$height.um_R=Data_comb$Width.um * Data_comb$Aspect_ratio_cor  
+  Data_comb$height.um_S=Data_comb$Width.um * 0.67
+  
+  # Volume estimation from Simon (2018) 
+  Data_comb$volume.um3_R=4* pi * Data_comb$height.um_R * Data_comb$Width.um * Data_comb$Length.um /(3*2*2*2)
+  Data_comb$volume.um3_S=4* pi * Data_comb$height.um_S * Data_comb$Width.um * Data_comb$Length.um /(3*2*2*2)
+  
+# / 3.2.2 Tanoiri (2021)  ####
+
+# Inclusion of shape parameters increases the accuracy of 3D models for microplastics mass quantification.
+# Mar Pollut Bull. 2021;171:112749. https://doi.org/10.1016/j.marpolbul.2021.112749
 
 
-Data_comb$Aspect_ratio2=min( Data_comb$Aspect_ratio , Data_comb$Width.um /Data_comb$Length.um)
-mean(Data_comb$Aspect_ratio2,na.rm=TRUE, nan.rm=TRUE)
+  # Height estimation from Tanoiri (2021)
+  Data_comb$height.um_T= Data_comb$Width.um * 0.372
+  
+  # Volume estimation from Tanoiri (2021)
+  Data_comb$volume.um3_T = 4* pi * Data_comb$height.um_T * Data_comb$Width.um * Data_comb$Length.um /(3*2*2*2)
 
-Data_comb$Aspect_ratio2[is.na(Data_comb$Aspect_ratio2)]=0.37
+# *** 3.3 Mass estimations ####
+Data_comb$Mass.ng_R=Data_comb$volume.um3_R * Data_comb$Pol_Density/1000
+Data_comb$Mass.ng_S=Data_comb$volume.um3_S * Data_comb$Pol_Density/1000
+Data_comb$Mass.ng_T=Data_comb$volume.um3_T * Data_comb$Pol_Density/1000
 
-Data_WUR$Aspect_ratio
+mean(Data_comb$Mass.ng_R)/1000
+mean(Data_comb$Mass.ng_S)/1000
+mean(Data_comb$Mass.ng_T)/1000
 
-Data_comb$height.um=Data_comb$Width.um * Data_comb$Aspect_ratio2  
+# Plot 3 mass
+#   # R based
+# boxplot(log(Data_comb[, c("Mass.ng_R", "Mass.ng_S", "Mass.ng_T")])/1000,
+#         names = c("Mass.ug_R", "Mass.ug_S", "Mass.ug_T"),
+#         ylab = "log(Mass.ug)",
+#         main = "Boxplots mass estimations" )
+# 
+# 
+# boxplot(subset(Data_comb, Area.um2.cor !=0, select=c("Mass.ng_R", "Mass.ng_S", "Mass.ng_T"))/1000,
+#         names = c("Mass.ug_R", "Mass.ug_S", "Mass.ug_T"),
+#         ylab = "log(Mass.ug)",
+#         main = "Boxplots mass estimations" )
+# 
+#   # GGplot
+Mass_Estimations <- pivot_longer(Data_comb, cols = c(Mass.ng_R, Mass.ng_S, Mass.ng_T),
+                       names_to = "Mass_Equation",
+                       values_to = "Mass.ng_est")
+Mass_Estimations$Mass.ug_est=Mass_Estimations$Mass.ng_est/1000
+# 
+# 
+# ggplot(Mass_Estimations, aes(x = Mass_Equation, y =Mass.ng_est)) +
+#   geom_violin(fill = "lightgray") +
+#   geom_boxplot(width = 0.1, outlier.shape = NA) +
+#   geom_jitter(width = 0.1, alpha = 0.3)
 
-
-Data_comb$volumeS18.um3=4* pi * Data_comb$height.um * Data_comb$Width.um * Data_comb$Length.um /(3*2*2*2)
-
-# *** 3.2.2 ####
-
-
-
-
-# *** 3.3 Mass (select) ####
-Data_comb$Mass1.ng=Data_comb$volumeS18.um3 *Data_comb$Pol_Density/1000
+ggplot(Mass_Estimations, aes(x = Mass_Equation, y = log(Mass.ng_est))) +
+  geom_violin(fill = "lightgray") #+
+  #geom_boxplot(width = 0.1, outlier.shape = NA) #+
+  #geom_jitter(width = 0.1, alpha = 0.3)
 
 
 # 4. Analyse blanks ####
@@ -383,7 +449,8 @@ nrow( unique( subset(Data_comb, Preparation_Type=="Blank_chemical", select = "Fi
 # number of blanks
 length(unique(df_Blanks$File_name))
 length(unique(df_Blanks$Filter_Name))
-
+n_bcm=length(unique(df_Blanks$Filter_Name))
+n_bcm=length(unique(df_Blanks$File_name))
 length(unique(df_Blanks$File_name[df_Blanks$Lab=="WUR"]))
 length(unique(df_Blanks$File_name[df_Blanks$Lab=="Ubern"]))
 
@@ -395,14 +462,17 @@ length(unique(df_Blanks$File_name[df_Blanks$Lab=="Ubern"& df_Blanks$N.px==0]))
 # list of polymers 
 unique(df_Blanks$Polymer.grp)
 
+# Summary per polymer 
 Summary_Blanks_polymers = df_Blanks %>% 
   group_by( Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
-  summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
-             Num.px=sum(N.px),           # Number of pixels
-             Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
-             Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
-             SD.Area=sd(Area.um2.cor))
+  summarise( N.particles= sum(N.px!=0)/n_bcm,  # Number of particles (Sum of Binary)
+             Num.px=sum(N.px)/n_bcm,           # Number of pixels
+             Tot.Area.mm2=sum(Area.um2.cor)/1000000/n_bcm, # Total plastic area 
+             Tot.Mass.ng_R=sum( Mass.ng_R)/n_bcm,
+             Tot.Mass.ng_S=sum( Mass.ng_S)/n_bcm,
+             Tot.Mass.ng_T=sum( Mass.ng_T)/n_bcm,
+             Median.Area.sqrt.um=sqrt(median(Area.um2.cor))/n_bcm,
+             SD.Area=sd(Area.um2.cor)/n_bcm)
 
 
 # Summary / Blanks / Polymer
@@ -413,7 +483,9 @@ Summary_Blanks1_File = df_Blanks %>%
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
+             Tot.Mass.ng_R=sum( Mass.ng_R),
+             Tot.Mass.ng_S=sum( Mass.ng_S),
+             Tot.Mass.ng_T=sum( Mass.ng_T),
              Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
              SD.Area=sd(Area.um2.cor),
              )%>%
@@ -425,7 +497,9 @@ Summary_Blanks2_Filter =  Summary_Blanks1_File %>%
   summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
              Num.px=mean(Num.px),           # Number of pixels
              Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
+             Tot.Mass.ng_R=mean(  Tot.Mass.ng_R),
+             Tot.Mass.ng_S=mean(  Tot.Mass.ng_S),
+             Tot.Mass.ng_T=mean( Tot.Mass.ng_T),
              Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
              SD.Area=mean( SD.Area),
              N.operator=length(unique(Operator)), 
@@ -438,7 +512,9 @@ Summary_Blanks3_Filter_sumPol =  Summary_Blanks2_Filter %>%
   summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
              Num.px= sum(Num.px),           # Number of pixels
              Tot.Area.mm2= sum( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
+             Tot.Mass.ng_R=sum(  Tot.Mass.ng_R),
+             Tot.Mass.ng_S=sum(  Tot.Mass.ng_S),
+             Tot.Mass.ng_T=sum(  Tot.Mass.ng_T),
              Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
              N.operator=max(N.operator), 
              Operators= paste0(unique(Operators), collapse = " ; "))%>%
@@ -452,7 +528,9 @@ Summary_Blanks4_Batch =   Summary_Blanks2_Filter %>%
   summarise( N.particles= mean(N.particles),  # Number of particles (Sum of Binary)
              Num.px=mean(Num.px),           # Number of pixels
              Tot.Area.mm2=mean( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
+             Tot.Mass.ng_R=mean(  Tot.Mass.ng_R),
+             Tot.Mass.ng_S=mean(  Tot.Mass.ng_S),
+             Tot.Mass.ng_T=mean( Tot.Mass.ng_T),
              Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
              SD.Area=mean( SD.Area) )%>%
   ungroup()
@@ -468,7 +546,9 @@ Summary_Blanks5_Batch_SumPol12 =   Summary_Blanks4_Batch %>%
   summarise( N.particles= sum(N.particles),  # Number of particles (Sum of Binary)
              Num.px=sum(Num.px),           # Number of pixels
              Tot.Area.mm2=sum( Tot.Area.mm2), # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
+             Tot.Mass.ng_R=sum(  Tot.Mass.ng_R),
+             Tot.Mass.ng_S=sum(  Tot.Mass.ng_S),
+             Tot.Mass.ng_T=sum(  Tot.Mass.ng_T),
              Median.Area.sqrt.um=mean(Median.Area.sqrt.um),
              SD.Area=mean( SD.Area) )%>%
   ungroup()
@@ -489,26 +569,27 @@ Out=subset(Data_comb, Q_index !=0 & Q_index <0.35 & Polymer.red12 =="Other.Plast
 
 # 5. Blank correction - OPTION Particle ####
 
-# * Remove samples with more than one particle in batches with blank of more than 5 particles ####
-# if the batch has more than 5 particles we consider something went wrong in this batch so other samples might be contaminated. 
-# However if a samples has <=1 particle it is likely not affected by the contamination
+# * 5.1 Batch correction #### 
+  # Remove samples with more than one particle in batches with blank of more than 5 particles 
+  # if the batch has more than 5 particles we consider something went wrong in this batch so other samples might be contaminated. 
+  # However if a samples has <=1 particle it is likely not affected by the contamination
+  
+  Batch_bcm_over5=Summary_Blanks5_Batch_SumPol12$Batch_Name[Summary_Blanks5_Batch_SumPol12$N.particles>5]
+  
+  # Create the reduced data frame Data_comb_red
+  nrow (subset(Data_comb, Batch_Name %in% Batch_bcm_over5  )) # 515 particles detected in batch "m29" and "m9" that are potentially contamination 
+  nrow (subset(Data_comb, Batch_Name %in% Batch_bcm_over5 & N.px==0   )) # 9 samples are in Batch_bcm_over5 BUT wit h0 particles detected so we keep them. 
+  
+  # Remove particles 
+  Data_comb_red=subset(Data_comb, Batch_Name %!in% Batch_bcm_over5 |  N.px==0 ) 
+  
+  # Number of particles, Files, Soils 
+  nrow (subset(Data_comb_red, N.px!=0 ))
+  length (unique(Data_comb_red$File_name))
+  length (unique(Data_comb_red$Soil_sample))
 
-Batch_bcm_over5=Summary_Blanks5_Batch_SumPol12$Batch_Name[Summary_Blanks5_Batch_SumPol12$N.particles>5]
 
-# Create the reduced data frame Data_comb_red
-nrow (subset(Data_comb, Batch_Name %in% Batch_bcm_over5  )) # 515 particles detected in batch "m29" and "m9" that are potentially contamination 
-nrow (subset(Data_comb, Batch_Name %in% Batch_bcm_over5 & N.px==0   )) # 9 samples are in Batch_bcm_over5 BUT wit h0 particles detected so we keep them. 
-
-# Remove particles 
-Data_comb_red=subset(Data_comb, Batch_Name %!in% Batch_bcm_over5 |  N.px==0 ) 
-
-# Number of particles, Files, Soils 
-nrow (subset(Data_comb_red, N.px!=0 ))
-length (unique(Data_comb_red$File_name))
-length (unique(Data_comb_red$Soil_sample))
-
-
-# * Characterize the remaining bcm contamination #### 
+# * 5.2 Remaining bcm contamination #### 
 
 # Create dataframe 
 df_bcm=subset(Data_comb_red, Soil_sample=="bcm" )
@@ -533,18 +614,6 @@ length(unique(df_bcm$File_name[df_bcm$Lab=="Ubern"& df_bcm$N.px==0]))
 #Number of UP: 
   nrow(subset(df_bcm, N.px!=0 ))
 
-# list of polymers 
-unique(df_bcm$Polymer.grp)
-
-Summary_Blanks_polymers = df_bcm %>% 
-  group_by( Polymer.grp, Polymer.red12,  Polymer.red3  ) %>%              # Group per file, Filter.name,Sample_type,Operator for info
-  summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
-             Num.px=sum(N.px),           # Number of pixels
-             Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-             #Tot.Mass.ng=sum( Mass.ng),
-             Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
-             SD.Area=sd(Area.um2.cor))
-
 
 # Summary per File, Polymer all :  
 
@@ -554,7 +623,9 @@ S1c_bcm = df_bcm %>%
   summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
              Num.px=sum(N.px),           # Number of pixels
              Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-             Tot.Mass.ng=sum( Mass.ng),
+             Tot.Mass.ng_R=sum(  Mass.ng_R),
+             Tot.Mass.ng_S=sum(  Mass.ng_S),
+             Tot.Mass.ng_T=sum(  Mass.ng_T),
              Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
              SD.Area=sd(Area.um2.cor)) %>%  #
   # for each file I want all the polymers represented
@@ -565,6 +636,9 @@ S1c_bcm = df_bcm %>%
            fill=list(N.particles=0,
                      Num.px=0,
                      Tot.Area.mm2=0,
+                     Tot.Mass.ng_R=0,
+                     Tot.Mass.ng_S=0,
+                     Tot.Mass.ng_T=0,
                      Median.Area.sqrt.um=0,
                      SD.Area=0)) %>%
   # Remove the "No.plastic", not needed anymore becasue all other polymers are reported. 
@@ -583,7 +657,9 @@ S2c_bcm= S1c_bcm  %>%
              Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
              Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
              Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-             Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+             Tot.Mass.ng_R=mean(  Tot.Mass.ng_R),
+             Tot.Mass.ng_S=mean(  Tot.Mass.ng_S),
+             Tot.Mass.ng_T=mean( Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
              sd.particles.operator=sd(N.particles),
              sd.Area.operator=sd(Tot.Area.mm2)   )%>%
   ungroup() 
@@ -594,25 +670,10 @@ sum(S2c_bcm$Mean.particles)
 
 
 
-# Summary per Batch, Polymer all :   
-
-S3c_bcm= S2c_bcm%>% 
-  group_by( Batch_Name, Lab,Preparation_Type, Sample_type, Soil_sample,      
-                 CSS,Farm, Field, Extraction_Name, Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
-  summarise( N.div = n(),
-             Mean.particles= sum(Mean.particles), #
-             Mean.px=sum(Mean.px),              # 
-             Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-             Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
-  ungroup()
-
-nrow(S3c_bcm)/6
-length(unique(S3c_bcm$Batch_Name))
-sum(S3c_bcm$Mean.particles)
 
 # Summary per Lab, Polymer all :  
 
-S7c_bcm= S3c_bcm %>%
+S7c_bcm= S2c_bcm %>%
   group_by(Preparation_Type, Lab,
            Polymer.grp,, Polymer.red12,  Polymer.red3 ) %>%
   summarise(N.files = n(),
@@ -624,7 +685,9 @@ S7c_bcm= S3c_bcm %>%
             Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
             Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
             Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
-            Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) %>%
+            Mean.Tot.Mass.ng_R.MM=mean( Tot.Mass.ng_R),
+            Mean.Tot.Mass.ng_S.MM=mean( Tot.Mass.ng_S),
+            Mean.Tot.Mass.ng_T.MM=mean( Tot.Mass.ng_T)) %>%
   ungroup()
 
 nrow(S7c_bcm)/6
@@ -633,7 +696,7 @@ sum(S7c_bcm$Mean.particles.MM)
 
 # Summary per Polymer, per lab Mean filter :  
 
-S_pPol_pLab_mFilter= S3c_bcm %>%
+S_pPol_pLab_mFilter= S2c_bcm %>%
   group_by(Preparation_Type, Lab,
            Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
   summarise(N.filters = n(),
@@ -645,15 +708,17 @@ S_pPol_pLab_mFilter= S3c_bcm %>%
             Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
             Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
             Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
-            Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) %>%
+            Mean.Tot.Mass.ng_R.MM=mean( Tot.Mass.ng_R),
+            Mean.Tot.Mass.ng_S.MM=mean( Tot.Mass.ng_S),
+            Mean.Tot.Mass.ng_T.MM=mean( Tot.Mass.ng_T)) %>%
   group_by(Lab) %>%
   mutate(
     MiP_perc = Mean.particles.MM / sum(Mean.particles.MM) * 100) %>%
   ungroup()
 
-# Summary per Polymer, per lab Mean filter :  
+# Summary per Polymer, Mean filter :  
 
-S_pPol_mFilter= S3c_bcm %>%
+S_pPol_mFilter= S2c_bcm %>%
   group_by(Preparation_Type,
            Polymer.grp, Polymer.red12,  Polymer.red3 ) %>%
   summarise(N.filters = n(),
@@ -665,7 +730,9 @@ S_pPol_mFilter= S3c_bcm %>%
             Median.Tot.Area.mm2.MM=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
             Min.Tot.Area.mm2.MM=min(Mean.Tot.Area.mm2),
             Max.Tot.Area.mm2.MM=max(Mean.Tot.Area.mm2),
-            Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) ) %>%
+            Mean.Tot.Mass.ng_R.MM=mean( Tot.Mass.ng_R),
+            Mean.Tot.Mass.ng_S.MM=mean( Tot.Mass.ng_S),
+            Mean.Tot.Mass.ng_T.MM=mean( Tot.Mass.ng_T)) %>%
   ungroup()
 
 
@@ -817,7 +884,7 @@ sum(subset(S2c_bcm, Polymer.red12  %!in% c( "PE", "PP", "No.plastic")  & Lab=="U
 
 #MC- you print all these number to the terminal, but don't save them anywhere?
 
-# * Apply correction ####
+# * 5.3 Particle based correction //\\ ####
 Data_comb_red_blank= Data_comb_red
 
 # The current correction is not satisfactory. It applies a discrete correction per sample so it is 1. largely skewed by the current simplified rules (see below) and by the polymers present in the samples. 
