@@ -93,7 +93,9 @@ Field_METADATA_vector=NA
     # "Length.um"        
     # "Width.um"         
     # "Aspect_ratio"
-    # "Mass.ng"
+    # "Mass.ng_R"
+    # "Mass.ng_S"
+    # "Mass.ng_T"
     # "Size_cat.um" 
     # "Size_cat2.um" 
     
@@ -203,7 +205,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area converted in mm2
-                 Tot.Mass.ng=sum(Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor))  %>%  #
     # Complete the Summary1_File: 
@@ -216,7 +220,9 @@ Field_METADATA_vector=NA
              fill=list(N.particles=0,
                        Num.px=0,
                        Tot.Area.mm2=0,
-                       Tot.Mass.ng=0,
+                       Tot.Mass.ng_R=0,
+                       Tot.Mass.ng_S=0,
+                       Tot.Mass.ng_T=0,
                        Median.Area.sqrt.um=0,
                        SD.Area=0))%>%
       # Remove the "No.plastic", not needed anymore
@@ -229,7 +235,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-                 Tot.Mass.ng=sum( Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor)) %>%  #
       # for each file I want all the polymers represented
@@ -240,7 +248,9 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
-                         Tot.Mass.ng=0,
+                         Tot.Mass.ng_R=0,   
+                         Tot.Mass.ng_S=0,      
+                         Tot.Mass.ng_T=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -253,7 +263,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-                 Tot.Mass.ng=sum( Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor)) %>%  #
       # for each file I want all the polymers represented
@@ -264,7 +276,7 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
-                         Tot.Mass.ng=0,
+                         Tot.Mass.ng_R=0,                         ,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -278,7 +290,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-                 Tot.Mass.ng=sum( Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor)) %>%  #
       # for each file I want all the polymers represented
@@ -288,7 +302,9 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
-                         Tot.Mass.ng=0,
+                         Tot.Mass.ng_R=0,   
+                         Tot.Mass.ng_S=0,      
+                         Tot.Mass.ng_T=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -300,13 +316,17 @@ Field_METADATA_vector=NA
       # "Other.Plastic" to 0
       mutate(N.px = if_else(Polymer.red12 == "Other.Plastic", 0, N.px),
              Area.um2.cor= if_else(Polymer.red12 == "Other.Plastic", 0,  Area.um2.cor),
-             Mass.ng = if_else(Polymer.red12 == "Other.Plastic", 0,  Mass.ng) ) %>%
+             Mass.ng_R = if_else(Polymer.red12 == "Other.Plastic", 0,  Mass.ng_R),
+             Mass.ng_S = if_else(Polymer.red12 == "Other.Plastic", 0,  Mass.ng_S),
+             Mass.ng_T = if_else(Polymer.red12 == "Other.Plastic", 0,  Mass.ng_T)) %>%
       
       group_by_at( c(Group1_Files) ) %>%
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-                 Tot.Mass.ng=sum( Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor)) %>%
       ungroup() #
@@ -319,7 +339,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-                 Tot.Mass.ng=sum( Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor))%>%
       ungroup()  #
@@ -330,7 +352,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area converted in mm2
-                 Tot.Mass.ng=sum(Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor))  %>%  #
       # Complete the Summary1_File: 
@@ -341,7 +365,9 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
-                         Tot.Mass.ng=0,
+                         Tot.Mass.ng_R=0, 
+                         Tot.Mass.ng_S=0,           
+                         Tot.Mass.ng_T=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0))
 
@@ -352,7 +378,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area 
-                 Tot.Mass.ng=sum( Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor)) %>%  #
       # for each file I want all the polymers represented
@@ -364,7 +392,9 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
-                         Tot.Mass.ng=0,
+                         Tot.Mass.ng_R=0,   
+                         Tot.Mass.ng_S=0,      
+                         Tot.Mass.ng_T=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0))    %>%    # Remove the "No.plastic", not needed anymore
     subset(Polymer.red3!="No.plastic") #
@@ -379,7 +409,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area converted in mm2
-                 Tot.Mass.ng=sum(Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor))  %>%  #
       # Complete the Summary1_File: 
@@ -390,7 +422,9 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
-                         Tot.Mass.ng=0,
+                         Tot.Mass.ng_R=0,   
+                         Tot.Mass.ng_S=0,      
+                         Tot.Mass.ng_T=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0))
     
@@ -401,7 +435,9 @@ Field_METADATA_vector=NA
       summarise( N.particles= sum(N.px!=0),  # Number of particles (Sum of Binary)
                  Num.px=sum(N.px),           # Number of pixels
                  Tot.Area.mm2=sum(Area.um2.cor)/1000000, # Total plastic area converted in mm2
-                 Tot.Mass.ng=sum(Mass.ng),
+                 Tot.Mass.ng_R=sum(Mass.ng_R),
+                 Tot.Mass.ng_S=sum(Mass.ng_S),
+                 Tot.Mass.ng_T=sum(Mass.ng_T),
                  Median.Area.sqrt.um=sqrt(median(Area.um2.cor)),
                  SD.Area=sd(Area.um2.cor))  %>%  #
       # Complete the Summary1_File: 
@@ -412,7 +448,9 @@ Field_METADATA_vector=NA
                fill=list(N.particles=0,
                          Num.px=0,
                          Tot.Area.mm2=0,
-                         Tot.Mass.ng=0,
+                         Tot.Mass.ng_R=0,   
+                         Tot.Mass.ng_S=0,      
+                         Tot.Mass.ng_T=0,
                          Median.Area.sqrt.um=0,
                          SD.Area=0)) %>%
       # Remove the "No.plastic", not needed anymore
@@ -479,7 +517,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -493,7 +533,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -506,7 +548,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -519,7 +563,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -533,7 +579,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -547,7 +595,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -560,7 +610,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -573,7 +625,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(N.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean(Num.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean(Tot.Mass.ng), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean(Tot.Mass.ng_R), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_S=mean(Tot.Mass.ng_S), #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_T=mean(Tot.Mass.ng_T), #  Mean mass per sample and polymer, over the files/operators
                  sd.particles.operator=sd(N.particles),
                  sd.Area.operator=sd(Tot.Area.mm2)   ) %>%
       ungroup()
@@ -613,14 +667,16 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
     
     # Blank Correction - Option 2 (Average) 
     # /!\ In some filters, values will be negative.
     # That is alright and should be canceled out with the number of filters. 
-    # Before presentation negative results are put at 0
+    # Before presentation negative results should be put at 0
     
     #Characterize blanks: 
     
@@ -635,40 +691,65 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(Mean.particles), #
                  Mean.px=mean(Mean.px),              # 
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=mean(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=mean(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=mean(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
     # Check
     sum(Summary10a_Lab_bcm$Mean.particles[Summary10a_Lab_bcm$Lab=="WUR" & Summary10a_Lab_bcm$Polymer.grp == "PP"])
     
     #Only keep the non null rows to apply the correction : 
-    Summary10a_Lab_bcm_cor=subset(Summary10a_Lab_bcm, Mean.particles>0)
+    Summary10a_Lab_bcm_4cor=subset(Summary10a_Lab_bcm, Mean.particles>0)
     
-    sum( Summary10a_Lab_bcm_cor$Mean.particles[ Summary10a_Lab_bcm_cor$Lab=="WUR" &  Summary10a_Lab_bcm_cor$Polymer.grp == "PP"])
+    sum( Summary10a_Lab_bcm_4cor$Mean.particles[ Summary10a_Lab_bcm_4cor$Lab=="WUR" &  Summary10a_Lab_bcm_4cor$Polymer.grp == "PP"])
     
-    write.csv(Summary10a_Lab_bcm_cor, paste(wd.out,"Summary_Blanks_meanFilter_4correction.csv",sep = "/"))
+    write.csv(Summary10a_Lab_bcm_4cor, paste(wd.out,"Summary_Blanks_meanFilter_4correction.csv",sep = "/"))
     
     #Corrected summary:
     Summary3a_Filter_cor= Summary3a_Filter 
       
       # Start For loop per Summary10a_Lab_bcm:
-      for (b in 1:nrow (Summary10a_Lab_bcm_cor)) {
-        Summary3a_Filter_cor[  Summary3a_Filter_cor$Lab ==Summary10a_Lab_bcm_cor$Lab[b]&
-                               Summary3a_Filter_cor$Polymer.grp ==Summary10a_Lab_bcm_cor$Polymer.grp[b] &
-                               Summary3a_Filter_cor$Size_cat.um ==Summary10a_Lab_bcm_cor$Size_cat.um[b]  ,
-                               c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng")] =
+      for (b in 1:nrow (Summary10a_Lab_bcm_4cor)) {
+        Summary3a_Filter_cor[  Summary3a_Filter_cor$Lab ==Summary10a_Lab_bcm_4cor$Lab[b]&
+                               Summary3a_Filter_cor$Polymer.grp ==Summary10a_Lab_bcm_4cor$Polymer.grp[b] &
+                               Summary3a_Filter_cor$Size_cat.um ==Summary10a_Lab_bcm_4cor$Size_cat.um[b]  ,
+                               c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng_R","Mean.Tot.Mass.ng_S","Mean.Tot.Mass.ng_T")] =
           sweep( 
-          Summary3a_Filter_cor[  Summary3a_Filter_cor$Lab ==Summary10a_Lab_bcm_cor$Lab[b]&
-                                 Summary3a_Filter_cor$Polymer.grp ==Summary10a_Lab_bcm_cor$Polymer.grp[b] &
-                                 Summary3a_Filter_cor$Size_cat.um ==Summary10a_Lab_bcm_cor$Size_cat.um[b]  ,
-                                 c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng")] ,
+          Summary3a_Filter_cor[  Summary3a_Filter_cor$Lab ==Summary10a_Lab_bcm_4cor$Lab[b]&
+                                 Summary3a_Filter_cor$Polymer.grp ==Summary10a_Lab_bcm_4cor$Polymer.grp[b] &
+                                 Summary3a_Filter_cor$Size_cat.um ==Summary10a_Lab_bcm_4cor$Size_cat.um[b]  ,
+                                 c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng_R","Mean.Tot.Mass.ng_S","Mean.Tot.Mass.ng_T" )],
           MARGIN =2, #subtraction column-wise (MARGIN = 2)
-          as.numeric(Summary10a_Lab_bcm_cor[b, c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng")]),
+          as.numeric(Summary10a_Lab_bcm_4cor[b, c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng_R","Mean.Tot.Mass.ng_S","Mean.Tot.Mass.ng_T"  )]),
           FUN = "-")
        
       } # Summary10a_Lab_bcm
 
  
+    #Characterize corrected blanks: 
+    
+    Summary3a_Filter_bcm_cor=subset(  Summary3a_Filter_cor, Soil_sample=="bcm" )
+    n_bcm_files=length(unique(   Summary3a_Filter_bcm_cor$Extraction_Name))
+    
+    # How does an average bcm File look like per lab? 
+    
+    Summary10a_Lab_bcm_cor= Summary3a_Filter_bcm_cor %>% 
+      group_by_at( c("Lab", GroupP, GroupS) ) %>%
+      summarise( N.div = n(),
+                 Mean.particles= mean(Mean.particles), #
+                 Mean.px=mean(Mean.px),              # 
+                 Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  
+                 Mean.Tot.Mass.ng_R=mean(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=mean(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean(Mean.Tot.Mass.ng_T)) %>%
+      ungroup()
+    
+    # Check
+    sum(Summary10a_Lab_bcm_cor$Mean.particles[Summary10a_Lab_bcm_cor$Lab=="WUR" & Summary10a_Lab_bcm_cor$Polymer.grp == "PP"])
+    
+    
+    
     # * 3b Sum per filter.div, Polymer.red12 * per Size_cat.um####
     Summary3b_Filter = Summary2b_IRfiles %>% 
       group_by_at( c(Group3_Filters, GroupP12, GroupS) ) %>%
@@ -676,7 +757,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
 
@@ -688,7 +771,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
     # * 3b2 Sum per filter.div, Polymer.red12 * per Size_cat2.um####
@@ -698,7 +783,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
     
@@ -709,7 +796,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T) ) %>%
       ungroup()
     
     
@@ -721,7 +810,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
 
@@ -734,7 +825,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
    
@@ -747,7 +840,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T))  %>%
       ungroup()
     
     
@@ -766,7 +861,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean(Mean.particles), #
                  Mean.px=mean(Mean.px),              # 
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=mean(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=mean(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=mean(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
     # Check
@@ -785,12 +882,12 @@ Field_METADATA_vector=NA
     # Start For loop per Summary10a_Lab_bcm:
     for (b in 1:nrow (Summary10d_Lab_bcm_cor)) {
       Summary3d_Filter_cor[  Summary3d_Filter_cor$Lab ==Summary10d_Lab_bcm_cor$Lab[b],
-                             c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng")] =
+                             c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng_R","Mean.Tot.Mass.ng_S","Mean.Tot.Mass.ng_T")]  =
         sweep( 
           Summary3d_Filter_cor[  Summary3d_Filter_cor$Lab == Summary10d_Lab_bcm_cor$Lab[b]  , 
-                                 c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng")] ,
-          MARGIN =2, #subtraction column-wise (MARGIN = 2)
-          as.numeric(Summary10d_Lab_bcm_cor[b, c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng")]),
+                                 c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng_R","Mean.Tot.Mass.ng_S","Mean.Tot.Mass.ng_T")],
+                                 MARGIN =2, #subtraction column-wise (MARGIN = 2)
+          as.numeric(Summary10d_Lab_bcm_cor[b, c("Mean.particles","Mean.px","Mean.Tot.Area.mm2","Mean.Tot.Mass.ng_R","Mean.Tot.Mass.ng_S","Mean.Tot.Mass.ng_T")]),
           FUN = "-")
       
     } # Summary10b_Lab_bcm
@@ -805,7 +902,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T)) %>%
       ungroup()
     
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -815,7 +914,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T) ) %>%
       ungroup()
     
     
@@ -826,7 +927,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T))  %>%
       ungroup()
     
   
@@ -837,7 +940,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T) ) %>%
       ungroup()
     
     
@@ -848,7 +953,9 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T))  %>%
       ungroup()
     
 
@@ -859,17 +966,44 @@ Field_METADATA_vector=NA
                  Mean.particles= sum(Mean.particles), #
                  Mean.px=sum(Mean.px),              # 
                  Mean.Tot.Area.mm2=sum(Mean.Tot.Area.mm2), #  
-                 Mean.Tot.Mass.ng=sum(Mean.Tot.Mass.ng) ) %>%
+                 Mean.Tot.Mass.ng_R=sum(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=sum(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=sum(Mean.Tot.Mass.ng_T))  %>%
       ungroup()
     
    
 
+    
+    #Characterize corrected blanks: 
+    
+    Summary3g_Filter_bcm_cor=subset(  Summary3g_Filter_cor, Soil_sample=="bcm" )
+    n_bcm_files=length(unique(   Summary3g_Filter_bcm_cor$Extraction_Name))
+    
+    # How does an average bcm File look like per lab? 
+    
+    Summary10g_Lab_bcm_cor= Summary3g_Filter_bcm_cor %>% 
+      group_by_at( c("Lab", GroupP) ) %>%
+      summarise( N.div = n(),
+                 Mean.particles= mean(Mean.particles), #
+                 Mean.px=mean(Mean.px),              # 
+                 Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  
+                 Mean.Tot.Mass.ng_R=mean(Mean.Tot.Mass.ng_R),
+                 Mean.Tot.Mass.ng_S=mean(Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean(Mean.Tot.Mass.ng_T)) %>%
+      ungroup()
+    
+    # Check
+    sum(Summary10a_Lab_bcm_cor$Mean.particles[Summary10a_Lab_bcm_cor$Lab=="WUR" & Summary10a_Lab_bcm_cor$Polymer.grp == "PP"])
+    
+    
+    
     
     # //\\ \\// Preparation_Type=="Field_samples" \\// //\\####
     #OR Preparation_Type %in% c("Field_samples", "Standard_Soil") ? 
     
     
     
+
     
     
 # 4. Summaries, Soil_samples ####    
@@ -884,7 +1018,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles),
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
 
@@ -935,7 +1071,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles),
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -985,7 +1123,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -996,7 +1136,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1009,7 +1151,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1020,7 +1164,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
    
@@ -1033,7 +1179,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -1043,7 +1191,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1058,7 +1208,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1070,7 +1222,9 @@ Field_METADATA_vector=NA
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
                  Mean.px=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
                  Mean.Tot.Area.mm2=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-                 Mean.Tot.Mass.ng=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1087,7 +1241,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.S=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.S=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.S=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.S=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -1103,7 +1259,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.S=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.S=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.S=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.S=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1120,7 +1278,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.S=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.S=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.S=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.S=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -1136,7 +1296,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.S=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.S=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.S=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.S=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1153,7 +1315,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.S=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.S=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.S=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.S=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -1167,7 +1331,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.S=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.S=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.S=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.S=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1187,7 +1353,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -1201,7 +1369,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T)
       ) %>%
       ungroup()
     
@@ -1217,7 +1387,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) #  Mean mass per sample and polymer, over the files/operators
       ) %>%
       ungroup()
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -1231,7 +1403,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) #  Mean mass per sample and polymer, over the files/operators
       ) %>%
       ungroup()
     
@@ -1248,7 +1422,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) #  Mean mass per sample and polymer, over the files/operators
       ) %>%
       ungroup()
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
@@ -1263,7 +1439,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) #  Mean mass per sample and polymer, over the files/operators
       ) %>%
       ungroup()
     
@@ -1279,7 +1457,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) ) %>% #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) ) %>% #  Mean mass per sample and polymer, over the files/operators
       ungroup() 
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
     Summary5c_Field_cor= Summary4c_Soil_cor%>% 
@@ -1292,7 +1472,9 @@ Field_METADATA_vector=NA
                  Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                  Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                  Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                 Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) ) %>% #  Mean mass per sample and polymer, over the files/operators
+                 Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                 Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                 Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) ) %>% #  Mean mass per sample and polymer, over the files/operators
       ungroup() 
     
     # * 5d sum up all polymers, excluding "Other.Plastic" ####
@@ -1308,7 +1490,9 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) ) %>% #  Mean mass per sample and polymer, over the files/operators
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) ) %>% #  Mean mass per sample and polymer, over the files/operators
       ungroup() 
     ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
     
@@ -1323,7 +1507,9 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng) ) %>% #  Mean mass per sample and polymer, over the files/operators
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T) ) %>% #  Mean mass per sample and polymer, over the files/operators
       ungroup() 
     
     
@@ -1340,9 +1526,15 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
-                Min.Tot.Mass.ng.Fd=min( Mean.Tot.Mass.ng.S),
-                Max.Tot.Mass.ng.Fd=max( Mean.Tot.Mass.ng.S),
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T),
+                Min.Tot.Mass.ng_R.Fd=min( Mean.Tot.Mass.ng_R), 
+                Min.Tot.Mass.ng_S.Fd=min( Mean.Tot.Mass.ng_S),
+                Min.Tot.Mass.ng_T.Fd=min( Mean.Tot.Mass.ng_T),
+                Max.Tot.Mass.ng_R.Fd=max( Mean.Tot.Mass.ng_R), 
+                Max.Tot.Mass.ng_S.Fd=max( Mean.Tot.Mass.ng_S),
+                Max.Tot.Mass.ng_T.Fd=max( Mean.Tot.Mass.ng_T),
                 Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
                 Formula=Min_Max_diff-Min.particles.Fd/2
       ) %>%
@@ -1363,9 +1555,15 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
-                Min.Tot.Mass.ng.Fd=min( Mean.Tot.Mass.ng.S),
-                Max.Tot.Mass.ng.Fd=max( Mean.Tot.Mass.ng.S),
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T),
+                Min.Tot.Mass.ng_R.Fd=min( Mean.Tot.Mass.ng_R), 
+                Min.Tot.Mass.ng_S.Fd=min( Mean.Tot.Mass.ng_S),
+                Min.Tot.Mass.ng_T.Fd=min( Mean.Tot.Mass.ng_T),
+                Max.Tot.Mass.ng_R.Fd=max( Mean.Tot.Mass.ng_R), 
+                Max.Tot.Mass.ng_S.Fd=max( Mean.Tot.Mass.ng_S),
+                Max.Tot.Mass.ng_T.Fd=max( Mean.Tot.Mass.ng_T),
                 Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
                 Formula=Min_Max_diff-Min.particles.Fd/2
       ) %>%
@@ -1387,7 +1585,15 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T),
+                Min.Tot.Mass.ng_R.Fd=min( Mean.Tot.Mass.ng_R), 
+                Min.Tot.Mass.ng_S.Fd=min( Mean.Tot.Mass.ng_S),
+                Min.Tot.Mass.ng_T.Fd=min( Mean.Tot.Mass.ng_T),
+                Max.Tot.Mass.ng_R.Fd=max( Mean.Tot.Mass.ng_R), 
+                Max.Tot.Mass.ng_S.Fd=max( Mean.Tot.Mass.ng_S),
+                Max.Tot.Mass.ng_T.Fd=max( Mean.Tot.Mass.ng_T),
                 Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
                 Formula=Min_Max_diff-Min.particles.Fd/2
       ) %>%
@@ -1407,7 +1613,15 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T),
+                Min.Tot.Mass.ng_R.Fd=min( Mean.Tot.Mass.ng_R), 
+                Min.Tot.Mass.ng_S.Fd=min( Mean.Tot.Mass.ng_S),
+                Min.Tot.Mass.ng_T.Fd=min( Mean.Tot.Mass.ng_T),
+                Max.Tot.Mass.ng_R.Fd=max( Mean.Tot.Mass.ng_R), 
+                Max.Tot.Mass.ng_S.Fd=max( Mean.Tot.Mass.ng_S),
+                Max.Tot.Mass.ng_T.Fd=max( Mean.Tot.Mass.ng_T),
                 Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
                 Formula=Min_Max_diff-Min.particles.Fd/2
       ) %>%
@@ -1430,7 +1644,15 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T),
+                Min.Tot.Mass.ng_R.Fd=min( Mean.Tot.Mass.ng_R), 
+                Min.Tot.Mass.ng_S.Fd=min( Mean.Tot.Mass.ng_S),
+                Min.Tot.Mass.ng_T.Fd=min( Mean.Tot.Mass.ng_T),
+                Max.Tot.Mass.ng_R.Fd=max( Mean.Tot.Mass.ng_R), 
+                Max.Tot.Mass.ng_S.Fd=max( Mean.Tot.Mass.ng_S),
+                Max.Tot.Mass.ng_T.Fd=max( Mean.Tot.Mass.ng_T),
                 Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
                 Formula=Min_Max_diff-Min.particles.Fd/2
       ) %>%
@@ -1468,7 +1690,15 @@ Field_METADATA_vector=NA
                 Mean.Tot.Area.mm2.Fd=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
                 Min.Tot.Area.mm2.Fd=min(Mean.Tot.Area.mm2.S),
                 Max.Tot.Area.mm2.Fd=max(Mean.Tot.Area.mm2.S),
-                Mean.Tot.Mass.ng.Fd=mean( Mean.Tot.Mass.ng.S), #  Mean mass per sample and polymer, over the files/operators
+                Mean.Tot.Mass.ng_R.Fd=mean( Mean.Tot.Mass.ng_R), 
+                Mean.Tot.Mass.ng_S.Fd=mean( Mean.Tot.Mass.ng_S),
+                Mean.Tot.Mass.ng_T.Fd=mean( Mean.Tot.Mass.ng_T),
+                Min.Tot.Mass.ng_R.Fd=min( Mean.Tot.Mass.ng_R), 
+                Min.Tot.Mass.ng_S.Fd=min( Mean.Tot.Mass.ng_S),
+                Min.Tot.Mass.ng_T.Fd=min( Mean.Tot.Mass.ng_T),
+                Max.Tot.Mass.ng_R.Fd=max( Mean.Tot.Mass.ng_R), 
+                Max.Tot.Mass.ng_S.Fd=max( Mean.Tot.Mass.ng_S),
+                Max.Tot.Mass.ng_T.Fd=max( Mean.Tot.Mass.ng_T),
                 Min_Max_diff=Max.particles.Fd-Min.particles.Fd,
                 Formula=Min_Max_diff-Min.particles.Fd/2
       ) %>%
@@ -1492,7 +1722,20 @@ Field_METADATA_vector=NA
     (subset(Summary5b2_Field_cor, CSS==6& Farm==6 & Field==1 &Polymer.red12=="PE"))
     
     
+    # *** Check soils with negative values ####
+    nrow(subset(Summary5e_Field, Mean.particles.Fd<=0 ))
+   (subset(Summary5e_Field, Mean.Tot.Mass.ng_T.Fd<=0 ))
     
+    nrow(subset(Summary5e_Field_cor, Mean.particles.Fd<=0 ))
+    nrow(subset(Summary5e_Field_cor,  Mean.Tot.Area.mm2.Fd<=0 ))
+    nrow(subset(Summary5e_Field_cor,  Mean.Tot.Mass.ng_R.Fd<=0 ))
+    nrow(subset(Summary5e_Field_cor, Mean.Tot.Mass.ng_S.Fd<=0 ))
+    nrow(subset(Summary5e_Field_cor, Mean.Tot.Mass.ng_T.Fd<=0 ))
+    
+    nrow(subset(Summary5e_Field_cor, Mean.particles.Fd<=0 & Mean.Tot.Area.mm2.Fd >0))
+    nrow(subset(Summary5e_Field_cor, Mean.particles.Fd>0 & Mean.Tot.Area.mm2.Fd <=0))
+    nrow(subset(Summary5e_Field_cor, Mean.particles.Fd<=0 | Mean.Tot.Area.mm2.Fd <=0|  Mean.Tot.Mass.ng_R.Fd <=0))
+    nrow(subset(Summary5e_Field_cor, Mean.particles.Fd<=0 | Mean.Tot.Area.mm2.Fd <=0|  Mean.Tot.Mass.ng_R.Fd <=0|  Mean.Tot.Mass.ng_S.Fd <=0|  Mean.Tot.Mass.ng_T.Fd <=0))
     
     # 6. Summary per Farm     ####
     # Mean (Field)  per farm
