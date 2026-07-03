@@ -68,7 +68,7 @@ Txt_translation=read_excel("Txt_translation_table_eng.xlsx")%>%
     
     Cat.um.txt2=c("90-300", "300-2000")
     
-    Date="2025.08_eng"
+    Date="2026.05_eng"
     Date=""
     # * Color palette ####   
     
@@ -838,7 +838,132 @@ Txt_translation=read_excel("Txt_translation_table_eng.xlsx")%>%
         
       } # End for CSS loop, 4.4
   
+     
       
+      
+      # * 4.4.to0 Per CSS, Per Farm, Per Polymer corrected ####
+      # Bar Plot per CSS, uP per kg soil per Field
+      
+      # Initialize plot df
+      # Average number of particles per kg soil per Field
+      Summary5e_Field_to0$Farm.Field=paste("F",Summary5e_Field_to0$Farm, Summary5e_Field_to0$Field, sep=".")
+      Summary5e_Field_to0$Farm.Field= factor(Summary5e_Field_to0$Farm.Field, 
+                                         levels= c("F.1.1", "F.1.2", "F.2.1", "F.2.2", "F.3.1", "F.3.2", "F.4.1", "F.4.2", "F.5.1", "F.5.2", "F.6.1", "F.6.2",
+                                                   "F.7.1", "F.7.2", "F.8.1","F.8.2", "F.9.1", "F.9.2", "F.10.1", "F.10.2", "F.11.1", "F.11.2", "F.12.1", "F.12.2","F.12.3","F.12.4", "MEAN"))
+      
+      Summary5c_Field_to0$Farm.Field=paste("F",Summary5c_Field_to0$Farm, Summary5c_Field_to0$Field, sep=".")
+      Summary5c_Field_to0$Farm.Field= factor(Summary5c_Field_to0$Farm.Field, 
+                                         levels= c("F.1.1", "F.1.2", "F.2.1", "F.2.2", "F.3.1", "F.3.2", "F.4.1", "F.4.2", "F.5.1", "F.5.2", "F.6.1", "F.6.2",
+                                                   "F.7.1", "F.7.2", "F.8.1","F.8.2", "F.9.1", "F.9.2", "F.10.1", "F.10.2", "F.11.1", "F.11.2", "F.12.1", "F.12.2","F.12.3","F.12.4", "MEAN"))
+      
+            # *** IF NO PROJECT MEAN bar:  ####
+      
+      # Remove outlier (CSS11 Farm 10) 
+      df_plot_bar=subset(Summary5c_Field_to0, CSS!=11 | Farm !=10 )
+      Summary5e_Field_to0_outlier=subset(Summary5e_Field_to0, CSS!=11 | Farm !=10 )
+      
+      for (css in 1:11){  
+        
+        # **** MEAN ####
+        df_plot_dot_css=subset(Summary5e_Field_to0_outlier, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+        df_plot_bar_css=subset( df_plot_bar, CSS %in% c(css,"MEAN")  & Preparation_Type=="Field_samples")
+        
+        
+        # Add vertical ticks between farms: 
+        # finds the separations between the farms  
+        Farms_csum <- df_plot_dot_css %>%
+          group_by(Farm) %>%
+          summarise(
+            n_farm=n()) %>%
+          mutate( sum_farm=cumsum(n_farm)) 
+        #Farm_boundaries <-  Farms_csum$sum_farm[1:nrow( Farms_csum)-1]+0.5 # Removing the last tick 
+        Farm_boundaries <-  Farms_csum$sum_farm+0.5 # including the last tick 
+        
+        
+        # Calculate gap between breaks: 
+        gap= round(max(df_plot_dot_css$Mean.particles.Fd)/5)*100
+        if (gap>1000){
+          gap=round(gap/500)*500
+        }
+        
+        # plot number of files 
+        ggplot()+
+          geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.Fd*200, color=factor(N.files)), shape = 1)
+        
+        # Plot 
+        PLOT= ggplot( ) +
+          # Stack bars with Polymer 12 
+          geom_bar( data=df_plot_bar_css,aes(x=Farm.Field, y=pmax(Mean.particles.Fd,0)*200, fill=Polymer.red12), position="stack", stat="identity")+ 
+          # Custom color palette
+          scale_fill_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                       "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                       "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                       "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                       "CA"= "#FFD39B") , 
+                            # Relabel  "Other.Plastic"                 
+                            labels = c( "Other.Plastic"=Txt_translation$Other_Plastic[Txt_translation$CSS==css]  ) ) +
+          
+          # custom y scale 
+          scale_y_continuous(breaks = seq(0, max(df_plot_dot_css$Mean.particles.Fd)*200, gap), # Have a break for each gap  
+                             labels = label_at(gap*2),                                        # label every second break  
+                             limits = c(-3*gap/4, max(df_plot_dot_css$Mean.particles.Fd)*202+80))+ #limits goes beyond to allow the vertical ticks between farms
+          
+          # Titles
+          ggtitle(paste("CSS ", css, ", ", Txt_translation$Bar_Title_CSS[Txt_translation$CSS==css]," ",Txt_translation$Field[Txt_translation$CSS==css], sep = ""))+
+          
+          # Add the x-axis line
+          geom_segment(aes(x = 0.4, xend = max(Farm_boundaries), y = 0, yend = 0), color = "black", size = 1) + #geom_hline(yintercept = 0, color = "black", size = 1) +
+          
+          # Add the y-axis 
+          geom_segment(aes(x = 0.4, xend = 0.4, y = max(df_plot_dot_css$Mean.particles.Fd)*200+80, yend = -gap/2), color = "black", size = 1) +
+          
+          # Add vertical ticks between farms: 
+          geom_segment(data = data.frame(x = Farm_boundaries), aes(x = x, xend = x, y = 0, yend = -gap/2),
+                       color = "black", size = .8) +
+          
+          # # Add the min-max bar 
+          # geom_linerange(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, ymin = Min.particles.F*200, ymax = Max.particles.F*200))+
+          
+          # # Add a dot when Min.particles.F == Max.particles.F and n>1
+          #  geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)))+
+          #  scale_color_manual(values = c("1"="NA","2"="Black" ))+
+          # Guides
+          guides( color  = "none", )+
+          
+          # # Add a star when n<=1
+          # new_scale_color() +
+          # geom_point(data=df_plot_dot_css, aes(x=Farm.Field, y=Mean.particles.F*200, color=factor(N.files)), shape = 8,size=2)+
+          # scale_color_manual(values = c("1"="Black","2"="NA"))+
+          
+          # Guides
+          guides( color  = "none", )+
+          # Translate axis and legend
+          labs(y = Txt_translation$y_nMiP_av[Txt_translation$CSS==css],                
+               fill = Txt_translation$Polymers_identified[Txt_translation$CSS==css]) +
+          # Theme
+          theme_minimal()+
+          theme(
+            axis.text.x = element_blank(),
+            axis.title.x = element_blank(),
+            axis.ticks.length.y = unit(0.15, "cm"),
+            axis.ticks.y = element_line(color = "black"), 
+            axis.line.y = element_blank() )+
+          
+          # Add the axis.text.x at the right position
+          annotate("text", x = df_plot_dot_css$Farm.Field, y = -gap/10, label = df_plot_dot_css$Farm.Field,angle=90,  hjust=1) +
+          # Clip the graph to the right size
+          coord_cartesian(ylim = c(-gap/2, NA), clip = "off")
+        
+        # print(PLOT)
+        # Export plots 
+        ggsave(filename = paste(wd.out,"/CSS",css,"/4.4.Bar_MiP_number_to0_nobar_CSS", css, "_",Date, ".png",sep =""), plot = PLOT, width = 10.5, height = 5, units = "in", dpi = 300)
+        
+      } # End for CSS loop, 4.4 to 0 
+      
+      
+      
+      
+       
       
       # *** PLOT outlier farm (CSS11 Farm 10)  ####
 
