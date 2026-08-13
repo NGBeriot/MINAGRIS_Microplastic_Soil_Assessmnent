@@ -807,72 +807,108 @@ Field_METADATA_vector=NA
     # We add a minimum mass: 
     # When MiP> 0 | Area > 0 & Mass <=0  Then Mass -> 120ng x 
     
-      # Find incoherent combinations lab*Polymer*size
-        # 1. MiP > 0 & Area <= 0
-        # particles but no area? 
-      #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2<=0,]  )
-      nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2<=0,]  )
-      length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2<=0]  ))  
-      # 28 samples
-      
-      # 2. MiP <= 0 & Area > 0
-      # No particles but area? 
-      #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0,]  )
-      nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0,]  )
-      length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0]  ))  
-      # 21 samples
-      
-      # We accept 1. and 2. because they derive from sample and blank measurements
-      # but mass is a calculated value, from a model, not a measured value. 
-      # So we force the model to represent the MiP > 0 | Area > 0 (4.)
-      
-      # 3. (MiP > 0 & Area > 0) & Mass_T <= 0
-      #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
-      nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]   )
-      length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]    ))  
-      # 49 samples
-    
-      # 4. (MiP > 0 | Area > 0) & Mass_T <= 0
-      #View(Summary3a_Filter_subBCM[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
-      nrow(Summary3a_Filter_subBCM[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]    )
-      length(unique(Summary3a_Filter_subBCM$Extraction_Name[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]   ))  
-      # 75 samples
-      
-      # 5. MiP > 0  & Mass_T <= 0
+     # Find incoherent combinations lab*Polymer*size
+     # 1. MiP > 0 & Area <= 0
+     # particles but no area?
+     #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2<=0,]  )
+     nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles >
+                                    0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 <= 0, ])
+     length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles >
+                                                             0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 <= 0]))
+     # 28 samples
+     
+     # 2. MiP <= 0 & Area > 0
+     # No particles but area?
+     #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0,]  )
+     nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles <=
+                                    0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0, ])
+     length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles <=
+                                                             0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0]))
+     # 21 samples
+     
+     # We accept 1. and 2. because they derive from sample and blank measurements
+     # but mass is a calculated value, from a model, not a measured value.
+     # So we force the model to represent the MiP > 0 | Area > 0 (4.)
+     
+     # 3. (MiP > 0 & Area > 0) & Mass_T <= 0
+     #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
+     nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles >
+                                    0 &
+                                    Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0 &
+                                    Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0, ])
+     length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles >
+                                                             0 &
+                                                             Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0 &
+                                                             Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]))
+     # 49 samples
+     
+     # 4. (MiP > 0 | Area > 0) & Mass_T <= 0
+     #View(Summary3a_Filter_subBCM[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
+     nrow(Summary3a_Filter_subBCM[(
+       Summary3a_Filter_subBCM$Mean.particles > 0 |
+         Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0
+     ) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0, ])
+     length(unique(Summary3a_Filter_subBCM$Extraction_Name[(
+       Summary3a_Filter_subBCM$Mean.particles > 0 |
+         Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0
+     ) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]))
+     # 75 samples
+     
+     # 5. MiP > 0  & Mass_T <= 0
      # View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
-      nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]   )
-      length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles>0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]    ))  
-      Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[ Summary3a_Filter_subBCM$Mean.particles>0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]
-      sum(Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[ Summary3a_Filter_subBCM$Mean.particles>0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0] )
-      sum(Summary3a_Filter_subBCM$Mean.particles[ Summary3a_Filter_subBCM$Mean.particles>0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0] )
-      
-      #  74 samples, 67.1 particle, 9144.355+ 67.12451*120 = + 17199.3 ng
-      
-      # 6. Area > 0 & Mass_T <= 0
-      #View(Summary3a_Filter_subBCM[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
-      nrow(Summary3a_Filter_subBCM[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]    )
-      length(unique(Summary3a_Filter_subBCM$Extraction_Name[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]   ))  
-      Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0] 
-      sum(Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0] )
-      
-      #  50 samples
-      
-      # 7. MiP <= 0 & Area > 0 & Mass_T <= 0
-      length(unique(Summary3a_Filter_subBCM$Extraction_Name[(Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]   ))  
-      Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[(Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]
-      Summary3a_Filter_subBCM$Mean.Tot.Area.mm2[(Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]/0.00775
-      
-      # 1 sample, 0.87 particles, 156+ 0.8696821 *120 =  + 260.3619 ng
-    
-      # What are the non null smallest values measured ? 
-      
-      sort(Summary3a_Filter$Mean.particles[Summary3a_Filter$Mean.particles>0])[1:70]
-      # Summary3a_Filter has some values <1 when averaged from different users.
-      # This will be taken into account by assigning the minimum estimated mass of a particle 120ng x mean number
-      
-      sort(Summary3a_Filter$Mean.Tot.Area.mm2[Summary3a_Filter$Mean.Tot.Area.mm2>0])[1:70]
-      # smallest area = 86*86um = 0.00775 mm2
-      # Summary3a_Filter has some area <0.00775 mm2 when averaged from different users.
+     nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles >
+                                    0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0, ])
+     length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles >
+                                                             0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]))
+     Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[Summary3a_Filter_subBCM$Mean.particles >
+                                                  0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]
+     sum(Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[Summary3a_Filter_subBCM$Mean.particles >
+                                                      0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0])
+     sum(Summary3a_Filter_subBCM$Mean.particles[Summary3a_Filter_subBCM$Mean.particles >
+                                                  0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0])
+     
+     #  74 samples, 67.1 particle, 9144.355+ 67.12451*120 = + 17199.3 ng
+     
+     # 6. Area > 0 & Mass_T <= 0
+     #View(Summary3a_Filter_subBCM[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
+     nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 >
+                                    0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0, ])
+     length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 >
+                                                             0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]))
+     Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 >
+                                                  0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]
+     sum(Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 >
+                                                      0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0])
+     
+     #  50 samples
+     
+     # 7. MiP <= 0 & Area > 0 & Mass_T <= 0
+     length(unique(Summary3a_Filter_subBCM$Extraction_Name[(
+       Summary3a_Filter_subBCM$Mean.particles <= 0 &
+         Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0
+     ) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]))
+     Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[(
+       Summary3a_Filter_subBCM$Mean.particles <= 0 &
+         Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0
+     ) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0]
+     Summary3a_Filter_subBCM$Mean.Tot.Area.mm2[(
+       Summary3a_Filter_subBCM$Mean.particles <= 0 &
+         Summary3a_Filter_subBCM$Mean.Tot.Area.mm2 > 0
+     ) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T <= 0] / 0.00775
+     
+     # 1 sample, 0.87 particles, 156+ 0.8696821 *120 =  + 260.3619 ng
+     
+     # What are the non null smallest values measured ?
+     
+     sort(Summary3a_Filter$Mean.particles[Summary3a_Filter$Mean.particles >
+                                            0])[1:70]
+     # Summary3a_Filter has some values <1 when averaged from different users.
+     # This will be taken into account by assigning the minimum estimated mass of a particle 120ng x mean number
+     
+     sort(Summary3a_Filter$Mean.Tot.Area.mm2[Summary3a_Filter$Mean.Tot.Area.mm2 >
+                                               0])[1:70]
+     # smallest area = 86*86um = 0.00775 mm2
+     # Summary3a_Filter has some area <0.00775 mm2 when averaged from different users.
       
            # Assign smallest mass 
                 # we expect 68 particles added for a total of +9300.791 (to 0) + 67.12451*120 (num) + 0.87*120 (Area) = 17 460 ng
@@ -2150,7 +2186,7 @@ Field_METADATA_vector=NA
       ) %>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction
     Summary6a_Farm_cor= Summary5a_Field_to0%>% 
       group_by_at( c(Group6_Farm, GroupP, GroupS) )  %>% # For each PMF_File_name, get the summary
       summarise( N.fields = n(),
@@ -2181,7 +2217,7 @@ Field_METADATA_vector=NA
       ) %>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary6b_Farm_cor= Summary5b_Field_to0%>% 
       group_by_at( c(Group6_Farm, GroupP12, GroupS) )  %>% # For each PMF_File_name, get the summary
       summarise( N.fields = n(),
@@ -2212,7 +2248,7 @@ Field_METADATA_vector=NA
                  Mean.Tot.Mass.ng.Fm=mean( Mean.Tot.Mass.ng.Fd) ) %>%
       ungroup()#  Mean mass per sample and polymer, over the files/operators
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction
     Summary6c_Farm_cor= Summary5c_Field_to0%>% 
       group_by_at( c(Group6_Farm, GroupP12) )  %>% # For each PMF_File_name, get the summary
       summarise( N.fields = n(),
@@ -2244,7 +2280,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.Fm=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup() #  Mean mass per sample and polymer, over the files/operators
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary6d_Farm_cor= Summary5d_Field_to0 %>% 
       group_by_at( c(Group6_Farm) ) %>% # For each PMF_File_name, get the summary
       
@@ -2278,7 +2314,7 @@ Field_METADATA_vector=NA
                 Formula=Min_Max_diff-Min.particles.Fm/2
       ) %>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     
     Summary6e_Farm_cor= Summary5e_Field_to0 %>% 
       group_by_at( c(Group6_Farm) ) %>% # For each PMF_File_name, get the summary
@@ -2356,7 +2392,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary7a_CSS_cor= Summary5a_Field_to0 %>% 
       group_by_at( c(Group7_CSS , GroupP, GroupS) )  %>% # For each PMF_File_name, get the summary
       summarise(N.files = n(),
@@ -2389,7 +2425,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary7b_CSS_cor= Summary5b_Field_to0 %>% 
       group_by_at( c(Group7_CSS , GroupP12, GroupS) )  %>% # For each PMF_File_name, get the summary
       summarise(N.fields = n(),
@@ -2422,7 +2458,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction
     Summary7c_CSS_cor= Summary5c_Field_to0 %>% 
       group_by_at( c(Group7_CSS , GroupP12) )  %>% # For each PMF_File_name, get the summary
       summarise(N.fields = n(),
@@ -2455,7 +2491,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary7c_CSS_outlier_cor = subset(Summary5c_Field_to0, CSS!=11 | Farm !=10 ) %>% 
       group_by_at( c(Group7_CSS , GroupP12) ) %>% # For each PMF_File_name, get the summary
       summarise(N.fields = n(),
@@ -2491,7 +2527,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary7d_CSS_cor= Summary5d_Field_to0 %>% 
       group_by(Preparation_Type,  
                CSS) %>% # For each PMF_File_name, get the summary
@@ -2526,7 +2562,7 @@ Field_METADATA_vector=NA
                 Max.Tot.Area.mm2.CSS=max(Mean.Tot.Area.mm2.Fd),
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary7e_CSS_cor= Summary5e_Field_to0%>% 
       group_by(Preparation_Type,  
                CSS) %>% # For each PMF_File_name, get the summary
@@ -2562,7 +2598,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary7e_CSS_outlier_cor = subset(Summary5e_Field_to0, CSS!=11 | Farm !=10 ) %>% 
       group_by(Preparation_Type,  
                CSS ) %>% # For each PMF_File_name, get the summary
@@ -2598,7 +2634,7 @@ Field_METADATA_vector=NA
                 Max.Tot.Area.mm2.CSS=max(Mean.Tot.Area.mm2.Fd),
                 Mean.Tot.Mass.ng.CSS=mean( Mean.Tot.Mass.ng.Fd) )%>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     Summary7f_CSS_cor= Summary5f_Field_to0   %>% 
       group_by_at( c(Group7_CSS , GroupS) )  %>% # For each PMF_File_name, get the summary
       summarise(N.fields = n(),
@@ -2676,7 +2712,7 @@ Field_METADATA_vector=NA
                 sd.Tot.Area.mm2.MM=sd(Mean.Tot.Area.mm2.Fd),
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.Fd) ) %>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     
     Summary8a_MINAGRIS_cor= Summary5a_Field_to0 %>%
       group_by(Preparation_Type,
@@ -2716,7 +2752,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.Fd) ) %>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     
     Summary8b_MINAGRIS_cor= Summary5b_Field_to0%>% 
       group_by(Preparation_Type, 
@@ -2756,7 +2792,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.Fd) ) %>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction  
     Summary8c_MINAGRIS_cor= Summary5c_Field_to0%>% 
       group_by(Preparation_Type,  
                Polymer.red12,  Polymer.red3)  %>% # For each PMF_File_name, get the summary
@@ -2794,7 +2830,7 @@ Field_METADATA_vector=NA
                 sd.Tot.Area.mm2.MM=sd(Mean.Tot.Area.mm2.Fd),
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.Fd) ) %>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     
     Summary8d_MINAGRIS_cor= Summary5d_Field_to0 %>% 
       group_by(Preparation_Type ) %>% # For each PMF_File_name, get the summary
@@ -2832,7 +2868,7 @@ Field_METADATA_vector=NA
                 sd.Tot.Area.mm2.MM=sd(Mean.Tot.Area.mm2.Fd),
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.Fd) ) %>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction  
     Summary8e_MINAGRIS_cor= Summary5e_Field_to0 %>% 
       group_by(Preparation_Type ) %>% # For each PMF_File_name, get the summary
       
@@ -2870,7 +2906,7 @@ Field_METADATA_vector=NA
                 sd.Tot.Area.mm2.MM=sd(Mean.Tot.Area.mm2.Fd),
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng.Fd) ) %>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     
     Summary8f_MINAGRIS_cor= Summary5f_Field_to0 %>%
       group_by(Preparation_Type,
@@ -2911,7 +2947,7 @@ Field_METADATA_vector=NA
                 Min.Tot.Mass.ng.MM=min( Mean.Tot.Mass.ng.S),
                 Max.Tot.Mass.ng.MM=max( Mean.Tot.Mass.ng.S) ) %>%
       ungroup()
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction  
     Summary8g_MINAGRIS_cor= Summary4g_Soil_subBCM %>% 
       group_by_at( c(GroupP) )%>% # For each PMF_File_name, get the summary
       
@@ -2933,216 +2969,7 @@ Field_METADATA_vector=NA
       ungroup()
     
 
-    # # 9. Summaries, Cropping System ####      
-    # Group9_Crop
-    # 
-    # Summary4e_Soil %>% 
-    #   group_by(CropDominant3)%>% 
-    # summarise(N_Soils = n()) %>%
-    #   ungroup()
-    # 
-    # Summary4e_Soil %>% 
-    #   group_by(CropDominant4)%>% 
-    #   summarise(N_Soils = n()) %>%
-    #   ungroup()
-    # 
-    # 
-    # 
-    # #  * 9a Mean per Crop, all factors #### 
-    # Summary9a_Crop= Summary4a_Soil %>% 
-    #   group_by_at( c(Group9_Crop , GroupP, GroupS) )  %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles),
-    #             Min.particles.Crop= min( Mean.particles),
-    #             Max.particles.Crop= max( Mean.particles),
-    #             SD.particles.Crop= sd( Mean.particles),
-    #             Mean.px.Crop=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng) )%>%
-    #   ungroup()
-    # 
-    # 
-    # # * 9b Mean per Crop, Polymer.red12 * per Size_cat.um ####
-    # 
-    # Summary9b_Crop= Summary4b_Soil %>% 
-    #   group_by_at( c(Group9_Crop , GroupP12, GroupS) )  %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles),
-    #             Min.particles.Crop= min( Mean.particles),
-    #             Max.particles.Crop= max( Mean.particles),
-    #             SD.particles.Crop= sd( Mean.particles),
-    #             Mean.px.Crop=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng) ) %>%
-    #   ungroup()
-    # 
-    # 
-    # # * 9c Mean per Field_samples, Polymer.red12 ####
-    # 
-    # Summary9c_Crop= Summary4c_Soil %>% 
-    #   group_by_at( c(Group9_Crop , GroupP12) )  %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles),
-    #             Min.particles.Crop= min( Mean.particles),
-    #             Max.particles.Crop= max( Mean.particles),
-    #             SD.particles.Crop= sd( Mean.particles),
-    #             Mean.px.Crop=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng) ) %>%
-    #   ungroup()
-    # 
-    # 
-    # 
-    # Summary9c_Crop_outlier = subset(Summary4c_Soil, CSS!=11 | Farm !=10 ) %>% 
-    #   group_by_at( c(Group9_Crop , GroupP12) ) %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles),
-    #             Min.particles.Crop= min( Mean.particles),
-    #             Max.particles.Crop= max( Mean.particles),
-    #             SD.particles.Crop= sd( Mean.particles),
-    #             Mean.px.Crop=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng) ) %>%
-    #   ungroup()
-    # 
-    # 
-    # 
-    # # * 9d sum up all polymers, excluding "Other.Plastic"  ####
-    # 
-    # Summary9d_Crop= Summary4d_Soil %>% 
-    #   group_by_at(Group9_Crop) %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles),
-    #             Min.particles.Crop= min( Mean.particles),
-    #             Max.particles.Crop= max( Mean.particles),
-    #             SD.particles.Crop= sd( Mean.particles),
-    #             Mean.px.Crop=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng) ) %>%
-    #   ungroup()
-    # 
-    # # * 9e sum up all polymers, including "Other.Plastic"  ####
-    # 
-    # Summary9e_Crop= Summary4e_Soil %>% 
-    #   group_by_at(Group9_Crop) %>%  # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles.S),
-    #             Min.particles.Crop= min( Mean.particles.S),
-    #             Max.particles.Crop= max( Mean.particles.S),
-    #             SD.particles.Crop= sd( Mean.particles.S),
-    #             Mean.px.Crop=mean( Mean.px.S),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2.S),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2.S),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2.S),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng.S) ) %>%
-    #   ungroup()
-    # 
-    # Summary9e_Crop_outlier = subset(Summary4e_Soil, CSS!=11 | Farm !=10 ) %>% 
-    #   group_by_at(Group9_Crop) %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles.S),
-    #             Min.particles.Crop= min( Mean.particles.S),
-    #             Max.particles.Crop= max( Mean.particles.S),
-    #             SD.particles.Crop= sd( Mean.particles.S),
-    #             Mean.px.Crop=mean( Mean.px.S),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2.S),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2.S),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2.S),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng.S) ) %>%
-    #   ungroup()
-    # 
-    # 
-    # 
-    # # * 9f sum up all polymers, size cat  ####
-    # 
-    # Summary9f_Crop= Summary4f_Soil %>% 
-    #   group_by_at( c(Group9_Crop , GroupS) )  %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles),
-    #             Min.particles.Crop= min( Mean.particles),
-    #             Max.particles.Crop= max( Mean.particles),
-    #             SD.particles.Crop= sd( Mean.particles),
-    #             Mean.px.Crop=mean( Mean.px),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng) ) %>%
-    #   ungroup()
-    # 
-    # # * 9g sum up all polymers, Polymer.grp ####
-    # 
-    # Summary9g_Crop= Summary4g_Soil %>% 
-    #   group_by_at( c(Group9_Crop , GroupP) )%>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles.S),
-    #             Min.particles.Crop= min( Mean.particles.S),
-    #             Max.particles.Crop= max( Mean.particles.S),
-    #             SD.particles.Crop= sd( Mean.particles.S),
-    #             Mean.px.Crop=mean( Mean.px.S),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2.S),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2.S),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2.S),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng.S) ) %>%
-    #   ungroup()
-    # 
-    # 
-    # 
-    # Summary9g_Crop_outlier = subset(Summary4g_Soil, CSS!=11 | Farm !=10 ) %>% 
-    #   group_by_at( c(Group9_Crop , GroupP) ) %>% # For each PMF_File_name, get the summary
-    #   summarise(N.files = n(),
-    #             Mean.particles.Crop= mean( Mean.particles.S), # Mean particle number per sample and polymer, over the files/operators 
-    #             Median.particles.Crop= median( Mean.particles.S),
-    #             Min.particles.Crop= min( Mean.particles.S),
-    #             Max.particles.Crop= max( Mean.particles.S),
-    #             SD.particles.Crop= sd( Mean.particles.S),
-    #             Mean.px.Crop=mean( Mean.px.S),              # Mean Number of pixels per sample and polymer, over the files/operators
-    #             Mean.Tot.Area.mm2.Crop=mean(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Median.Tot.Area.mm2.Crop=median(Mean.Tot.Area.mm2.S), #  Mean area per sample and polymer, over the files/operators
-    #             Min.Tot.Area.mm2.Crop=min(Mean.Tot.Area.mm2.S),
-    #             Max.Tot.Area.mm2.Crop=max(Mean.Tot.Area.mm2.S),
-    #             SD.Tot.Area.mm2.Crop=sd(Mean.Tot.Area.mm2.S),
-    #             Mean.Tot.Mass.ng.Crop=mean( Mean.Tot.Mass.ng.S) ) %>%
-    #   ungroup()
-    # 
-    # 
-    # 
+    
     # 10. Per lab ####
     #  * 10a Mean all Lab, all factors #### 
     Summary10a_Lab= Summary4a_Soil %>%
@@ -3228,7 +3055,7 @@ Field_METADATA_vector=NA
                 Mean.Tot.Mass.ng.MM=mean( Mean.Tot.Mass.ng) )  %>%
       ungroup()
     
-    ## Apply blank correction -OPTION 2 (Sum) From lower level summary 
+    ## Apply blank correction 
     
     
     Summary10c_Lab_cor= Summary4c_Soil_subBCM%>% 
