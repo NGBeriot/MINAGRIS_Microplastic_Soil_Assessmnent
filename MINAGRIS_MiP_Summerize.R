@@ -152,26 +152,37 @@ Field_METADATA_vector=NA
     
     
     # Number of Files per lab: 
-    length(unique(df_MiP$File_name[df_MiP$Lab=="WUR"]))
-    length(unique(df_MiP$File_name[df_MiP$Lab=="Ubern"]))
+    length(unique(df_MiP$File_name[df_MiP$Lab=="WUR"])) # 417
+    length(unique(df_MiP$File_name[df_MiP$Lab=="Ubern"])) # 327
     length(unique(df_MiP$File_name))
     
     # Number of Files per Fields: 
-    length(unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="WUR"]))
-    length(unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="Ubern"]))
-    length(unique(df_MiP$CSS_Farm_Field))
+    length(unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="WUR"])) # 223
+    length(unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="Ubern"])) # 221
+    length(unique(df_MiP$CSS_Farm_Field)) # 228
+    
+    # Fields only in WUR: 
+    unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="WUR"])[unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="WUR"]) %!in% unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="Ubern"])]
+      # "5_5_2"  "7_9_2"  "10_9_2" "1_2_2"  "2_12_1" "3_1_2"  "4_8_1" 
+    
+    # Fields only in Ubern: 
+    unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="Ubern"])[unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="Ubern"]) %!in% unique(df_MiP$CSS_Farm_Field[df_MiP$Lab=="WUR"])]
+      # "5_1_2"  "5_2_2"  "5_3_1"  "4_11_2" "4_12_1"
     
     # Number of Field sample Files per lab: 
-    length(unique(df_MiP$File_name[df_MiP$Lab=="WUR" & df_MiP$Preparation_Type=="Field_samples"]))
-    length(unique(df_MiP$File_name[df_MiP$Lab=="Ubern"& df_MiP$Preparation_Type=="Field_samples"]))
-    length(unique(df_MiP$File_name[ df_MiP$Preparation_Type=="Field_samples"]))
+    length(unique(df_MiP$File_name[df_MiP$Lab=="WUR" & df_MiP$Preparation_Type=="Field_samples"]))  # 313
+    length(unique(df_MiP$File_name[df_MiP$Lab=="Ubern"& df_MiP$Preparation_Type=="Field_samples"])) # 254
+    length(unique(df_MiP$File_name[ df_MiP$Preparation_Type=="Field_samples"])) # 567
     
     # Number of identified particles 
-    nrow(df_MiP[df_MiP$N.px>0,])
+    nrow(df_MiP[df_MiP$N.px>0,]) # 8363
     
     
     # * Create Summary groups ####
+      # Available columns: 
+      colnames(df_MiP)
     
+    # Group with sampling hierarchy 
     Group1_Files=c("File_name", "Lab","Batch_Name", "Preparation_Type", "Sample_type", "Soil_sample", # Field_METADATA_vector,     
                   "CSS","Farm", "Field", "Extraction_Name", "Filter_div", "Filter_Name", "IR_rep", "IR_name","PMF_rep", "Operator")
     
@@ -183,16 +194,32 @@ Field_METADATA_vector=NA
     
     Group4_Soil=c("Lab", "Preparation_Type", "Soil_sample",  #Field_METADATA_vector,     
                  "CSS","Farm", "Field")
-    
     Group5_Field= c("Preparation_Type",   "CSS","Farm", "Field") #Field_METADATA_vector,
     Group6_Farm= c("Preparation_Type", "CSS","Farm")
     Group7_CSS= c("Preparation_Type", "CSS")
-    Group9_Crop= c("Preparation_Type", "CropDominant4")
     
+    #Group9_Crop= c("Preparation_Type", "CropDominant4") #WARNING: in this version the dominant crop is not present
+    
+    # Group with Polymer categories
     GroupP= c("Polymer.grp", "Polymer.red12", "Polymer.red3")
     GroupP12=c( "Polymer.red12",  "Polymer.red3")
     GroupP3=c("Polymer.red3")
+    
+    # Group with Size categories
     GroupS=c("Size_cat.um", "Size_cat2.um")
+    
+    # Check that all attributes are available: 
+    unique(Group1_Files %in% colnames(df_MiP))
+    unique(Group2_IRfiles %in% colnames(df_MiP))
+    unique(Group3_Filters %in% colnames(df_MiP))
+    unique(Group4_Soil %in% colnames(df_MiP))
+    unique(Group5_Field %in% colnames(df_MiP))
+    unique(Group6_Farm %in% colnames(df_MiP))
+    unique(Group7_CSS %in% colnames(df_MiP))
+    unique(GroupP %in% colnames(df_MiP))
+    unique(GroupP12 %in% colnames(df_MiP))
+    unique(GroupP3 %in% colnames(df_MiP))
+    unique(GroupS %in% colnames(df_MiP))
     
 # 1. Summaries, processed (PMF) File ####   
     # Sum per Processed and manually checked results file
@@ -477,40 +504,42 @@ Field_METADATA_vector=NA
     # Here we average, independently filters aquired several times (IR_rep) and processed several times (Operators)
     # This is a minor approximation for ease of calculation 
     # It can be fixed later on with adding a summary level.
-    # The approximation concerns 4 Filters: 
+    # The approximation concerns 4 Filters : m24_451_r, m24_831_n, m25_771_n and m28_711_s2
     
-    # How many Filters are Acquired and Processed multiple times? 
-    unique(df_MiP$IR_rep)
-    MultipleIR_Extract=unique(df_MiP$Extraction_Name[df_MiP$IR_rep %in% c ("ir2" ,"ir3")])
-    MultipleIR_File= "m24_451_r_PMF_EC.csv"
-    
-    for (ex in 1: length(MultipleIR_Extract)){
-    #print(length(unique(df_MiP$File_name[df_MiP$Extraction_Name == MultipleIR_Extract[ex]])))
-      if (length(unique(df_MiP$File_name[df_MiP$Extraction_Name == MultipleIR_Extract[ex]])) > 1) {
-       # print(MultipleIR_Extract[ex])
-        print(unique(df_MiP$File_name[df_MiP$Extraction_Name ==MultipleIR_Extract[ex]]))
-        MultipleIR_File= c(MultipleIR_File,unique(df_MiP$File_name[df_MiP$Extraction_Name ==MultipleIR_Extract[ex]]) )
-      }
+    # How many Filters are Acquired AND Processed multiple times? 
+      unique(df_MiP$IR_rep)
+      MultipleIR_Extract=unique(df_MiP$Extraction_Name[df_MiP$IR_rep %in% c ("ir2" ,"ir3")])
      
-    }
-    MultipleIR_File=unique(MultipleIR_File)
+       MultipleIR_File= "m24_451_r_PMF_EC.csv"
+      
+      for (ex in 1: length(MultipleIR_Extract)){
+      #print(length(unique(df_MiP$File_name[df_MiP$Extraction_Name == MultipleIR_Extract[ex]])))
+        if (length(unique(df_MiP$File_name[df_MiP$Extraction_Name == MultipleIR_Extract[ex]])) > 1) {
+         # print(MultipleIR_Extract[ex])
+          print(unique(df_MiP$File_name[df_MiP$Extraction_Name ==MultipleIR_Extract[ex]]))
+          MultipleIR_File= c(MultipleIR_File,unique(df_MiP$File_name[df_MiP$Extraction_Name ==MultipleIR_Extract[ex]]) )
+        }
+       
+      }
+      MultipleIR_File=unique(MultipleIR_File)
+      
+      # Plot concerned filters with multiple extractions: 
+      ggplot(subset( Summary1g_File,  Summary1g_File$File_name %in% MultipleIR_File ),  aes(x=File_name, y=N.particles, color=Polymer.grp, shape = Operator)) + 
+      facet_grid(~Extraction_Name, scales =  "free", )+
+        geom_point()  +
+        scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                     "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                     "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                     "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                     "CA"= "#FFD39B") , 
+                          # Relabel  "Other.Plastic"                 
+                          labels = c( "Other.Plastic"="Other Plastic" ) )+
+        theme_minimal()+
+        theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5),
+              panel.border = element_rect(color = "black", fill = NA, size = 1) )
     
-    # Plot concerned filters: 
-    ggplot(subset( Summary1g_File,  Summary1g_File$File_name %in% MultipleIR_File ),  aes(x=File_name, y=N.particles, color=Polymer.grp, shape = Operator)) + 
-    facet_grid(~Extraction_Name, scales =  "free", )+
-      geom_point()  +
-      scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
-                                   "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
-                                   "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
-                                   "PMMA"="#a1d99b",   "PC"="#FFF8DC",
-                                   "CA"= "#FFD39B") , 
-                        # Relabel  "Other.Plastic"                 
-                        labels = c( "Other.Plastic"="Other Plastic" ) )+
-      theme_minimal()+
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5),
-            panel.border = element_rect(color = "black", fill = NA, size = 1) )
     
-    
+
     # *2a Mean over IR results files, all factors ####
     Summary2a_IRfiles = Summary1a_File %>% 
       group_by_at( c(Group2_IRfiles, GroupP, GroupS) ) %>%
@@ -651,10 +680,36 @@ Field_METADATA_vector=NA
     max(Summary2b_IRfiles$N.files)
     max(Summary2a_IRfiles$N.files)
 
+    # Plot concerned filters with multiple extractions or processing: 
+    
+    # For ease of visualization we only plot the 20 filters with the most particles:
+    MultipleIRorPMF_Filter=unique(Summary2e_IRfiles$Filter_Name[Summary2e_IRfiles$N.files>1]  [order(Summary2e_IRfiles$Mean.particles[Summary2e_IRfiles$N.files > 1],decreasing = T )] )
+    # Out of a total of :
+    length( MultipleIRorPMF_Filter) 
+   sum( Summary2e_IRfiles$N.files[Summary2e_IRfiles$N.files>1])
+   # 49 filters for a total of 132 files 
+    
+    ggplot(subset( Summary1g_File,  Summary1g_File$Filter_Name %in% MultipleIRorPMF_Filter[1:20] ),  aes(x=File_name, y=N.particles, color=Polymer.grp, shape = Operator)) + 
+      facet_wrap( ~Extraction_Name, nrow=2, scales =  "free")+
+      geom_point()  +
+      scale_color_manual(values = c("PE"="#377EB8",  "Other.Plastic"="#E41A1C", "PU"="#F781BF",
+                                    "PP"="#FF7F00",  "PLA"="#A65628",           "PS"="#999999",
+                                    "PET"="#FFD700", "PVC"="#4DAF4A",           "PA"="#984EA3",
+                                    "PMMA"="#a1d99b",   "PC"="#FFF8DC",
+                                    "CA"= "#FFD39B") , 
+                         # Relabel  "Other.Plastic"                 
+                         labels = c( "Other.Plastic"="Other Plastic" ) )+
+      theme_minimal()+
+      coord_cartesian(ylim = c(0, NA))+
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=0.5),
+            panel.border = element_rect(color = "black", fill = NA, size = 1) )
 
 
-# 3. Summaries, filter.div and CORRECTION #### 
-   # Sum per filter.div (one 5g sub sample extraction in multiple filters) 
+    # 3. Summaries, filter.div and CORRECTION #### 
+    # Sum per filter.div (one 5g sub sample extraction in multiple filters)
+        # Concenrs 4 soils: 
+          unique(Summary2e_IRfiles$Extraction_Name[Summary2e_IRfiles$Filter_div>1] )
+    
     # And correction of blank contamination  - Option 2 (Average) 
     # We generate two summaries: 
     # -without correction "Summary3a"
@@ -749,19 +804,18 @@ Field_METADATA_vector=NA
     # View(Summary3a_Filter_subBCM[order(Summary3a_Filter_subBCM$Mean.particles),][1:10,])
     
     # *** 3a.3 Summary_minMASS ####
-  
-     
+    # We add a minimum mass: 
     # When MiP> 0 | Area > 0 & Mass <=0  Then Mass -> 120ng x 
     
       # Find incoherent combinations lab*Polymer*size
-        # MiP > 0 & Area <= 0
+        # 1. MiP > 0 & Area <= 0
         # particles but no area? 
       #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2<=0,]  )
       nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2<=0,]  )
       length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2<=0]  ))  
       # 28 samples
       
-      #  MiP <= 0 & Area > 0
+      # 2. MiP <= 0 & Area > 0
       # No particles but area? 
       #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0,]  )
       nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0,]  )
@@ -770,21 +824,21 @@ Field_METADATA_vector=NA
       
       # We accept 1. and 2. because they derive from sample and blank measurements
       # but mass is a calculated value, from a model, not a measured value. 
-      # So we force the model to represent the MiP > 0 | Area > 0
+      # So we force the model to represent the MiP > 0 | Area > 0 (4.)
       
-      # (MiP > 0 & Area > 0) & Mass_T <= 0
+      # 3. (MiP > 0 & Area > 0) & Mass_T <= 0
       #View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
       nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]   )
       length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]    ))  
       # 49 samples
     
-      # (MiP > 0 | Area > 0) & Mass_T <= 0
+      # 4. (MiP > 0 | Area > 0) & Mass_T <= 0
       #View(Summary3a_Filter_subBCM[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
       nrow(Summary3a_Filter_subBCM[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]    )
       length(unique(Summary3a_Filter_subBCM$Extraction_Name[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]   ))  
       # 75 samples
       
-      # MiP > 0  & Mass_T <= 0
+      # 5. MiP > 0  & Mass_T <= 0
      # View(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
       nrow(Summary3a_Filter_subBCM[Summary3a_Filter_subBCM$Mean.particles>0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]   )
       length(unique(Summary3a_Filter_subBCM$Extraction_Name[Summary3a_Filter_subBCM$Mean.particles>0  & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]    ))  
@@ -794,7 +848,7 @@ Field_METADATA_vector=NA
       
       #  74 samples, 67.1 particle, 9144.355+ 67.12451*120 = + 17199.3 ng
       
-      # Area > 0 & Mass_T <= 0
+      # 6. Area > 0 & Mass_T <= 0
       #View(Summary3a_Filter_subBCM[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
       nrow(Summary3a_Filter_subBCM[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]    )
       length(unique(Summary3a_Filter_subBCM$Extraction_Name[ Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0 & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]   ))  
@@ -803,7 +857,7 @@ Field_METADATA_vector=NA
       
       #  50 samples
       
-      # MiP <= 0 & Area > 0 & Mass_T <= 0
+      # 7. MiP <= 0 & Area > 0 & Mass_T <= 0
       length(unique(Summary3a_Filter_subBCM$Extraction_Name[(Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]   ))  
       Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T[(Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]
       Summary3a_Filter_subBCM$Mean.Tot.Area.mm2[(Summary3a_Filter_subBCM$Mean.particles<=0 & Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0]/0.00775
@@ -821,20 +875,20 @@ Field_METADATA_vector=NA
       # Summary3a_Filter has some area <0.00775 mm2 when averaged from different users.
       
            # Assign smallest mass 
-      # we expect 68 particles added for a total of +9300.791 (to 0) + 67.12451*120 (num) + 0.87*120 (Area) = 17 460 ng
-      
-      Summary3a_Filter_minMASS = Summary3a_Filter_subBCM %>%
-        # Mean.area>0 & Mean.particles<=0 Mean.Tot.Mass.ng_T<0
-        mutate(across(c(Mean.Tot.Mass.ng_R, Mean.Tot.Mass.ng_S, Mean.Tot.Mass.ng_T),
-                      ~ ifelse(Mean.Tot.Area.mm2>0 & Mean.particles<=0 & Mean.Tot.Mass.ng_T<=0, Mean.Tot.Area.mm2/0.00775*120, .))) %>%  #  :  260 ng
-        # Mean.particles>0 & Mean.Tot.Mass.ng_T<0 
-        mutate(across(c(Mean.Tot.Mass.ng_R, Mean.Tot.Mass.ng_S, Mean.Tot.Mass.ng_T), 
-                      ~ ifelse(Mean.particles>0 & Mean.Tot.Mass.ng_T<=0, Mean.particles*120, .))) #  93667868: + 17199.3 ng
-      
-      # sum of mass before Assigning smallest mass : 99210816 ng
-      sum(Summary3a_Filter$Mean.Tot.Mass.ng_T) # : 99210816 ng
-      sum(Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T)- # 93650669 ng
-      sum(Summary3a_Filter_minMASS$Mean.Tot.Mass.ng_T) #  93668129 ng : +  17460.1 ng
+                # we expect 68 particles added for a total of +9300.791 (to 0) + 67.12451*120 (num) + 0.87*120 (Area) = 17 460 ng
+                
+                Summary3a_Filter_minMASS = Summary3a_Filter_subBCM %>%
+                  # Mean.area>0 & Mean.particles<=0 Mean.Tot.Mass.ng_T<0
+                  mutate(across(c(Mean.Tot.Mass.ng_R, Mean.Tot.Mass.ng_S, Mean.Tot.Mass.ng_T),
+                                ~ ifelse(Mean.Tot.Area.mm2>0 & Mean.particles<=0 & Mean.Tot.Mass.ng_T<=0, Mean.Tot.Area.mm2/0.00775*120, .))) %>%  #  :  260 ng
+                  # Mean.particles>0 & Mean.Tot.Mass.ng_T<0 
+                  mutate(across(c(Mean.Tot.Mass.ng_R, Mean.Tot.Mass.ng_S, Mean.Tot.Mass.ng_T), 
+                                ~ ifelse(Mean.particles>0 & Mean.Tot.Mass.ng_T<=0, Mean.particles*120, .))) #  93667868: + 17199.3 ng
+                
+                # sum of mass before Assigning smallest mass : 99210816 ng
+                sum(Summary3a_Filter$Mean.Tot.Mass.ng_T) # : 99210816 ng
+                sum(Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T)- # 93650669 ng
+                sum(Summary3a_Filter_minMASS$Mean.Tot.Mass.ng_T) #  93668129 ng : +  17460.1 ng
       
       # *** 3a.4 Summary3a_to0 ####
       # Set all negative values to 0
@@ -850,8 +904,6 @@ Field_METADATA_vector=NA
 
       #View(Summary3a_Filter_to0[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]  )
       nrow(Summary3a_Filter_to0[(Summary3a_Filter_subBCM$Mean.particles>0 | Summary3a_Filter_subBCM$Mean.Tot.Area.mm2>0) & Summary3a_Filter_subBCM$Mean.Tot.Mass.ng_T<=0,]    )
-     
-    
       
     
     # * 3b Sum per filter.div, Polymer.red12 * per Size_cat.um####
@@ -1217,7 +1269,7 @@ Field_METADATA_vector=NA
     
     # * 4a Mean per Soil_samples, all factors ####
     # *** 4a.1 Average analysed Filter per Soil ####
-    Summary4a_Soil= subset( Summary3a_Filter, Preparation_Type == "Field_samples" )  %>% #Preparation_Type %in% c("Field_samples", "Standard_Soil")
+    Summary4a_Soil= subset( Summary3a_Filter, Preparation_Type %!in% c( "Spiked", "Blank_chemical" ) ) %>% #Preparation_Type %in% c("Field_samples", "Standard_Soil")
       group_by_at( c( Group4_Soil, GroupP, GroupS) ) %>% # For each PMF_File_name, get the summary
       summarise( N.extract = n(),
                  Mean.particles= mean( Mean.particles), # Mean particle number per sample and polymer, over the files/operators 
@@ -1232,18 +1284,19 @@ Field_METADATA_vector=NA
 
     
     
-    # *** 4a.2 graph Multiple analysis per soil ####
+    # *** 4a.# graph Multiple analysis per soil ####
+    # Mostly concerns replicasts 
     # How many Soil Samples are extracted multiple times? 
-    unique(df_MiP$IR_rep)
-    # list of soils with multiple extractions
-    MultipleSoil_Extract=unique(Summary4a_Soil$Soil_sample[ Summary4a_Soil$N.extract>1])
+       # list of soils with multiple extractions
+      MultipleSoil_Extract=unique(Summary4a_Soil$Soil_sample[ Summary4a_Soil$N.extract>1])
+      length(  MultipleSoil_Extract)
     
     MultipleExtract_Name=  "m15_8.8.1_S1_n" 
     
     # For each of this soil 
     for (ex in 1: length(MultipleSoil_Extract)){
       #print(length(unique(df_MiP$File_name[df_MiP$Extraction_Name == MultipleIR_Extract[ex]])))
-      if (length(unique(df_MiP$Extraction_Name[df_MiP$Soil_sample == MultipleSoil_Extract[ex]])) > 1) { # If there is more than one 
+      if (length(unique(df_MiP$Extraction_Name[df_MiP$Soil_sample == MultipleSoil_Extract[ex] ])) > 1) { # If there is more than one and not a Spike or Bcm
         # print(MultipleIR_Extract[ex])
         print(unique(df_MiP$Extraction_Name[df_MiP$Soil_sample == MultipleSoil_Extract[ex]])) 
         MultipleExtract_Name= c( MultipleExtract_Name,unique(df_MiP$Extraction_Name[df_MiP$Soil_sample == MultipleSoil_Extract[ex]]) )
@@ -1269,7 +1322,7 @@ Field_METADATA_vector=NA
     
     
     
-    # *** 4a.3 subBCM Mean per Soil_samples, all factors ####
+    # *** 4a.2 subBCM Mean per Soil_samples, all factors ####
     Summary4a_Soil_subBCM= subset( Summary3a_Filter_subBCM, Preparation_Type == "Field_samples" )  %>% #Preparation_Type %in% c("Field_samples", "Standard_Soil")
       group_by_at( c( Group4_Soil, GroupP, GroupS) ) %>% # For each PMF_File_name, get the summary
       summarise( N.extract = n(),
@@ -1283,7 +1336,7 @@ Field_METADATA_vector=NA
       ) %>%
       ungroup()
     
-    # *** 4a.4 minMASS ####
+    # *** 4a.3 minMASS ####
     # min mass correction 
     Summary4a_Soil_minMASS=     Summary4a_Soil_subBCM %>%
       # Mean.area>0 & Mean.particles<=0 & Mean.Tot.Mass.ng_T<0
@@ -1293,7 +1346,7 @@ Field_METADATA_vector=NA
       mutate(across(c(Mean.Tot.Mass.ng_R, Mean.Tot.Mass.ng_S, Mean.Tot.Mass.ng_T), 
                     ~ ifelse(Mean.particles>0 & Mean.Tot.Mass.ng_T<=0, Mean.particles*120, .)))
     
-    # *** 4a.5 to0 values <0 to 0 ####
+    # *** 4a.4 to0 values <0 to 0 ####
     Summary4a_Soil_to0 = Summary4a_Soil_minMASS %>%
       mutate(across(c(Mean.particles,Mean.px, Mean.Tot.Area.mm2, Mean.Tot.Mass.ng_R, Mean.Tot.Mass.ng_S, Mean.Tot.Mass.ng_T), ~ ifelse(. < 0, 0, .)))
     
@@ -1640,10 +1693,8 @@ Field_METADATA_vector=NA
                     ~ ifelse(. < 0, 0, .)))
     
     
-    
-    # Mean per field of the soil samples. 
-    
-# 5. Summaries, Field ####       
+# 5. Summaries, Field ####  
+    # Mean per field of the soil samples.
     Group5_Field
     
     # * 5a Mean per Field, all factors ####
