@@ -247,8 +247,10 @@ Data_comb$Preparation_Type[Data_comb$Soil_sample=="pfsr" ]="Blank_soil"
 Data_comb$Sample_type[Data_comb$Preparation_Type=="Reference_Soil"]="n"
 
 # Re-label Filter_Name:
-Data_comb$Filter_Name=paste(Data_comb$Batch_Name, "_", Data_comb$Soil_sample, "_", Data_comb$Sample_type, "_", Data_comb$Filter_div, sep = "")
+  Data_comb$Filter_Name=paste(Data_comb$Batch_Name, "_", Data_comb$Soil_sample, "_", Data_comb$Sample_type, "_", Data_comb$Filter_div, sep = "")
 
+# Re-label plastics 
+  Data_comb$Polymer.grp[Data_comb$Polymer.grp=="silicone" ]="Silicone" 
 
 # Add a unique ID per particle 
 Data_comb$ID=seq_along(Data_comb$File_name)
